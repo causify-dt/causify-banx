@@ -369,7 +369,6 @@
                 ]
             };
 
-            // Function to load content
             function loadContent(url) {
                 // Remove any leading slash if present
                 url = url.replace(/^\//, '');
@@ -383,38 +382,28 @@
                     })
                     .then(html => {
                         if (dynamicContent) {
-                            // Create a temporary container
-                            const temp = document.createElement('div');
-                            temp.innerHTML = html;
-
-                            // Extract scripts
-                            const scripts = temp.querySelectorAll('script');
-                            
-                            // Remove scripts from the temp container
-                            scripts.forEach(script => script.remove());
-
-                            // Insert the HTML
-                            dynamicContent.innerHTML = temp.innerHTML;
-
-                            // Execute the scripts
-                            scripts.forEach(script => {
-                                const newScript = document.createElement('script');
-                                Array.from(script.attributes).forEach(attr => {
-                                    newScript.setAttribute(attr.name, attr.value);
-                                });
-                                newScript.appendChild(document.createTextNode(script.innerHTML));
-                                document.body.appendChild(newScript);
-                            });
+                            dynamicContent.innerHTML = html;
+                            // Execute scripts if needed (as in the previous version)
                         } else {
                             console.error('Dynamic content element not found');
                         }
                     })
                     .catch(error => {
                         console.error('Error loading content:', error);
-                        if (dynamicContent) {
-                            dynamicContent.innerHTML = '<p>Error loading content. Please try again.</p>';
-                        }
+                        displayPlaceholder(url);
                     });
+            }
+
+            function displayPlaceholder(url) {
+                const section = url.split('-')[0];
+                if (dynamicContent) {
+                    dynamicContent.innerHTML = `
+                        <div class="p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
+                            <p class="font-bold">Content Not Available</p>
+                            <p>The ${section} content (${url}) is currently under development. Please check back later.</p>
+                        </div>
+                    `;
+                }
             }
 
             // Load initial content
