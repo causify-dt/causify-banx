@@ -375,7 +375,28 @@
                     .then(response => response.text())
                     .then(html => {
                         if (dynamicContent) {
-                            dynamicContent.innerHTML = html;
+                            // Create a temporary container
+                            const temp = document.createElement('div');
+                            temp.innerHTML = html;
+
+                            // Extract scripts
+                            const scripts = temp.querySelectorAll('script');
+                            
+                            // Remove scripts from the temp container
+                            scripts.forEach(script => script.remove());
+
+                            // Insert the HTML
+                            dynamicContent.innerHTML = temp.innerHTML;
+
+                            // Execute the scripts
+                            scripts.forEach(script => {
+                                const newScript = document.createElement('script');
+                                Array.from(script.attributes).forEach(attr => {
+                                    newScript.setAttribute(attr.name, attr.value);
+                                });
+                                newScript.appendChild(document.createTextNode(script.innerHTML));
+                                document.body.appendChild(newScript);
+                            });
                         } else {
                             console.error('Dynamic content element not found');
                         }
