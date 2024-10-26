@@ -335,27 +335,13 @@
             };
 
             function loadContent(url) {
-                // Remove any leading slash if present
-                url = url.replace(/^\//, '');
-                
-                // Handle different prefixes
-                if (url.startsWith('CARDS-')) {
-                    url = url.replace('CARDS-', 'CREDIT-CARDS-');
-                } else if (url.startsWith('INSTITUTIONAL-')) {
-                    url = url.replace('INSTITUTIONAL-', 'INSTITUTIONAL-CLIENTS-');
-                }
-                
                 fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('HTTP error ' + response.status);
-                        }
-                        return response.text();
-                    })
+                    .then(response => response.text())
                     .then(html => {
                         if (dynamicContent) {
-                            dynamicContent.innerHTML = html;
-                            // Execute scripts if needed
+                            const sanitizedHtml = DOMPurify.sanitize(html);
+                            dynamicContent.innerHTML = sanitizedHtml;
+                            // Execute any scripts here if needed
                         } else {
                             console.error('Dynamic content element not found');
                         }
