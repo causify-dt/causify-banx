@@ -284,95 +284,103 @@
             
             const navigationItems = {
                 retail: [
-                    { icon: 'fa-home', text: 'Overview' },
-                    { icon: 'fa-user-plus', text: 'Acquisition & Retention' },
-                    { icon: 'fa-chart-bar', text: 'Account Activity' },
-                    { icon: 'fa-user-minus', text: 'Churn Prediction' },
-                    { icon: 'fa-chart-line', text: 'Usage Trends' },
-                    { icon: 'fa-dollar-sign', text: 'Revenue & Profitability' },
-                    { icon: 'fa-smile', text: 'Customer Satisfaction' },
-                    { icon: 'fa-handshake', text: 'Cross-Selling' }
+                    { icon: 'fa-home', text: 'Overview', file: 'RETAIL-Overview.html' },
+                    { icon: 'fa-user-plus', text: 'Acquisition & Retention', file: 'RETAIL-Acquisition-Retention.html' },
+                    { icon: 'fa-chart-bar', text: 'Account Activity', file: 'RETAIL-Account-Activity.html' },
+                    { icon: 'fa-user-minus', text: 'Churn Prediction', file: 'RETAIL-Churn-Prediction.html' },
+                    { icon: 'fa-chart-line', text: 'Usage Trends', file: 'RETAIL-Usage-Trends.html' },
+                    { icon: 'fa-dollar-sign', text: 'Revenue & Profitability', file: 'RETAIL-Revenue-Profitability.html' },
+                    { icon: 'fa-smile', text: 'Customer Satisfaction', file: 'RETAIL-Customer-Satisfaction.html' },
+                    { icon: 'fa-handshake', text: 'Cross-Selling', file: 'RETAIL-Cross-Selling.html' }
                 ],
                 corporate: [
-                    { icon: 'fa-home', text: 'Overview' },
-                    { icon: 'fa-briefcase', text: 'Business Accounts' },
-                    { icon: 'fa-hand-holding-usd', text: 'Loans & Financing' },
-                    { icon: 'fa-coins', text: 'Cash Management' },
-                    { icon: 'fa-globe', text: 'Trade Services' },
-                    { icon: 'fa-credit-card', text: 'Merchant Services' },
-                    { icon: 'fa-chart-line', text: 'Cash Flow' },
-                    { icon: 'fa-chart-pie', text: 'Client Profitability' },
-                    { icon: 'fa-money-bill-wave', text: 'Payments' },
-                    { icon: 'fa-handshake', text: 'Cross-Selling' }
+                    { icon: 'fa-home', text: 'Overview', file: 'CORPORATE-Overview.html' },
+                    { icon: 'fa-briefcase', text: 'Business Accounts', file: 'CORPORATE-Business-Accounts.html' },
+                    { icon: 'fa-hand-holding-usd', text: 'Loans & Financing', file: 'CORPORATE-Loans-Financing.html' },
+                    { icon: 'fa-coins', text: 'Cash Management', file: 'CORPORATE-Cash-Management.html' },
+                    { icon: 'fa-globe', text: 'Trade Services', file: 'CORPORATE-Trade-Services.html' },
+                    { icon: 'fa-credit-card', text: 'Merchant Services', file: 'CORPORATE-Merchant-Services.html' },
+                    { icon: 'fa-chart-line', text: 'Cash Flow', file: 'CORPORATE-Cash-Flow.html' },
+                    { icon: 'fa-chart-pie', text: 'Client Profitability', file: 'CORPORATE-Client-Profitability.html' },
+                    { icon: 'fa-money-bill-wave', text: 'Payments', file: 'CORPORATE-Payments.html' },
+                    { icon: 'fa-handshake', text: 'Cross-Selling', file: 'CORPORATE-Cross-Selling.html' }
                 ],
                 cards: [
-                    { icon: 'fa-home', text: 'Overview' },
-                    { icon: 'fa-credit-card', text: 'Consumer Cards' },
-                    { icon: 'fa-building', text: 'Business Cards' },
-                    { icon: 'fa-lock', text: 'Secured Cards' },
-                    { icon: 'fa-cogs', text: 'Card Services' },
-                    { icon: 'fa-chart-line', text: 'Credit Risk' },
-                    { icon: 'fa-gift', text: 'Rewards Program' },
-                    { icon: 'fa-shield-alt', text: 'Fraud Prevention' },
-                    { icon: 'fa-users', text: 'Customer Engagement' },
-                    { icon: 'fa-sync', text: 'Card Lifecycle' }
+                    { icon: 'fa-home', text: 'Overview', file: 'CARDS-Overview.html' },
+                    { icon: 'fa-credit-card', text: 'Consumer Cards', file: 'CARDS-Consumer-Cards.html' },
+                    { icon: 'fa-building', text: 'Business Cards', file: 'CARDS-Business-Cards.html' },
+                    { icon: 'fa-lock', text: 'Secured Cards', file: 'CARDS-Secured-Cards.html' },
+                    { icon: 'fa-cogs', text: 'Card Services', file: 'CARDS-Card-Services.html' },
+                    { icon: 'fa-chart-line', text: 'Credit Risk', file: 'CARDS-Credit-Risk.html' },
+                    { icon: 'fa-gift', text: 'Rewards Program', file: 'CARDS-Rewards-Program.html' },
+                    { icon: 'fa-shield-alt', text: 'Fraud Prevention', file: 'CARDS-Fraud-Prevention.html' },
+                    { icon: 'fa-users', text: 'Customer Engagement', file: 'CARDS-Customer-Engagement.html' },
+                    { icon: 'fa-sync', text: 'Card Lifecycle', file: 'CARDS-Card-Lifecycle.html' }
                 ],
                 private: [
-                    { icon: 'fa-home', text: 'Overview' },
-                    { icon: 'fa-user-tie', text: 'HNWI Services' },
-                    { icon: 'fa-scroll', text: 'Estate Planning' },
-                    { icon: 'fa-building', text: 'Family Office' },
-                    { icon: 'fa-hand-holding-heart', text: 'Philanthropic Advisory' }
+                    { icon: 'fa-home', text: 'Overview', file: 'PRIVATE-Overview.html' },
+                    { icon: 'fa-user-tie', text: 'HNWI Services', file: 'PRIVATE-HNWI-Services.html' },
+                    { icon: 'fa-scroll', text: 'Estate Planning', file: 'PRIVATE-Estate-Planning.html' },
+                    { icon: 'fa-building', text: 'Family Office', file: 'PRIVATE-Family-Office.html' },
+                    { icon: 'fa-hand-holding-heart', text: 'Philanthropic Advisory', file: 'PRIVATE-Philanthropic-Advisory.html' }
                 ],
                 investment: [
-                    { icon: 'fa-home', text: 'Overview' },
-                    { icon: 'fa-handshake', text: 'M&A' },
-                    { icon: 'fa-chart-line', text: 'Equity Capital Markets' },
-                    { icon: 'fa-chart-area', text: 'Debt Capital Markets' },
-                    { icon: 'fa-file-signature', text: 'Underwriting' },
-                    { icon: 'fa-lightbulb', text: 'Strategic Advisory' },
-                    { icon: 'fa-sitemap', text: 'Corporate Restructuring' },
-                    { icon: 'fa-money-bill-wave', text: 'Capital Raising' },
-                    { icon: 'fa-piggy-bank', text: 'Private Equity & VC' }
+                    { icon: 'fa-home', text: 'Overview', file: 'INVESTMENT-Overview.html' },
+                    { icon: 'fa-handshake', text: 'M&A', file: 'INVESTMENT-MA.html' },
+                    { icon: 'fa-chart-line', text: 'Equity Capital Markets', file: 'INVESTMENT-Equity-Capital-Markets.html' },
+                    { icon: 'fa-chart-area', text: 'Debt Capital Markets', file: 'INVESTMENT-Debt-Capital-Markets.html' },
+                    { icon: 'fa-file-signature', text: 'Underwriting', file: 'INVESTMENT-Underwriting.html' },
+                    { icon: 'fa-lightbulb', text: 'Strategic Advisory', file: 'INVESTMENT-Strategic-Advisory.html' },
+                    { icon: 'fa-sitemap', text: 'Corporate Restructuring', file: 'INVESTMENT-Corporate-Restructuring.html' },
+                    { icon: 'fa-money-bill-wave', text: 'Capital Raising', file: 'INVESTMENT-Capital-Raising.html' },
+                    { icon: 'fa-piggy-bank', text: 'Private Equity & VC', file: 'INVESTMENT-Private-Equity-VC.html' }
                 ],
                 markets: [
-                    { icon: 'fa-home', text: 'Overview' },
-                    { icon: 'fa-chart-line', text: 'Equities Trading' },
-                    { icon: 'fa-chart-area', text: 'Fixed Income' },
-                    { icon: 'fa-oil-can', text: 'Commodities' },
-                    { icon: 'fa-chart-pie', text: 'Derivatives' },
-                    { icon: 'fa-warehouse', text: 'Prime Brokerage' },
-                    { icon: 'fa-exchange-alt', text: 'Securities Lending' },
-                    { icon: 'fa-shield-alt', text: 'Risk Management' },
-                    { icon: 'fa-smile', text: 'Customer Satisfaction' }
+                    { icon: 'fa-home', text: 'Overview', file: 'MARKETS-Overview.html' },
+                    { icon: 'fa-chart-line', text: 'Equities Trading', file: 'MARKETS-Equities-Trading.html' },
+                    { icon: 'fa-chart-area', text: 'Fixed Income', file: 'MARKETS-Fixed-Income.html' },
+                    { icon: 'fa-oil-can', text: 'Commodities', file: 'MARKETS-Commodities.html' },
+                    { icon: 'fa-chart-pie', text: 'Derivatives', file: 'MARKETS-Derivatives.html' },
+                    { icon: 'fa-warehouse', text: 'Prime Brokerage', file: 'MARKETS-Prime-Brokerage.html' },
+                    { icon: 'fa-exchange-alt', text: 'Securities Lending', file: 'MARKETS-Securities-Lending.html' },
+                    { icon: 'fa-shield-alt', text: 'Risk Management', file: 'MARKETS-Risk-Management.html' },
+                    { icon: 'fa-smile', text: 'Customer Satisfaction', file: 'MARKETS-Customer-Satisfaction.html' }
                 ],
                 treasury: [
-                    { icon: 'fa-home', text: 'Overview' },
-                    { icon: 'fa-tint', text: 'Liquidity Management' },
-                    { icon: 'fa-exchange-alt', text: 'Payments & Receivables' },
-                    { icon: 'fa-credit-card', text: 'Commercial Cards' },
-                    { icon: 'fa-globe', text: 'Trade Services' }
+                    { icon: 'fa-home', text: 'Overview', file: 'TREASURY-Overview.html' },
+                    { icon: 'fa-tint', text: 'Liquidity Management', file: 'TREASURY-Liquidity-Management.html' },
+                    { icon: 'fa-exchange-alt', text: 'Payments & Receivables', file: 'TREASURY-Payments-Receivables.html' },
+                    { icon: 'fa-credit-card', text: 'Commercial Cards', file: 'TREASURY-Commercial-Cards.html' },
+                    { icon: 'fa-globe', text: 'Trade Services', file: 'TREASURY-Trade-Services.html' }
                 ],
                 institutional: [
-                    { icon: 'fa-home', text: 'Overview' },
-                    { icon: 'fa-landmark', text: 'Government Services' },
-                    { icon: 'fa-university', text: 'Financial Institutions' },
-                    { icon: 'fa-building', text: 'Multinational Corps' },
-                    { icon: 'fa-globe', text: 'Cross-Border Finance' },
-                    { icon: 'fa-crown', text: 'Sovereign Wealth' },
-                    { icon: 'fa-road', text: 'Infrastructure Finance' },
-                    { icon: 'fa-handshake', text: 'Correspondent Banking' },
-                    { icon: 'fa-shield-alt', text: 'Risk & Compliance' },
-                    { icon: 'fa-laptop', text: 'Digital Transformation' },
-                    { icon: 'fa-leaf', text: 'Sustainable Finance' },
-                    { icon: 'fa-chart-pie', text: 'Client Profitability' }
+                    { icon: 'fa-home', text: 'Overview', file: 'INSTITUTIONAL-Overview.html' },
+                    { icon: 'fa-landmark', text: 'Government Services', file: 'INSTITUTIONAL-Government-Services.html' },
+                    { icon: 'fa-university', text: 'Financial Institutions', file: 'INSTITUTIONAL-Financial-Institutions.html' },
+                    { icon: 'fa-building', text: 'Multinational Corps', file: 'INSTITUTIONAL-Multinational-Corps.html' },
+                    { icon: 'fa-globe', text: 'Cross-Border Finance', file: 'INSTITUTIONAL-Cross-Border-Finance.html' },
+                    { icon: 'fa-crown', text: 'Sovereign Wealth', file: 'INSTITUTIONAL-Sovereign-Wealth.html' },
+                    { icon: 'fa-road', text: 'Infrastructure Finance', file: 'INSTITUTIONAL-Infrastructure-Finance.html' },
+                    { icon: 'fa-handshake', text: 'Correspondent Banking', file: 'INSTITUTIONAL-Correspondent-Banking.html' },
+                    { icon: 'fa-shield-alt', text: 'Risk & Compliance', file: 'INSTITUTIONAL-Risk-Compliance.html' },
+                    { icon: 'fa-laptop', text: 'Digital Transformation', file: 'INSTITUTIONAL-Digital-Transformation.html' },
+                    { icon: 'fa-leaf', text: 'Sustainable Finance', file: 'INSTITUTIONAL-Sustainable-Finance.html' },
+                    { icon: 'fa-chart-pie', text: 'Client Profitability', file: 'INSTITUTIONAL-Client-Profitability.html' }
                 ]
             };
 
             // Function to load content
             function loadContent(url) {
+                // Remove any leading slash if present
+                url = url.replace(/^\//, '');
+                
                 fetch(url)
-                    .then(response => response.text())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('HTTP error ' + response.status);
+                        }
+                        return response.text();
+                    })
                     .then(html => {
                         if (dynamicContent) {
                             // Create a temporary container
@@ -410,7 +418,7 @@
             }
 
             // Load initial content
-            loadContent('RETAIL-BANKING-Overview.html');
+            loadContent('RETAIL-Overview.html');
 
             function updateSidebar(tab) {
                 const items = navigationItems[tab] || navigationItems.retail;
@@ -429,7 +437,7 @@
 
                 items.forEach(item => {
                     sidebarHTML += `
-                        <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center ${isSidebarExpanded ? 'justify-start' : 'justify-center'} w-full" data-content="${tab.toUpperCase()}-${item.text.replace(/\s+/g, '-')}.html">
+                        <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center ${isSidebarExpanded ? 'justify-start' : 'justify-center'} w-full" data-content="${item.file}">
                             <div class="w-8 flex justify-center">
                                 <i class="fas ${item.icon}"></i>
                             </div>
@@ -531,7 +539,7 @@
                     updateSidebar(selectedTab);
 
                     // Load the overview content for the selected tab
-                    loadContent(`${selectedTab.toUpperCase()}-BANKING-Overview.html`);
+                    loadContent(`${selectedTab.toUpperCase()}-Overview.html`);
                 });
             });
 
