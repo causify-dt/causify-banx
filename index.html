@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banx Finance Demo Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sidebar: '#2c3e50',
+                        'sidebar-hover': '#34495e',
+                        header: '#3498db',  
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css" rel="stylesheet" />
+    <style>
+        .text-xs {
+            line-height: 0rem;
+        }
+
+        .causify-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: white;
+            border-radius: 5px;
+            padding: 0px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 9999;
+            width: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .causify-logo {
+            width: 80px;
+            height: auto;
+            display: block;
+            margin: 5px 0;
+        }
+
+        .banx-logo-black {
+            filter: brightness(0) saturate(100%);
+            height: 1.25rem;
+            width: auto;
+        }
+
+        body {
+            padding-top: 0; /* Remove the padding we added for the fixed header */
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <header class="bg-white text-gray-800 py-2 px-3 shadow-sm border-b border-gray-200">
+        <div class="flex justify-between items-center">
+            <img src="https://github.com/causify-dt/causify-banx/blob/main/banx-logo/banx-logo.png?raw=true" alt="Banx Logo" class="banx-logo-black">
+            <div class="flex items-center">
+                <ul class="inline-flex text-xs font-medium text-center text-gray-500 dark:text-gray-400 space-x-1 bg-gray-100 p-1 rounded-full mr-3">
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap bg-white text-gray-900" data-tab="retail">
+                            <i class="fas fa-home mr-1.5 text-gray-900"></i>
+                            Retail
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="corporate">
+                            <i class="fas fa-building mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Corporate
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="cards">
+                            <i class="fas fa-credit-card mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Cards
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="private">
+                            <i class="fas fa-user-tie mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Private
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="investment">
+                            <i class="fas fa-chart-line mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Investment
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="markets">
+                            <i class="fas fa-globe mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Markets
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="treasury">
+                            <i class="fas fa-vault mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Treasury
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="institutional">
+                            <i class="fas fa-university mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Institutional
+                        </a>
+                    </li>
+                </ul>
+                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-base">
+                    MB
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="flex">
+        <div id="sidebar" class="bg-gray-50 text-gray-700 w-[103px] transition-all duration-300 overflow-y-auto flex flex-col border-r border-gray-200">
+            <div class="flex flex-col items-center pt-4">
+                <button id="sidebarToggle" class="mb-6 text-gray-700 hover:text-gray-900 focus:outline-none">
+                    <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </button>
+            </div>
+            <ul class="p-0 m-0 w-full flex flex-col items-center">
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Overview</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">E-commerce</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-hashtag"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Social Media</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Influencers</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Email Campaigns</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-pen-fancy"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Content Marketing</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-ad"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Paid Advertising</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Events</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Retail Partnerships</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Product Performance</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Customer Segments</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Brand Health</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Competitor Analysis</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Sustainability</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Trend Forecasting</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">A/B Testing</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Customer Feedback</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Marketing ROI</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Budget Allocation</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Campaign Planner</span>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="flex-grow bg-gray-100 overflow-y-auto transition-all duration-300">
+            <div class="p-6 bg-gray-50">
+                <h2 class="text-2xl font-bold mb-4">Overview</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- KPI Cards -->
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-lg font-semibold mb-2">Total Revenue</h3>
+                        <p class="text-3xl font-bold text-blue-600">$1,234,567</p>
+                        <p class="text-sm text-gray-500">+12.5% from last month</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-lg font-semibold mb-2">Conversion Rate</h3>
+                        <p class="text-3xl font-bold text-green-600">3.2%</p>
+                        <p class="text-sm text-gray-500">+0.5% from last month</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-lg font-semibold mb-2">Customer Acquisition Cost</h3>
+                        <p class="text-3xl font-bold text-orange-600">$45.67</p>
+                        <p class="text-sm text-gray-500">-2.3% from last month</p>
+                    </div>
+                    
+                    <!-- Causal Impact Analysis -->
+                    <div class="bg-white p-4 rounded-lg shadow col-span-full lg:col-span-2 h-[400px]">
+                        <h3 class="text-lg font-semibold mb-2">Causal Impact Analysis</h3>
+                        <div class="h-[calc(100%-2rem)]">
+                            <canvas id="causalImpactChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Cross-Channel Attribution -->
+                    <div class="bg-white p-4 rounded-lg shadow col-span-full md:col-span-1 h-[400px]">
+                        <h3 class="text-lg font-semibold mb-2">Cross-Channel Attribution</h3>
+                        <div class="h-[calc(100%-2rem)]">
+                            <canvas id="attributionChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- AI-Driven Insights -->
+                    <div class="bg-white p-4 rounded-lg shadow col-span-full md:col-span-1">
+                        <h3 class="text-lg font-semibold mb-2">AI-Driven Insights</h3>
+                        <ul class="list-disc pl-5">
+                            <li class="mb-2">Email campaigns show a 15% increase in effectiveness when paired with targeted social media ads.</li>
+                            <li class="mb-2">Customer segments responding to sustainability messaging have a 23% higher LTV.</li>
+                            <li class="mb-2">A/B testing suggests a 7% lift in conversions with personalized product recommendations.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Predictive Analytics -->
+                    <div class="bg-white p-4 rounded-lg shadow col-span-full md:col-span-1 h-[400px]">
+                        <h3 class="text-lg font-semibold mb-2">Predictive Analytics</h3>
+                        <div class="h-[calc(100%-2rem)]">
+                            <canvas id="predictiveChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Real-time Campaign Optimization -->
+                    <div class="bg-white p-4 rounded-lg shadow col-span-full md:col-span-1">
+                        <h3 class="text-lg font-semibold mb-2">Real-time Campaign Optimization</h3>
+                        <ul class="list-disc pl-5">
+                            <li class="mb-2">Increase budget for "Summer Sale" campaign by 10% to capitalize on high engagement rates.</li>
+                            <li class="mb-2">Adjust targeting for "Fitness Challenge" to focus on 25-34 age group for better conversion.</li>
+                            <li class="mb-2">Pause underperforming "Protein Shake" ad set and reallocate budget to top performers.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Customer Segmentation -->
+                    <div class="bg-white p-4 rounded-lg shadow col-span-full h-[400px]">
+                        <h3 class="text-lg font-semibold mb-2">Customer Segmentation</h3>
+                        <div class="h-[calc(100%-2rem)]">
+                            <canvas id="segmentationChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Marketing Mix Modeling -->
+                    <div class="bg-white p-4 rounded-lg shadow col-span-full lg:col-span-2 h-[400px]">
+                        <h3 class="text-lg font-semibold mb-2">Marketing Mix Modeling</h3>
+                        <div class="h-[calc(100%-2rem)]">
+                            <canvas id="mixModelingChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Anomaly Detection -->
+                    <div class="bg-white p-4 rounded-lg shadow col-span-full md:col-span-1">
+                        <h3 class="text-lg font-semibold mb-2">Anomaly Detection</h3>
+                        <ul id="anomalyList" class="list-disc pl-5">
+                            <li class="mb-2">Unusual spike in website traffic from organic search (investigate potential viral content)</li>
+                            <li class="mb-2">Significant drop in email open rates for the "New Product" campaign</li>
+                            <li class="mb-2">Unexpected increase in CAC for the 18-24 age group</li>
+                        </ul>
+                    </div>
+                </div>
+                <h2 class="text-2xl font-bold mb-4 mt-8">Advanced Predictive Analytics</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Customer Lifetime Value Prediction -->
+                    <div class="bg-white p-4 rounded-lg shadow h-[400px]">
+                        <h3 class="text-lg font-semibold mb-2">Customer Lifetime Value Prediction</h3>
+                        <div class="h-[calc(100%-2rem)]">
+                            <canvas id="clvChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Churn Risk Prediction -->
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-lg font-semibold mb-2">Churn Risk Prediction</h3>
+                        <div id="churnRisk">
+                            <div class="mb-4">
+                                <div class="flex justify-between mb-1">
+                                    <span>High Risk</span>
+                                    <span>15%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-red-600 h-2.5 rounded-full" style="width: 15%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <div class="flex justify-between mb-1">
+                                    <span>Medium Risk</span>
+                                    <span>25%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-yellow-400 h-2.5 rounded-full" style="width: 25%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <div class="flex justify-between mb-1">
+                                    <span>Low Risk</span>
+                                    <span>60%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-green-600 h-2.5 rounded-full" style="width: 60%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Next Best Action Recommendation -->
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-lg font-semibold mb-2">Next Best Action Recommendation</h3>
+                        <ul class="space-y-2">
+                            <li class="flex justify-between items-center">
+                                <span>Email Campaign</span>
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">Score: 0.85</span>
+                            </li>
+                            <li class="flex justify-between items-center">
+                                <span>Personalized Offer</span>
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">Score: 0.72</span>
+                            </li>
+                            <li class="flex justify-between items-center">
+                                <span>Product Recommendation</span>
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">Score: 0.68</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Demand Forecasting -->
+                    <div class="bg-white p-4 rounded-lg shadow h-[400px]">
+                        <h3 class="text-lg font-semibold mb-2">Demand Forecasting</h3>
+                        <div class="h-[calc(100%-2rem)]">
+                            <canvas id="demandForecastChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Causify Badge -->
+    <div class="causify-badge" style="z-index: 10000;">
+        <img src="https://raw.githubusercontent.com/causify-dt/causify-marketing/refs/heads/main/causify-black-color.png" alt="Causify Logo" class="causify-logo">
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabLinks = document.querySelectorAll('header ul li a');
+            const sidebar = document.getElementById('sidebar');
+            const dynamicContent = document.getElementById('dynamic-content');
+            let isSidebarExpanded = false;
+            
+            const navigationItems = {
+                retail: [
+                    { icon: 'fa-home', text: 'Overview' },
+                    { icon: 'fa-user-plus', text: 'Acquisition & Retention' },
+                    { icon: 'fa-chart-bar', text: 'Account Activity' },
+                    { icon: 'fa-user-minus', text: 'Churn Prediction' },
+                    { icon: 'fa-chart-line', text: 'Usage Trends' },
+                    { icon: 'fa-dollar-sign', text: 'Revenue & Profitability' },
+                    { icon: 'fa-smile', text: 'Customer Satisfaction' },
+                    { icon: 'fa-handshake', text: 'Cross-Selling' }
+                ],
+                corporate: [
+                    { icon: 'fa-home', text: 'Overview' },
+                    { icon: 'fa-briefcase', text: 'Business Accounts' },
+                    { icon: 'fa-hand-holding-usd', text: 'Loans & Financing' },
+                    { icon: 'fa-coins', text: 'Cash Management' },
+                    { icon: 'fa-globe', text: 'Trade Services' },
+                    { icon: 'fa-credit-card', text: 'Merchant Services' },
+                    { icon: 'fa-chart-line', text: 'Cash Flow' },
+                    { icon: 'fa-chart-pie', text: 'Client Profitability' },
+                    { icon: 'fa-money-bill-wave', text: 'Payments' },
+                    { icon: 'fa-handshake', text: 'Cross-Selling' }
+                ],
+                cards: [
+                    { icon: 'fa-home', text: 'Overview' },
+                    { icon: 'fa-credit-card', text: 'Consumer Cards' },
+                    { icon: 'fa-building', text: 'Business Cards' },
+                    { icon: 'fa-lock', text: 'Secured Cards' },
+                    { icon: 'fa-cogs', text: 'Card Services' },
+                    { icon: 'fa-chart-line', text: 'Credit Risk' },
+                    { icon: 'fa-gift', text: 'Rewards Program' },
+                    { icon: 'fa-shield-alt', text: 'Fraud Prevention' },
+                    { icon: 'fa-users', text: 'Customer Engagement' },
+                    { icon: 'fa-sync', text: 'Card Lifecycle' }
+                ],
+                private: [
+                    { icon: 'fa-home', text: 'Overview' },
+                    { icon: 'fa-user-tie', text: 'HNWI Services' },
+                    { icon: 'fa-scroll', text: 'Estate Planning' },
+                    { icon: 'fa-building', text: 'Family Office' },
+                    { icon: 'fa-hand-holding-heart', text: 'Philanthropic Advisory' }
+                ],
+                investment: [
+                    { icon: 'fa-home', text: 'Overview' },
+                    { icon: 'fa-handshake', text: 'M&A' },
+                    { icon: 'fa-chart-line', text: 'Equity Capital Markets' },
+                    { icon: 'fa-chart-area', text: 'Debt Capital Markets' },
+                    { icon: 'fa-file-signature', text: 'Underwriting' },
+                    { icon: 'fa-lightbulb', text: 'Strategic Advisory' },
+                    { icon: 'fa-sitemap', text: 'Corporate Restructuring' },
+                    { icon: 'fa-money-bill-wave', text: 'Capital Raising' },
+                    { icon: 'fa-piggy-bank', text: 'Private Equity & VC' }
+                ],
+                markets: [
+                    { icon: 'fa-home', text: 'Overview' },
+                    { icon: 'fa-chart-line', text: 'Equities Trading' },
+                    { icon: 'fa-chart-area', text: 'Fixed Income' },
+                    { icon: 'fa-oil-can', text: 'Commodities' },
+                    { icon: 'fa-chart-pie', text: 'Derivatives' },
+                    { icon: 'fa-warehouse', text: 'Prime Brokerage' },
+                    { icon: 'fa-exchange-alt', text: 'Securities Lending' },
+                    { icon: 'fa-shield-alt', text: 'Risk Management' },
+                    { icon: 'fa-smile', text: 'Customer Satisfaction' }
+                ],
+                treasury: [
+                    { icon: 'fa-home', text: 'Overview' },
+                    { icon: 'fa-tint', text: 'Liquidity Management' },
+                    { icon: 'fa-exchange-alt', text: 'Payments & Receivables' },
+                    { icon: 'fa-credit-card', text: 'Commercial Cards' },
+                    { icon: 'fa-globe', text: 'Trade Services' }
+                ],
+                institutional: [
+                    { icon: 'fa-home', text: 'Overview' },
+                    { icon: 'fa-landmark', text: 'Government Services' },
+                    { icon: 'fa-university', text: 'Financial Institutions' },
+                    { icon: 'fa-building', text: 'Multinational Corps' },
+                    { icon: 'fa-globe', text: 'Cross-Border Finance' },
+                    { icon: 'fa-crown', text: 'Sovereign Wealth' },
+                    { icon: 'fa-road', text: 'Infrastructure Finance' },
+                    { icon: 'fa-handshake', text: 'Correspondent Banking' },
+                    { icon: 'fa-shield-alt', text: 'Risk & Compliance' },
+                    { icon: 'fa-laptop', text: 'Digital Transformation' },
+                    { icon: 'fa-leaf', text: 'Sustainable Finance' },
+                    { icon: 'fa-chart-pie', text: 'Client Profitability' }
+                ]
+            };
+
+            // Function to load content
+            function loadContent(url) {
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        dynamicContent.innerHTML = html;
+                    })
+                    .catch(error => {
+                        console.error('Error loading content:', error);
+                        dynamicContent.innerHTML = '<p>Error loading content. Please try again.</p>';
+                    });
+            }
+
+            // Load initial content
+            loadContent('RETAIL-BANKING-Overview.html');
+
+            function updateSidebar(tab) {
+                const items = navigationItems[tab] || navigationItems.retail;
+                let sidebarHTML = `
+                    <div class="flex flex-col items-center pt-4">
+                        <button id="sidebarToggle" class="mb-6 text-gray-700 hover:text-gray-900 focus:outline-none">
+                            <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </button>
+                    </div>
+                    <ul class="p-0 m-0 w-full flex flex-col items-center">
+                `;
+
+                items.forEach(item => {
+                    sidebarHTML += `
+                        <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center ${isSidebarExpanded ? 'justify-start' : 'justify-center'} w-full" data-content="${tab.toUpperCase()}-${item.text.replace(/\s+/g, '-')}.html">
+                            <div class="w-8 flex justify-center">
+                                <i class="fas ${item.icon}"></i>
+                            </div>
+                            <span class="sidebar-text ${isSidebarExpanded ? '' : 'hidden'} ml-2">${item.text}</span>
+                        </li>
+                    `;
+                });
+
+                sidebarHTML += '</ul>';
+                sidebar.innerHTML = sidebarHTML;
+
+                // Apply the current sidebar state
+                if (isSidebarExpanded) {
+                    sidebar.classList.remove('w-[103px]');
+                    sidebar.classList.add('w-[415px]');
+                } else {
+                    sidebar.classList.remove('w-[415px]');
+                    sidebar.classList.add('w-[103px]');
+                }
+
+                // Reattach the sidebarToggle event listener
+                const sidebarToggle = document.getElementById('sidebarToggle');
+                sidebarToggle.addEventListener('click', toggleSidebar);
+
+                // Add click event listeners to sidebar items
+                const sidebarItems = sidebar.querySelectorAll('li');
+                sidebarItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        const contentUrl = this.getAttribute('data-content');
+                        loadContent(contentUrl);
+                    });
+                });
+            }
+
+            function toggleSidebar() {
+                isSidebarExpanded = !isSidebarExpanded;
+                if (isSidebarExpanded) {
+                    sidebar.classList.remove('w-[103px]');
+                    sidebar.classList.add('w-[415px]');
+                    document.querySelectorAll('.sidebar-text').forEach(text => text.classList.remove('hidden'));
+                    document.querySelectorAll('#sidebar ul li').forEach(item => {
+                        item.classList.remove('justify-center');
+                        item.classList.add('justify-start');
+                    });
+                } else {
+                    sidebar.classList.remove('w-[415px]');
+                    sidebar.classList.add('w-[103px]');
+                    document.querySelectorAll('.sidebar-text').forEach(text => text.classList.add('hidden'));
+                    document.querySelectorAll('#sidebar ul li').forEach(item => {
+                        item.classList.remove('justify-start');
+                        item.classList.add('justify-center');
+                    });
+                }
+                updateToggleButton();
+            }
+
+            function updateToggleButton() {
+                const sidebarToggle = document.getElementById('sidebarToggle');
+                if (isSidebarExpanded) {
+                    sidebarToggle.innerHTML = `
+                        <div class="flex items-center">
+                            <span class="mr-2 text-xs">Collapse</span>
+                            <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    sidebarToggle.innerHTML = `
+                        <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    `;
+                }
+            }
+
+            tabLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all tabs
+                    tabLinks.forEach(tab => {
+                        tab.classList.remove('bg-white', 'text-gray-900');
+                        tab.querySelector('i').classList.remove('text-gray-900');
+                        tab.querySelector('i').classList.add('text-gray-400');
+                    });
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('bg-white', 'text-gray-900');
+                    this.querySelector('i').classList.remove('text-gray-400');
+                    this.querySelector('i').classList.add('text-gray-900');
+                    
+                    // Update the sidebar based on the selected tab
+                    const selectedTab = this.getAttribute('data-tab');
+                    updateSidebar(selectedTab);
+
+                    // Load the overview content for the selected tab
+                    loadContent(`${selectedTab.toUpperCase()}-BANKING-Overview.html`);
+                });
+            });
+
+            // Initialize with the retail sidebar
+            updateSidebar('retail');
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
+</body>
+</html>
