@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Retail Banking Customer Acquisition</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Consumer Credit Cards</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Rewards Program Usage</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">70%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 75% next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cashback Redemption Rate</h3>
+                               <p class="text-sm text-gray-500">(80% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">55%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 60% with better incentives</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Travel Mile Redemption Growth</h3>
+                               <p class="text-sm text-gray-500">(88% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$150M</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> $160M next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Satisfaction (NPS)</h3>
+                               <p class="text-sm text-gray-500">(82% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">70</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 72 with new reward structures</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Rewards engagement is driving overall card usage, with a projected 5% increase in program participation next quarter.</li>
+                           <li>Cashback programs are showing strong correlation with customer satisfaction, expected to boost NPS by 2 points.</li>
+                           <li>Travel credit cards remain popular, with mile redemption forecasted to grow by $10 million in the coming quarter.</li>
+                           <li>If we introduce a tiered rewards structure, we could potentially see a 15% increase in high-value customer retention.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Credit Card Usage Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Rewards Program Usage Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="rewardsProgramUsageChart"></canvas>
+                               </div>
+                               <p id="rewardsProgramUsageExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cashback Redemption Rate Forecast <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="cashbackRedemptionChart"></canvas>
+                               </div>
+                               <p id="cashbackRedemptionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Travel Mile Redemption Growth <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="travelMileRedemptionChart"></canvas>
+                               </div>
+                               <p id="travelMileRedemptionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Satisfaction (NPS) Trend <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="customerSatisfactionChart"></canvas>
+                               </div>
+                               <p id="customerSatisfactionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Credit Card Spending by Category <span class="text-sm font-normal text-gray-500">(79% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="spendingCategoryChart"></canvas>
+                               </div>
+                               <p id="spendingCategoryExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">New Card Acquisition Forecast <span class="text-sm font-normal text-gray-500">(83% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="newCardAcquisitionChart"></canvas>
+                               </div>
+                               <p id="newCardAcquisitionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initTimeSeriesChart(canvasId, data, options) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           const labels = generateDateLabels(data.monthsBack, data.monthsForward);
+           const historicalDataPoints = data.monthsBack + 1;
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: data.historical,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Predicted',
+                       data: data.forecast,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: {
+                           title: {
+                               display: true,
+                               text: 'Month'
+                           }
+                       },
+                       y: {
+                           beginAtZero: options.beginAtZero || false,
+                           title: {
+                               display: true,
+                               text: options.yAxisTitle
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].datasetIndex === 0 ? 'Historical' : 'Prediction';
+                               }
+                           }
+                       },
+                       annotation: {
+                           annotations: {
+                               line1: {
+                                   type: 'line',
+                                   xMin: historicalDataPoints - 0.5,
+                                   xMax: historicalDataPoints - 0.5,
+                                   borderColor: 'rgb(169, 169, 169)',
+                                   borderWidth: 2,
+                                   label: {
+                                       content: 'Now',
+                                       enabled: true,
+                                       position: 'top'
+                                   }
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation(canvasId + 'Explanation', data.explanation);
+       }
+
+       function initSpendingCategoryChart() {
+           const ctx = document.getElementById('spendingCategoryChart').getContext('2d');
+           new Chart(ctx, {
+               type: 'doughnut',
+               data: {
+                   labels: ['Travel', 'Dining', 'Retail', 'Groceries', 'Entertainment', 'Other'],
+                   datasets: [{
+                       data: [25, 20, 18, 15, 12, 10],
+                       backgroundColor: [
+                           'rgba(255, 99, 132, 0.6)',
+                           'rgba(54, 162, 235, 0.6)',
+                           'rgba(255, 206, 86, 0.6)',
+                           'rgba(75, 192, 192, 0.6)',
+                           'rgba(153, 102, 255, 0.6)',
+                           'rgba(255, 159, 64, 0.6)'
+                       ]
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           position: 'right'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('spendingCategoryExplanation', 'Travel and dining categories are projected to grow by 15% and 10% respectively in the next quarter, driven by post-pandemic recovery and summer vacation trends.');
+       }
+
+       function initCausalNetworkGraph() {
+           const container = document.getElementById('causalNetworkGraph');
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Rewards Program', color: '#FFA500' },
+               { id: 2, label: 'Cashback Offers', color: '#00CED1' },
+               { id: 3, label: 'Travel Benefits', color: '#FF69B4' },
+               { id: 4, label: 'Customer Satisfaction', color: '#32CD32' },
+               { id: 5, label: 'Card Usage', color: '#4169E1' },
+               { id: 6, label: 'New Acquisitions', color: '#BA55D3' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 4, label: '0.6', arrows: 'to' },
+               { from: 1, to: 5, label: '0.7', arrows: 'to' },
+               { from: 2, to: 4, label: '0.5', arrows: 'to' },
+               { from: 2, to: 5, label: '0.6', arrows: 'to' },
+               { from: 3, to: 4, label: '0.4', arrows: 'to' },
+               { from: 3, to: 5, label: '0.5', arrows: 'to' },
+               { from: 4, to: 6, label: '0.8', arrows: 'to' },
+               { from: 5, to: 6, label: '0.7', arrows: 'to' }
+           ]);
+
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: false,
+               height: '100%',
+               width: '100%'
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           console.log('Initializing dashboard');
+
+           const rewardsProgramUsageData = {
+               monthsBack: 9,
+               monthsForward: 3,
+               historical: [60, 62, 64, 65, 67, 68, 69, 70, 70, null, null, null],
+               forecast: [null, null, null, null, null, null, null, null, 70, 72, 73, 75],
+               explanation: "Rewards program usage is expected to increase from 70% to 75% in the next quarter, driven by new personalized offers and improved user experience in the mobile app."
+           };
+           initTimeSeriesChart('rewardsProgramUsageChart', rewardsProgramUsageData, { beginAtZero: true, yAxisTitle: 'Usage Percentage' });
+
+           const cashbackRedemptionData = {
+               monthsBack: 9,
+               monthsForward: 3,
+               historical: [45, 47, 49, 50, 52, 53, 54, 55, 55, null, null, null],
+               forecast: [null, null, null, null, null, null, null, null, 55, 57, 58, 60],
+               explanation: "Cashback redemption rate is projected to rise from 55% to 60% with the introduction of new, more attractive cashback incentives and easier redemption process."
+           };
+           initTimeSeriesChart('cashbackRedemptionChart', cashbackRedemptionData, { beginAtZero: true, yAxisTitle: 'Redemption Rate (%)' });
+
+           const travelMileRedemptionData = {
+               monthsBack: 9,
+               monthsForward: 3,
+               historical: [110, 120, 125, 130, 135, 140, 145, 150, 150, null, null, null],
+               forecast: [null, null, null, null, null, null, null, null, 150, 155, 158, 160],
+               explanation: "Travel mile redemption is expected to grow from $150 million to $160 million next quarter, fueled by increased travel demand and new partnerships with airlines."
+           };
+           initTimeSeriesChart('travelMileRedemptionChart', travelMileRedemptionData, { beginAtZero: false, yAxisTitle: 'Redemption Value ($ millions)' });
+
+           const customerSatisfactionData = {
+               monthsBack: 9,
+               monthsForward: 3,
+               historical: [65, 66, 67, 68, 68, 69, 69, 70, 70, null, null, null],
+               forecast: [null, null, null, null, null, null, null, null, 70, 71, 71, 72],
+               explanation: "Customer satisfaction (NPS) is predicted to improve from 70 to 72 with the implementation of new reward structures and enhanced customer support."
+           };
+           initTimeSeriesChart('customerSatisfactionChart', customerSatisfactionData, { beginAtZero: false, yAxisTitle: 'NPS Score' });
+
+           initSpendingCategoryChart();
+
+           const newCardAcquisitionData = {
+               monthsBack: 9,
+               monthsForward: 3,
+               historical: [8000, 8200, 8400, 8600, 8800, 9000, 9200, 9400, 9600, null, null, null],
+               forecast: [null, null, null, null, null, null, null, null, 9600, 9800, 10000, 10200],
+               explanation: "New card acquisitions are forecasted to increase from 9,600 to 10,200 per month, driven by targeted marketing campaigns and improved onboarding processes."
+           };
+           initTimeSeriesChart('newCardAcquisitionChart', newCardAcquisitionData, { beginAtZero: false, yAxisTitle: 'New Cards per Month' });
+
+           initCausalNetworkGraph();
+           console.log('Dashboard initialization complete');
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

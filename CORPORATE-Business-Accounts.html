@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Corporate Business Accounts</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Business Accounts</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Business Account Activity Growth</h3>
+                               <p class="text-sm text-gray-500">(80% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">45%</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> Predicted increase to 50%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">New Business Account Openings</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">10,000</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> Increase to 11,000 next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Retention Rate</h3>
+                               <p class="text-sm text-gray-500">(82% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">90%</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> Expected to increase to 92% next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue from Business Accounts</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$300M</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> Predicted $320M next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>New business accounts are growing due to demand for digital banking solutions.</li>
+                           <li>Improved onboarding and customer service are enhancing business account retention.</li>
+                           <li>Increased adoption of premium services is driving business account revenue growth.</li>
+                           <li>If we hadn't implemented the new digital features, account activity growth would have remained at 42% instead of increasing to 45%.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Business Account Growth Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Business Account Activity Forecast <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="accountActivityChart"></canvas>
+                               </div>
+                               <p id="accountActivityExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">New Business Account Openings Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="accountOpeningsChart"></canvas>
+                               </div>
+                               <p id="accountOpeningsExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Business Account Retention Rate <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="retentionRateChart"></canvas>
+                               </div>
+                               <p id="retentionRateExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue from Business Accounts <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="revenueChart"></canvas>
+                               </div>
+                               <p id="revenueExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Digital Banking Adoption Rate <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="digitalAdoptionChart"></canvas>
+                               </div>
+                               <p id="digitalAdoptionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Premium Service Utilization <span class="text-sm font-normal text-gray-500">(83% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="premiumServiceChart"></canvas>
+                               </div>
+                               <p id="premiumServiceExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function generateTimeSeriesData(monthsBack, monthsForward, startValue, growth) {
+           const data = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const value = startValue * Math.pow(1 + growth, i);
+               data.push(parseFloat(value.toFixed(2)));
+           }
+           return data;
+       }
+
+       function createChart(canvasId, labels, historicalData, forecastData, yAxisLabel) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           const historicalDataPoints = labels.length - forecastData.filter(d => d !== null).length;
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true,
+                       pointRadius: 0,
+                       tension: 0.1
+                   }, {
+                       label: 'Forecast',
+                       data: forecastData,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false,
+                       pointRadius: 0,
+                       tension: 0.1
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: {
+                           grid: {
+                               display: false
+                           }
+                       },
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: yAxisLabel
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: true,
+                           position: 'bottom'
+                       },
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       }
+                   },
+                   elements: {
+                       line: {
+                           tension: 0.1
+                       }
+                   }
+               }
+           });
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Digital Banking\nAdoption', color: '#E6F3FF', font: { color: '#333' } },
+               { id: 2, label: 'Customer\nSatisfaction', color: '#FFECB3', font: { color: '#333' } },
+               { id: 3, label: 'Account\nActivity', color: '#E8F5E9', font: { color: '#333' } },
+               { id: 4, label: 'Premium Service\nUtilization', color: '#F3E5F5', font: { color: '#333' } },
+               { id: 5, label: 'Revenue\nGrowth', color: '#FFCDD2', font: { color: '#333' } }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 2, label: '0.6', arrows: 'to' },
+               { from: 1, to: 3, label: '0.7', arrows: 'to' },
+               { from: 2, to: 4, label: '0.5', arrows: 'to' },
+               { from: 3, to: 4, label: '0.4', arrows: 'to' },
+               { from: 4, to: 5, label: '0.8', arrows: 'to' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'box',
+                   margin: 10,
+                   widthConstraint: {
+                       maximum: 120
+                   }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   arrows: { to: { enabled: true, scaleFactor: 0.5 } }
+               },
+               physics: {
+                   enabled: false,
+                   barnesHut: {
+                       gravitationalConstant: -2000,
+                       centralGravity: 0.3,
+                       springLength: 95,
+                       springConstant: 0.04,
+                       damping: 0.09,
+                       avoidOverlap: 0.1
+                   }
+               },
+               layout: {
+                   hierarchical: {
+                       enabled: false
+                   }
+               }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           // Account Activity Chart
+           const accountActivityData = generateTimeSeriesData(9, 3, 40, 0.01);
+           const accountActivityHistorical = accountActivityData.slice(0, historicalDataPoints);
+           const accountActivityForecast = [...Array(historicalDataPoints - 1).fill(null), ...accountActivityData.slice(historicalDataPoints - 1)];
+           createChart('accountActivityChart', labels, accountActivityHistorical, accountActivityForecast, 'Activity Level (%)');
+           document.getElementById('accountActivityExplanation').textContent = 'Predicts growth in business account activity, including online banking and payment services. Expecting a 5% increase due to new digital features and improved user experience.';
+
+           // New Account Openings Chart
+           const accountOpeningsData = generateTimeSeriesData(9, 3, 9000, 0.02);
+           const accountOpeningsHistorical = accountOpeningsData.slice(0, historicalDataPoints);
+           const accountOpeningsForecast = [...Array(historicalDataPoints - 1).fill(null), ...accountOpeningsData.slice(historicalDataPoints - 1)];
+           createChart('accountOpeningsChart', labels, accountOpeningsHistorical, accountOpeningsForecast, 'New Accounts');
+           document.getElementById('accountOpeningsExplanation').textContent = 'Forecasts future new account openings, segmented by business size. Projecting a 10% increase driven by targeted marketing and streamlined onboarding process.';
+
+           // Retention Rate Chart
+           const retentionRateData = generateTimeSeriesData(9, 3, 88, 0.003);
+           const retentionRateHistorical = retentionRateData.slice(0, historicalDataPoints);
+           const retentionRateForecast = [...Array(historicalDataPoints - 1).fill(null), ...retentionRateData.slice(historicalDataPoints - 1)];
+           createChart('retentionRateChart', labels, retentionRateHistorical, retentionRateForecast, 'Retention Rate (%)');
+           document.getElementById('retentionRateExplanation').textContent = 'Shows the trend in business account retention rates. Expecting a 2% improvement due to enhanced customer service and personalized account management.';
+
+           // Revenue Chart
+           const revenueData = generateTimeSeriesData(9, 3, 280, 0.015);
+           const revenueHistorical = revenueData.slice(0, historicalDataPoints);
+           const revenueForecast = [...Array(historicalDataPoints - 1).fill(null), ...revenueData.slice(historicalDataPoints - 1)];
+           createChart('revenueChart', labels, revenueHistorical, revenueForecast, 'Revenue ($ Million)');
+           document.getElementById('revenueExplanation').textContent = 'Tracks revenue growth from business accounts. Projecting a 6.7% increase driven by higher account activity and adoption of premium services.';
+
+           // Digital Banking Adoption Chart
+           const digitalAdoptionData = generateTimeSeriesData(9, 3, 60, 0.02);
+           const digitalAdoptionHistorical = digitalAdoptionData.slice(0, historicalDataPoints);
+           const digitalAdoptionForecast = [...Array(historicalDataPoints - 1).fill(null), ...digitalAdoptionData.slice(historicalDataPoints - 1)];
+           createChart('digitalAdoptionChart', labels, digitalAdoptionHistorical, digitalAdoptionForecast, 'Adoption Rate (%)');
+           document.getElementById('digitalAdoptionExplanation').textContent = 'Shows the trend in digital banking adoption among business customers. Expecting a 15% increase due to new mobile features and improved online platform.';
+
+           // Premium Service Utilization Chart
+           const premiumServiceData = generateTimeSeriesData(9, 3, 30, 0.025);
+           const premiumServiceHistorical = premiumServiceData.slice(0, historicalDataPoints);
+           const premiumServiceForecast = [...Array(historicalDataPoints - 1).fill(null), ...premiumServiceData.slice(historicalDataPoints - 1)];
+           createChart('premiumServiceChart', labels, premiumServiceHistorical, premiumServiceForecast, 'Utilization Rate (%)');
+           document.getElementById('premiumServiceExplanation').textContent = 'Tracks the utilization of premium business banking services. Projecting a 20% increase driven by new value-added services and targeted upselling campaigns.';
+
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

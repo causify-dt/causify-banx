@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Investment Banking Overview</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Overview</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">M&A Deal Volume</h3>
+                               <p class="text-sm text-gray-500">(90% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$1.01B</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> $1.21B</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Equity Capital Markets (ECM) Activity</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$502M</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> $553M</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Debt Capital Markets (DCM) Activity</h3>
+                               <p class="text-sm text-gray-500">(88% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$798M</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> $847M</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Underwriting Fee Revenue</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$101M</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> $112M</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>M&A deal volume projected to increase by 20% next quarter, driven by consolidation in tech and healthcare sectors. Key factors: favorable interest rates (40% impact) and post-pandemic recovery strategies (35% impact).</li>
+                           <li>ECM activity forecast to rise 10%, boosted by a surge in IPOs from emerging tech companies. Primary driver: increased investor appetite for high-growth stocks.</li>
+                           <li>DCM activity expected to grow 6%, influenced by corporations seeking to refinance debt at lower rates. Secondary factor: expansion of green bond issuances (15% contribution to growth).</li>
+                           <li>Counterfactual: If regulatory approval times for M&A deals were reduced by 25%, deal volume could potentially increase by an additional 15%, reaching $1.39B next quarter.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Investment Banking Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">M&A Deal Volume Growth <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="maDealVolumeChart"></canvas>
+                               </div>
+                               <p id="maDealVolumeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Capital Markets Activity Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="capitalMarketsChart"></canvas>
+                               </div>
+                               <p id="capitalMarketsExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Underwriting Fee Revenue Trend <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="underwritingFeeChart"></canvas>
+                               </div>
+                               <p id="underwritingFeeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Deal Pipeline by Sector <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="dealPipelineChart"></canvas>
+                               </div>
+                               <p id="dealPipelineExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cross-Border vs. Domestic Deals <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="crossBorderChart"></canvas>
+                               </div>
+                               <p id="crossBorderExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">IPO Market Performance <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="ipoPerformanceChart"></canvas>
+                               </div>
+                               <p id="ipoPerformanceExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           const today = new Date();
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initMADealVolumeChart() {
+           const ctx = document.getElementById('maDealVolumeChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [850, 880, 920, 950, 980, 1010, 1040, 1070, 1100, 1130, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 1130, 1170, 1210, 1250],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Deal Volume ($ Million)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('maDealVolumeExplanation', 'M&A deal volume projected to increase by 20% over the next quarter, driven by tech sector consolidation and healthcare industry mergers. Key factors include favorable interest rates and post-pandemic strategic realignments.');
+       }
+
+       function initCapitalMarketsChart() {
+           const ctx = document.getElementById('capitalMarketsChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'ECM Historical',
+                   data: [420, 440, 460, 480, 500, 520, 540, 560, 580, 600, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'ECM Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 600, 620, 640, 660],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }, {
+                   label: 'DCM Historical',
+                   data: [680, 700, 720, 740, 760, 780, 800, 820, 840, 860, null, null, null],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                   fill: true
+               }, {
+                   label: 'DCM Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 860, 880, 900, 920],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Activity Volume ($ Million)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('capitalMarketsExplanation', 'ECM activity forecast to rise 10% due to increased IPOs from tech companies. DCM activity expected to grow 6%, driven by corporations refinancing debt and an expansion in green bond issuances.');
+       }
+
+       function initUnderwritingFeeChart() {
+           const ctx = document.getElementById('underwritingFeeChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [85, 88, 91, 94, 97, 100, 103, 106, 109, 112, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 112, 115, 118, 121],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Fee Revenue ($ Million)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('underwritingFeeExplanation', 'Underwriting fee revenue projected to increase by 11% in the next quarter, driven by higher deal volumes in both ECM and DCM activities. The rise in complex transactions and green bond issuances is expected to contribute to higher fee margins.');
+       }
+
+       function initDealPipelineChart() {
+           const ctx = document.getElementById('dealPipelineChart').getContext('2d');
+           const data = {
+               labels: ['Technology', 'Healthcare', 'Financial Services', 'Energy', 'Consumer Goods', 'Others'],
+               datasets: [{
+                   label: 'Current Quarter',
+                   data: [30, 25, 20, 15, 10, 5],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)',
+               }, {
+                   label: 'Next Quarter (Forecast)',
+                   data: [35, 28, 18, 12, 11, 6],
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)',
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Percentage of Total Deal Volume'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('dealPipelineExplanation', 'Technology sector expected to lead deal pipeline growth with a 17% increase, followed by healthcare at 12%. Financial services deals projected to decrease by 10% due to regulatory uncertainties. Energy sector deals forecast to decline by 20% amid shift towards renewable energy projects.');
+       }
+
+       function initCrossBorderChart() {
+           const ctx = document.getElementById('crossBorderChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Cross-Border Deals',
+                   data: [30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Domestic Deals',
+                   data: [70, 68, 66, 64, 62, 60, 58, 56, 54, 52, 50, 48, 46],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                   fill: true
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Percentage of Total Deals'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('crossBorderExplanation', 'Cross-border deals projected to increase from 40% to 54% of total deal volume over the next quarter. This trend is driven by tech companies seeking global expansion and healthcare firms pursuing international research collaborations. Domestic deals expected to decrease proportionally.');
+       }
+
+       function initIPOPerformanceChart() {
+           const ctx = document.getElementById('ipoPerformanceChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Number of IPOs',
+                   type: 'bar',
+                   data: [10, 12, 15, 18, 20, 22, 25, 28, 30, 32, 35, 38, 40],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                   yAxisID: 'y-axis-1',
+               }, {
+                   label: 'Average First-Day Return',
+                   type: 'line',
+                   data: [15, 18, 20, 22, 25, 28, 30, 32, 35, 38, 40, 42, 45],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   fill: false,
+                   yAxisID: 'y-axis-2',
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           type: 'linear',
+                           display: true,
+                           position: 'left',
+                           id: 'y-axis-1',
+                           title: {
+                               display: true,
+                               text: 'Number of IPOs'
+                           }
+                       },
+                       y1: {
+                           type: 'linear',
+                           display: true,
+                           position: 'right',
+                           id: 'y-axis-2',
+                           title: {
+                               display: true,
+                               text: 'Average First-Day Return (%)'
+                           },
+                           grid: {
+                               drawOnChartArea: false
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('ipoPerformanceExplanation', 'IPO market expected to remain robust with a 33% increase in the number of IPOs over the next quarter. Average first-day returns projected to rise from 35% to 45%, driven by strong investor demand for tech and healthcare IPOs. Recommendation: Increase focus on pre-IPO advisory services to capture higher market share.');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'M&A Activity', shape: 'circle' },
+               { id: 2, label: 'ECM Activity', shape: 'circle' },
+               { id: 3, label: 'DCM Activity', shape: 'circle' },
+               { id: 4, label: 'Interest Rates', shape: 'diamond' },
+               { id: 5, label: 'Economic Growth', shape: 'diamond' },
+               { id: 6, label: 'Regulatory Environment', shape: 'diamond' },
+               { id: 7, label: 'Tech Sector Innovation', shape: 'box' },
+               { id: 8, label: 'Healthcare Consolidation', shape: 'box' },
+               { id: 9, label: 'Green Finance Initiatives', shape: 'box' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 4, to: 1, label: '0.7' },
+               { from: 4, to: 2, label: '0.6' },
+               { from: 4, to: 3, label: '0.8' },
+               { from: 5, to: 1, label: '0.6' },
+               { from: 5, to: 2, label: '0.5' },
+               { from: 5, to: 3, label: '0.4' },
+               { from: 6, to: 1, label: '0.5' },
+               { from: 6, to: 2, label: '0.4' },
+               { from: 6, to: 3, label: '0.3' },
+               { from: 7, to: 1, label: '0.8' },
+               { from: 7, to: 2, label: '0.7' },
+               { from: 8, to: 1, label: '0.6' },
+               { from: 8, to: 2, label: '0.5' },
+               { from: 9, to: 3, label: '0.7' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = {
+               nodes: nodes,
+               edges: edges
+           };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   arrows: { to: { enabled: true, scaleFactor: 0.5 } }
+               },
+               physics: { enabled: false }
+           };
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initMADealVolumeChart();
+           initCapitalMarketsChart();
+           initUnderwritingFeeChart();
+           initDealPipelineChart();
+           initCrossBorderChart();
+           initIPOPerformanceChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

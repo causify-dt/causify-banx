@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Retail Banking Customer Churn Prediction</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Overview</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Churn Rate</h3>
+                               <p class="text-sm text-gray-500">(92% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">4.8%</div>
+                                   <div class="text-sm text-red-500"><i class="fas fa-arrow-up"></i> 5.2%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Retention</h3>
+                               <p class="text-sm text-gray-500">(89% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">95.2%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 1.8%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Lifetime Value</h3>
+                               <p class="text-sm text-gray-500">(87% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$12,450</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 3.5%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Net Promoter Score</h3>
+                               <p class="text-sm text-gray-500">(91% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">42</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 6 points</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Customer churn rate projected to decrease by 0.5% in the next quarter (Confidence: 92%). Primary driver: Improved customer service response times. Secondary factors: Personalized product recommendations (30% impact) and loyalty program enhancements (25% impact).</li>
+                           <li>Net Promoter Score expected to increase by 6 points, reaching 48 by year-end (Confidence: 91%). Key contributors: Streamlined mobile banking experience and proactive issue resolution.</li>
+                           <li>Customer Lifetime Value forecast to grow by 7% over the next year (Confidence: 87%). Main factors: Cross-selling of investment products and increased adoption of premium account services.</li>
+                           <li>Counterfactual insight: If mobile app user experience remains unchanged, projected churn rate would increase by 1.2% instead of decreasing, highlighting the critical importance of continuous digital innovation.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Churn Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Churn Rate Trend <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="churnRateChart"></canvas>
+                               </div>
+                               <p id="churnRateChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Lifetime Value <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="lifetimeValueChart"></canvas>
+                               </div>
+                               <p id="lifetimeValueChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Product Usage by Churned Customers <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="productUsageChart"></canvas>
+                               </div>
+                               <p id="productUsageChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Satisfaction Scores <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="satisfactionScoreChart"></canvas>
+                               </div>
+                               <p id="satisfactionScoreChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Retention Campaign ROI <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="retentionROIChart"></canvas>
+                               </div>
+                               <p id="retentionROIChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Digital Engagement vs Churn <span class="text-sm font-normal text-gray-500">(93% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="digitalEngagementChart"></canvas>
+                               </div>
+                               <p id="digitalEngagementChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           const today = new Date();
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initChurnRateChart() {
+           const ctx = document.getElementById('churnRateChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: [5.2, 5.1, 5.0, 4.9, 4.8, 4.7, 4.8, 4.9, 4.8, 4.7, null, null, null],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       fill: false
+                   }, {
+                       label: 'Predicted',
+                       data: [null, null, null, null, null, null, null, null, null, 4.7, 4.6, 4.5, 4.4],
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Churn Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                               }
+                           }
+                       },
+                       annotation: {
+                           annotations: {
+                               line1: {
+                                   type: 'line',
+                                   xMin: historicalDataPoints - 0.5,
+                                   xMax: historicalDataPoints - 0.5,
+                                   borderColor: 'rgb(169, 169, 169)',
+                                   borderWidth: 2,
+                                   label: {
+                                       content: 'Now',
+                                       enabled: true,
+                                       position: 'top'
+                                   }
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('churnRateChartExplanation',
+               'Churn rate projected to decrease from 4.8% to 4.4% over the next quarter. Key drivers: Improved customer service (40% impact), personalized product offerings (30% impact), and enhanced digital banking features (20% impact).');
+       }
+
+       function initLifetimeValueChart() {
+           const ctx = document.getElementById('lifetimeValueChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: [11200, 11400, 11600, 11800, 12000, 12200, 12300, 12400, 12450, 12500, null, null, null],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       fill: false
+                   }, {
+                       label: 'Predicted',
+                       data: [null, null, null, null, null, null, null, null, null, 12500, 12650, 12800, 12950],
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Customer Lifetime Value ($)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                               }
+                           }
+                       },
+                       annotation: {
+                           annotations: {
+                               line1: {
+                                   type: 'line',
+                                   xMin: historicalDataPoints - 0.5,
+                                   xMax: historicalDataPoints - 0.5,
+                                   borderColor: 'rgb(169, 169, 169)',
+                                   borderWidth: 2,
+                                   label: {
+                                       content: 'Now',
+                                       enabled: true,
+                                       position: 'top'
+                                   }
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('lifetimeValueChartExplanation',
+               'Customer Lifetime Value expected to increase from $12,450 to $12,950 over the next quarter. Main drivers: Increased cross-selling of investment products (35% impact), higher adoption of premium account services (30% impact), and improved customer retention strategies (25% impact).');
+       }
+
+       function initProductUsageChart() {
+           const ctx = document.getElementById('productUsageChart').getContext('2d');
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: ['Checking Account', 'Savings Account', 'Credit Card', 'Personal Loan', 'Mortgage', 'Investment Account'],
+                   datasets: [{
+                       label: 'Current',
+                       data: [95, 75, 60, 30, 20, 15],
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                   }, {
+                       label: 'Predicted (Next Quarter)',
+                       data: [92, 78, 65, 32, 22, 18],
+                       backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Usage Percentage (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       title: {
+                           display: false
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('productUsageChartExplanation',
+               'Predicted increase in usage across most products for retained customers. Notable growth in investment accounts (20% increase) and credit cards (8% increase). Strategy: Implement targeted cross-selling campaigns for these high-growth products to further reduce churn risk.');
+       }
+
+       function initSatisfactionScoreChart() {
+           const ctx = document.getElementById('satisfactionScoreChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: [7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 8.0, 8.1, null, null, null],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       fill: false
+                   }, {
+                       label: 'Predicted',
+                       data: [null, null, null, null, null, null, null, null, null, 8.1, 8.2, 8.3, 8.4],
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           max: 10,
+                           title: {
+                               display: true,
+                               text: 'Satisfaction Score (0-10)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                               }
+                           }
+                       },
+                       annotation: {
+                           annotations: {
+                               line1: {
+                                   type: 'line',
+                                   xMin: historicalDataPoints - 0.5,
+                                   xMax: historicalDataPoints - 0.5,
+                                   borderColor: 'rgb(169, 169, 169)',
+                                   borderWidth: 2,
+                                   label: {
+                                       content: 'Now',
+                                       enabled: true,
+                                       position: 'top'
+                                   }
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('satisfactionScoreChartExplanation',
+               'Customer satisfaction scores expected to improve from 8.1 to 8.4 over the next quarter. Key drivers: Enhanced mobile banking experience (40% impact), faster complaint resolution (30% impact), and personalized financial advice (20% impact).');
+       }
+
+       function initRetentionROIChart() {
+           const ctx = document.getElementById('retentionROIChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'ROI',
+                       data: [1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0],
+                       backgroundColor: (context) => {
+                           return context.dataIndex < historicalDataPoints ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)';
+                       },
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'ROI'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].dataIndex >= historicalDataPoints ? 'Prediction' : 'Historical';
+                               }
+                           }
+                       },
+                       annotation: {
+                           annotations: {
+                               line1: {
+                                   type: 'line',
+                                   xMin: historicalDataPoints - 0.5,
+                                   xMax: historicalDataPoints - 0.5,
+                                   borderColor: 'rgb(169, 169, 169)',
+                                   borderWidth: 2,
+                                   label: {
+                                       content: 'Now',
+                                       enabled: true,
+                                       position: 'top'
+                                   }
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('retentionROIChartExplanation',
+               'Retention campaign ROI projected to increase from 2.7 to 3.0 over the next quarter. Key factors: AI-driven personalized offers (35% impact), targeted loyalty rewards (30% impact), and proactive customer engagement (25% impact).');
+       }
+
+       function initDigitalEngagementChart() {
+           const ctx = document.getElementById('digitalEngagementChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Digital Engagement',
+                       data: [60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       fill: false
+                   }, {
+                       label: 'Churn Rate',
+                       data: [5.2, 5.1, 5.0, 4.9, 4.8, 4.7, 4.6, 4.5, 4.4, 4.3, 4.2, 4.1, 4.0],
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Percentage (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                               }
+                           }
+                       },
+                       annotation: {
+                           annotations: {
+                               line1: {
+                                   type: 'line',
+                                   xMin: historicalDataPoints - 0.5,
+                                   xMax: historicalDataPoints - 0.5,
+                                   borderColor: 'rgb(169, 169, 169)',
+                                   borderWidth: 2,
+                                   label: {
+                                       content: 'Now',
+                                       enabled: true,
+                                       position: 'top'
+                                   }
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('digitalEngagementChartExplanation',
+               'Strong inverse correlation between digital engagement and churn rate. As digital engagement is projected to increase from 78% to 84%, churn rate is expected to decrease from 4.3% to 4.0%. Key digital initiatives: Enhanced mobile app features (40% impact), personalized digital communications (30% impact), and simplified online banking processes (20% impact).');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Customer Churn', shape: 'circle' },
+               { id: 2, label: 'Customer Service', shape: 'box' },
+               { id: 3, label: 'Product Offerings', shape: 'box' },
+               { id: 4, label: 'Digital Experience', shape: 'box' },
+               { id: 5, label: 'Pricing', shape: 'box' },
+               { id: 6, label: 'Loyalty Programs', shape: 'box' },
+               { id: 7, label: 'Competitor Actions', shape: 'box' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 2, to: 1, label: '-0.4', arrows: 'to' },
+               { from: 3, to: 1, label: '-0.3', arrows: 'to' },
+               { from: 4, to: 1, label: '-0.3', arrows: 'to' },
+               { from: 5, to: 1, label: '-0.2', arrows: 'to' },
+               { from: 6, to: 1, label: '-0.2', arrows: 'to' },
+               { from: 7, to: 1, label: '0.3', arrows: 'to' },
+               { from: 4, to: 2, label: '0.2', arrows: 'to' },
+               { from: 3, to: 6, label: '0.3', arrows: 'to' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'box',
+                   margin: 10,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   arrows: { to: { enabled: true, scaleFactor: 0.5 } }
+               },
+               layout: {
+                   hierarchical: {
+                       direction: 'UD',
+                       sortMethod: 'directed'
+                   }
+               },
+               physics: false
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           console.log('Initializing dashboard');
+           initChurnRateChart();
+           initLifetimeValueChart();
+           initProductUsageChart();
+           initSatisfactionScoreChart();
+           initRetentionROIChart();
+           initDigitalEngagementChart();
+           initCausalNetworkGraph();
+           console.log('Dashboard initialization complete');
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

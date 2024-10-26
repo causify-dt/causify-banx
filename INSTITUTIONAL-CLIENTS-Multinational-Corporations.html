@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Multinational Corporations</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Multinational Corporations</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2" id="kpiCards">
+                       <!-- KPI cards will be dynamically inserted here -->
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2" id="insightsList">
+                           <!-- Insights will be dynamically inserted here -->
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Multinational Corporate Services <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2" id="chartContainer">
+                       <!-- Charts will be dynamically inserted here -->
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       const microCards = [
+           {
+               name: "Cross-Border Transactions",
+               current_value: "$2.73B",
+               predicted_value: "$2.81B",
+               trend: "increase",
+               confidence: 91
+           },
+           {
+               name: "Global Client Relationships",
+               current_value: "1,284",
+               predicted_value: "1,309",
+               trend: "increase",
+               confidence: 88
+           },
+           {
+               name: "Average Transaction Size",
+               current_value: "$1.87M",
+               predicted_value: "$1.89M",
+               trend: "increase",
+               confidence: 85
+           },
+           {
+               name: "Service Adoption Rate",
+               current_value: "73%",
+               predicted_value: "75%",
+               trend: "increase",
+               confidence: 89
+           }
+       ];
+
+       const keyInsights = [
+           "Cross-border transaction volume projected to increase by 2.9% in the next quarter (Confidence: 91%). Primary driver: Expansion of trade finance solutions. Secondary factors: Improved FX services (25% impact) and streamlined regulatory compliance (20% impact).",
+           "Global client relationships expected to grow by 1.9% (Confidence: 88%). Key factors: Enhanced digital platform adoption (35% impact) and targeted industry-specific solutions (30% impact).",
+           "Service adoption rate forecast to rise by 2 percentage points (Confidence: 89%). Main contributors: AI-powered cash flow forecasting (40% impact) and tailored risk management tools (30% impact).",
+           "Counterfactual: Without the implementation of blockchain-based cross-border payment solutions, transaction costs would be 8% higher, potentially reducing client acquisition by 3%."
+       ];
+
+       const chartData = [
+           {
+               id: "crossBorderTransactions",
+               title: "Cross-Border Transaction Volume",
+               type: "line",
+               confidence: 91,
+               prediction: "Cross-border transactions projected to increase by 2.9% due to expansion of trade finance solutions and improved FX services.",
+               data: generateTimeSeriesData(9, 3, 2730000000, 27000000)
+           },
+           {
+               id: "globalClientRelationships",
+               title: "Global Client Relationships",
+               type: "line",
+               confidence: 88,
+               prediction: "Global client relationships expected to grow by 1.9%, driven by enhanced digital platform adoption and industry-specific solutions.",
+               data: generateTimeSeriesData(9, 3, 1284, 8)
+           },
+           {
+               id: "averageTransactionSize",
+               title: "Average Transaction Size",
+               type: "line",
+               confidence: 85,
+               prediction: "Average transaction size forecast to increase by 1.1% due to expanded trade finance offerings and larger corporate deals.",
+               data: generateTimeSeriesData(9, 3, 1870000, 7000)
+           },
+           {
+               id: "serviceAdoptionRate",
+               title: "Service Adoption Rate",
+               type: "line",
+               confidence: 89,
+               prediction: "Service adoption rate projected to rise by 2 percentage points, driven by AI-powered cash flow forecasting and tailored risk management tools.",
+               data: generateTimeSeriesData(9, 3, 73, 0.3)
+           },
+           {
+               id: "revenueByRegion",
+               title: "Revenue by Region",
+               type: "bar",
+               confidence: 87,
+               prediction: "Asia-Pacific region expected to show highest growth at 7%, followed by North America at 4% and Europe at 3%.",
+               data: {
+                   labels: ["North America", "Europe", "Asia-Pacific", "Latin America", "Middle East & Africa"],
+                   current: [3200000000, 2800000000, 2400000000, 1200000000, 800000000],
+                   forecast: [3328000000, 2884000000, 2568000000, 1224000000, 816000000]
+               }
+           },
+           {
+               id: "productPerformance",
+               title: "Product Performance",
+               type: "bar",
+               confidence: 86,
+               prediction: "Cash management solutions projected to grow by 6%, while trade finance and FX services expected to increase by 4% and 3% respectively.",
+               data: {
+                   labels: ["Cash Management", "Trade Finance", "FX Services", "Supply Chain Finance", "Risk Management"],
+                   current: [1800000000, 1500000000, 1200000000, 900000000, 600000000],
+                   forecast: [1908000000, 1560000000, 1236000000, 918000000, 612000000]
+               }
+           }
+       ];
+
+       function generateTimeSeriesData(monthsBack, monthsForward, baseValue, increment) {
+           const labels = [];
+           const historical = [];
+           const forecast = [];
+           
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+               
+               if (i < 0) {
+                   historical.push(baseValue + i * increment * (0.8 + Math.random() * 0.4));
+                   forecast.push(null);
+               } else if (i === 0) {
+                   historical.push(baseValue);
+                   forecast.push(baseValue);
+               } else {
+                   historical.push(null);
+                   forecast.push(baseValue + i * increment * (0.8 + Math.random() * 0.4));
+               }
+           }
+           
+           return { labels, historical, forecast };
+       }
+
+       function renderKPICards() {
+           const container = document.getElementById('kpiCards');
+           microCards.forEach(card => {
+               const cardElement = document.createElement('div');
+               cardElement.className = 'w-full sm:w-1/2 lg:w-1/4 px-2 mb-4';
+               cardElement.innerHTML = `
+                   <div class="bg-white rounded-lg shadow p-4">
+                       <h3 class="text-sm font-semibold">${card.name}</h3>
+                       <p class="text-sm text-gray-500">(${card.confidence}% Confidence)</p>
+                       <div class="mt-2">
+                           <div class="text-2xl font-bold">${card.current_value}</div>
+                           <div class="text-sm ${card.trend === 'increase' ? 'text-green-600' : 'text-red-600'}">
+                               ${card.trend === 'increase' ? '▲' : '▼'} ${card.predicted_value}
+                           </div>
+                       </div>
+                   </div>
+               `;
+               container.appendChild(cardElement);
+           });
+       }
+
+       function renderInsights() {
+           const container = document.getElementById('insightsList');
+           keyInsights.forEach(insight => {
+               const li = document.createElement('li');
+               li.textContent = insight;
+               container.appendChild(li);
+           });
+       }
+
+       function renderCharts() {
+           const container = document.getElementById('chartContainer');
+           chartData.forEach(chart => {
+               const chartElement = document.createElement('div');
+               chartElement.className = 'w-full lg:w-1/2 px-2 mb-4';
+               chartElement.innerHTML = `
+                   <div class="bg-white rounded-lg shadow p-4">
+                       <h3 class="text-sm font-semibold">${chart.title} <span class="text-sm font-normal text-gray-500">(${chart.confidence}% Confidence)</span></h3>
+                       <div class="chart-container mt-4">
+                           <canvas id="${chart.id}"></canvas>
+                       </div>
+                       <p id="${chart.id}Explanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200">${chart.prediction}</p>
+                   </div>
+               `;
+               container.appendChild(chartElement);
+               
+               if (chart.type === 'line') {
+                   createLineChart(chart.id, chart.data);
+               } else if (chart.type === 'bar') {
+                   createBarChart(chart.id, chart.data);
+               }
+           });
+       }
+
+       function createLineChart(id, data) {
+           const ctx = document.getElementById(id).getContext('2d');
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: data.labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: data.historical,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Forecast',
+                       data: data.forecast,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: {
+                           grid: {
+                               display: false
+                           }
+                       },
+                       y: {
+                           beginAtZero: false,
+                           ticks: {
+                               callback: function(value, index, values) {
+                                   return '$' + value.toLocaleString();
+                               }
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+       }
+
+       function createBarChart(id, data) {
+           const ctx = document.getElementById(id).getContext('2d');
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: data.labels,
+                   datasets: [{
+                       label: 'Current',
+                       data: data.current,
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                   }, {
+                       label: 'Forecast',
+                       data: data.forecast,
+                       backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: {
+                           grid: {
+                               display: false
+                           }
+                       },
+                       y: {
+                           beginAtZero: false,
+                           ticks: {
+                               callback: function(value, index, values) {
+                                   return '$' + value.toLocaleString();
+                               }
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Cross-Border Transactions', color: '#4CAF50' },
+               { id: 2, label: 'Trade Finance Solutions', color: '#2196F3' },
+               { id: 3, label: 'FX Services', color: '#FFC107' },
+               { id: 4, label: 'Regulatory Compliance', color: '#FF5722' },
+               { id: 5, label: 'Digital Platform Adoption', color: '#9C27B0' },
+               { id: 6, label: 'Industry-Specific Solutions', color: '#00BCD4' },
+               { id: 7, label: 'AI Cash Flow Forecasting', color: '#795548' },
+               { id: 8, label: 'Risk Management Tools', color: '#607D8B' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 2, to: 1, label: '40% impact', arrows: 'to' },
+               { from: 3, to: 1, label: '30% impact', arrows: 'to' },
+               { from: 4, to: 1, label: '25% impact', arrows: 'to' },
+               { from: 5, to: 2, label: '35% impact', arrows: 'to' },
+               { from: 6, to: 2, label: '30% impact', arrows: 'to' },
+               { from: 7, to: 5, label: '45% impact', arrows: 'to' },
+               { from: 8, to: 5, label: '35% impact', arrows: 'to' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: false
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           renderKPICards();
+           renderInsights();
+           renderCharts();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

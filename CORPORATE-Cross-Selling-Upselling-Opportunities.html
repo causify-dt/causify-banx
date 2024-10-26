@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Corporate Accounts: Cross-Selling and Upselling Opportunities</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Cross-Selling and Upselling Opportunities</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cross-Sell Conversion Rate</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">12%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> Predicted increase to 14%
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue from Cross-Selling</h3>
+                               <p class="text-sm text-gray-500">(90% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$50M</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> Predicted $55M next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Upsell Success Rate</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">10%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> Predicted increase to 12% next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Segments Likely to Upsell</h3>
+                               <p class="text-sm text-gray-500">(88% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">High-growth SMEs</div>
+                                   <div class="text-sm text-green-500">
+                                       40% more likely to purchase additional products
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Targeted offers are driving higher cross-sell conversion rates, with a projected increase from 12% to 14%.</li>
+                           <li>Cross-selling additional products to existing clients is contributing significantly to overall revenue, expected to reach $55 million next quarter.</li>
+                           <li>SMEs in high-growth industries, such as technology and manufacturing, are 40% more likely to engage in cross-sell and upsell opportunities.</li>
+                           <li>If economic conditions remain stable, cross-sell conversion rates could potentially reach 16% by Q3 2024, surpassing the current forecast.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Cross-Selling and Upselling Drivers <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cross-Sell Conversion Rate Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="crossSellConversionChart"></canvas>
+                               </div>
+                               <p id="crossSellConversionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue Impact of Upselling <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="revenueImpactChart"></canvas>
+                               </div>
+                               <p id="revenueImpactExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Product Adoption Rates <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="productAdoptionChart"></canvas>
+                               </div>
+                               <p id="productAdoptionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Segment Performance <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="customerSegmentChart"></canvas>
+                               </div>
+                               <p id="customerSegmentExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initCrossSellConversionChart() {
+           const ctx = document.getElementById('crossSellConversionChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [10.5, 10.8, 11.1, 11.3, 11.6, 11.8, 12.0, 12.2, 12.4, 12.6];
+           const forecastData = [12.6, 13.1, 13.6, 14.0];
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData.concat(Array(4).fill(null)),
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       tension: 0.1
+                   }, {
+                       label: 'Forecast',
+                       data: Array(9).fill(null).concat(forecastData),
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       tension: 0.1
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Conversion Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('crossSellConversionExplanation', 
+               'Cross-sell conversion rate is expected to increase from 12% to 14% over the next quarter, driven by AI-powered product recommendations and improved customer segmentation.');
+       }
+
+       function initRevenueImpactChart() {
+           const ctx = document.getElementById('revenueImpactChart').getContext('2d');
+           const labels = ['Q1', 'Q2', 'Q3', 'Q4', 'Q1 (Forecast)', 'Q2 (Forecast)'];
+           const data = [45, 47, 49, 50, 52, 55];
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Revenue from Upselling ($ millions)',
+                       data: data,
+                       backgroundColor: [
+                           'rgba(75, 192, 192, 0.6)',
+                           'rgba(75, 192, 192, 0.6)',
+                           'rgba(75, 192, 192, 0.6)',
+                           'rgba(75, 192, 192, 0.6)',
+                           'rgba(255, 99, 132, 0.6)',
+                           'rgba(255, 99, 132, 0.6)'
+                       ],
+                       borderColor: [
+                           'rgba(75, 192, 192, 1)',
+                           'rgba(75, 192, 192, 1)',
+                           'rgba(75, 192, 192, 1)',
+                           'rgba(75, 192, 192, 1)',
+                           'rgba(255, 99, 132, 1)',
+                           'rgba(255, 99, 132, 1)'
+                       ],
+                       borderWidth: 1
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Revenue ($ millions)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('revenueImpactExplanation', 
+               'Revenue from upselling is projected to reach $55 million in Q2 2024, a 10% increase from the current quarter, primarily due to personalized product recommendations and targeted marketing campaigns.');
+       }
+
+       function initProductAdoptionChart() {
+           const ctx = document.getElementById('productAdoptionChart').getContext('2d');
+           const labels = generateDateLabels(5, 2);
+           const historicalDataPoints = 6;
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Cash Management Solutions',
+                       data: [20, 22, 24, 26, 28, 30, 32, 34],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       tension: 0.1
+                   }, {
+                       label: 'Trade Finance Products',
+                       data: [15, 16, 17, 18, 19, 20, 21, 22],
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       tension: 0.1
+                   }, {
+                       label: 'FX Services',
+                       data: [10, 11, 12, 13, 14, 15, 16, 17],
+                       borderColor: 'rgba(255, 206, 86, 1)',
+                       tension: 0.1
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Adoption Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('productAdoptionExplanation', 
+               'Cash management solutions show the highest adoption rate, projected to reach 34% in the next quarter. FX services are gaining traction with a forecasted 13% growth rate.');
+       }
+
+       function initCustomerSegmentChart() {
+           const ctx = document.getElementById('customerSegmentChart').getContext('2d');
+
+           new Chart(ctx, {
+               type: 'radar',
+               data: {
+                   labels: ['Cross-Sell Rate', 'Upsell Rate', 'Product Adoption', 'Customer Lifetime Value', 'Retention Rate'],
+                   datasets: [{
+                       label: 'High-growth SMEs',
+                       data: [80, 75, 85, 90, 88],
+                       fill: true,
+                       backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                       borderColor: 'rgb(255, 99, 132)',
+                       pointBackgroundColor: 'rgb(255, 99, 132)',
+                       pointBorderColor: '#fff',
+                       pointHoverBackgroundColor: '#fff',
+                       pointHoverBorderColor: 'rgb(255, 99, 132)'
+                   }, {
+                       label: 'Established Corporates',
+                       data: [65, 70, 60, 75, 80],
+                       fill: true,
+                       backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                       borderColor: 'rgb(54, 162, 235)',
+                       pointBackgroundColor: 'rgb(54, 162, 235)',
+                       pointBorderColor: '#fff',
+                       pointHoverBackgroundColor: '#fff',
+                       pointHoverBorderColor: 'rgb(54, 162, 235)'
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   elements: {
+                       line: {
+                           borderWidth: 3
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('customerSegmentExplanation', 
+               'High-growth SMEs outperform established corporates across all metrics, particularly in cross-sell rate (80% vs 65%) and product adoption (85% vs 60%). Focus on tailored solutions for this segment to maximize growth.');
+       }
+
+       function initCausalNetworkGraph() {
+           const container = document.getElementById('causalNetworkGraph');
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Targeted Offers', color: '#FFB3BA' },
+               { id: 2, label: 'AI Product Recommendations', color: '#BAFFC9' },
+               { id: 3, label: 'Customer Segmentation', color: '#BAE1FF' },
+               { id: 4, label: 'Cross-Sell Rate', color: '#FFFFBA' },
+               { id: 5, label: 'Upsell Success', color: '#FFD9BA' },
+               { id: 6, label: 'Revenue Impact', color: '#F4BAFF' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 4, label: '0.4' },
+               { from: 2, to: 4, label: '0.5' },
+               { from: 3, to: 4, label: '0.3' },
+               { from: 1, to: 5, label: '0.3' },
+               { from: 2, to: 5, label: '0.6' },
+               { from: 3, to: 5, label: '0.4' },
+               { from: 4, to: 6, label: '0.7' },
+               { from: 5, to: 6, label: '0.8' }
+           ]);
+
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'box',
+                   font: { size: 14 }
+               },
+               edges: {
+                   arrows: 'to',
+                   font: { size: 12, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: {
+                   enabled: true,
+                   hierarchicalRepulsion: {
+                       centralGravity: 0.0,
+                       springLength: 100,
+                       springConstant: 0.01,
+                       nodeDistance: 120,
+                       damping: 0.09
+                   },
+                   solver: 'hierarchicalRepulsion'
+               },
+               layout: {
+                   hierarchical: {
+                       direction: 'LR',
+                       sortMethod: 'directed'
+                   }
+               }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initCrossSellConversionChart();
+           initRevenueImpactChart();
+           initProductAdoptionChart();
+           initCustomerSegmentChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

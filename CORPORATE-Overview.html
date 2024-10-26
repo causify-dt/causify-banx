@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Corporate Banking Overview</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Overview</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2" id="kpiCards">
+                       <!-- KPI cards will be dynamically inserted here -->
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul id="insightsList" class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <!-- Insights will be dynamically inserted here -->
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Corporate Banking Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2" id="chartContainer">
+                       <!-- Charts will be dynamically inserted here -->
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function createKPICard(metric) {
+           const cardDiv = document.createElement('div');
+           cardDiv.className = 'w-full sm:w-1/2 lg:w-1/4 px-2 mb-4';
+           cardDiv.innerHTML = `
+               <div class="bg-white rounded-lg shadow p-4">
+                   <h3 class="text-sm font-semibold">${metric.name}</h3>
+                   <p class="text-xs text-gray-500">${metric.confidence}% Confidence</p>
+                   <div class="mt-2">
+                       <div class="text-2xl font-bold">${metric.current_value}</div>
+                       <div class="text-sm ${metric.trend === 'increase' ? 'text-green-600' : 'text-red-600'}">
+                           ${metric.trend === 'increase' ? '↑' : '↓'} ${metric.predicted_value}
+                       </div>
+                   </div>
+               </div>
+           `;
+           return cardDiv;
+       }
+
+       function createChart(chartData) {
+           const chartDiv = document.createElement('div');
+           chartDiv.className = 'w-full lg:w-1/2 px-2 mb-4';
+           chartDiv.innerHTML = `
+               <div class="bg-white rounded-lg shadow p-4">
+                   <h3 class="text-sm font-semibold">${chartData.title} <span class="text-sm font-normal text-gray-500">(${chartData.confidence}% Confidence)</span></h3>
+                   <div class="chart-container mt-4">
+                       <canvas id="${chartData.id}"></canvas>
+                   </div>
+                   <p id="${chartData.id}Explanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+               </div>
+           `;
+           return chartDiv;
+       }
+
+       function initChart(chartData) {
+           const ctx = document.getElementById(chartData.id).getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: chartData.type,
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: chartData.data.historical,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Forecast',
+                       data: chartData.data.forecast,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: {
+                           title: {
+                               display: true,
+                               text: 'Month'
+                           }
+                       },
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: chartData.yAxisLabel
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].datasetIndex === 0 ? 'Historical' : 'Forecast';
+                               }
+                           }
+                       },
+                       annotation: {
+                           annotations: {
+                               line1: {
+                                   type: 'line',
+                                   xMin: historicalDataPoints - 0.5,
+                                   xMax: historicalDataPoints - 0.5,
+                                   borderColor: 'rgb(169, 169, 169)',
+                                   borderWidth: 2,
+                                   label: {
+                                       content: 'Now',
+                                       enabled: true,
+                                       position: 'top'
+                                   }
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation(`${chartData.id}Explanation`, chartData.prediction);
+       }
+
+       function initCausalNetworkGraph() {
+           const container = document.getElementById('causalNetworkGraph');
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Economic Conditions', color: '#FFD700' },
+               { id: 2, label: 'Regulatory Changes', color: '#FF6347' },
+               { id: 3, label: 'Digital Transformation', color: '#4CAF50' },
+               { id: 4, label: 'Market Competition', color: '#1E90FF' },
+               { id: 5, label: 'Corporate Banking Performance', color: '#9370DB' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 5, label: '0.7', arrows: 'to' },
+               { from: 2, to: 5, label: '0.5', arrows: 'to' },
+               { from: 3, to: 5, label: '0.8', arrows: 'to' },
+               { from: 4, to: 5, label: '0.6', arrows: 'to' }
+           ]);
+
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: false,
+               height: '100%',
+               width: '100%'
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           console.log('Initializing dashboard');
+
+           const kpiData = [
+               { name: 'Loan Approval Rate', current_value: '65%', predicted_value: '70%', trend: 'increase', confidence: 85 },
+               { name: 'Business Account Openings', current_value: '15,000', predicted_value: '16,500', trend: 'increase', confidence: 88 },
+               { name: 'SME Loan Growth', current_value: '$500M', predicted_value: '$550M', trend: 'increase', confidence: 90 },
+               { name: 'Business Churn Rate', current_value: '5%', predicted_value: '4.5%', trend: 'decrease', confidence: 80 }
+           ];
+
+           const kpiCardsContainer = document.getElementById('kpiCards');
+           kpiData.forEach(metric => {
+               kpiCardsContainer.appendChild(createKPICard(metric));
+           });
+
+           const insights = [
+               "Improved risk assessment and credit models are boosting loan approval rates.",
+               "Small and medium enterprises (SMEs) are driving business loan growth.",
+               "Marketing campaigns targeting SMEs and startups are leading to account growth.",
+               "Counterfactual: If interest rates decrease by 0.5%, we project a 12% increase in loan applications."
+           ];
+
+           const insightsList = document.getElementById('insightsList');
+           insights.forEach(insight => {
+               const li = document.createElement('li');
+               li.textContent = insight;
+               insightsList.appendChild(li);
+           });
+
+           const chartData = [
+               {
+                   id: 'loanApprovalChart',
+                   title: 'Loan Approval Rate Trends',
+                   type: 'line',
+                   confidence: 85,
+                   yAxisLabel: 'Approval Rate (%)',
+                   data: {
+                       historical: [60, 61, 62, 63, 64, 65, 66, 67, 68, 69],
+                       forecast: [null, null, null, null, null, null, null, null, null, 69, 70, 71, 72]
+                   },
+                   prediction: "Loan approval rates are predicted to increase across different sectors, reaching 72% by Q2 2024."
+               },
+               {
+                   id: 'accountOpeningsChart',
+                   title: 'Business Account Openings Forecast',
+                   type: 'bar',
+                   confidence: 88,
+                   yAxisLabel: 'Number of Accounts',
+                   data: {
+                       historical: [13000, 13500, 14000, 14500, 15000, 15500, 16000, 16500, 17000, 17500],
+                       forecast: [null, null, null, null, null, null, null, null, null, 17500, 18000, 18500, 19000]
+                   },
+                   prediction: "Business account openings are forecasted to reach 19,000 by Q2 2024, driven by new digital onboarding processes."
+               },
+               {
+                   id: 'smeLoanGrowthChart',
+                   title: 'SME Loan Growth',
+                   type: 'line',
+                   confidence: 90,
+                   yAxisLabel: 'Loan Volume ($ Million)',
+                   data: {
+                       historical: [450, 460, 470, 480, 490, 500, 510, 520, 530, 540],
+                       forecast: [null, null, null, null, null, null, null, null, null, 540, 550, 560, 570]
+                   },
+                   prediction: "SME loan growth is expected to reach $570 million by Q2 2024, supported by new tailored loan products."
+               },
+               {
+                   id: 'businessChurnRateChart',
+                   title: 'Business Churn Rate',
+                   type: 'line',
+                   confidence: 80,
+                   yAxisLabel: 'Churn Rate (%)',
+                   data: {
+                       historical: [5.5, 5.4, 5.3, 5.2, 5.1, 5.0, 4.9, 4.8, 4.7, 4.6],
+                       forecast: [null, null, null, null, null, null, null, null, null, 4.6, 4.5, 4.4, 4.3]
+                   },
+                   prediction: "Business churn rate is predicted to decrease to 4.3% over the next six months due to improved customer retention strategies."
+               }
+           ];
+
+           const chartContainer = document.getElementById('chartContainer');
+           chartData.forEach(chart => {
+               chartContainer.appendChild(createChart(chart));
+               initChart(chart);
+           });
+
+           initCausalNetworkGraph();
+           console.log('Dashboard initialization complete');
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

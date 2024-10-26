@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>M&A and Corporate Restructuring Analysis</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">M&A and Corporate Restructuring Analysis</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">M&A Restructuring Volume</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$150M</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> Predicted $170M next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Restructuring Success Rate</h3>
+                               <p class="text-sm text-gray-500">80% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">70%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> Predicted 75% with new deal strategies
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue from Restructuring</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$30M</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> Predicted $35M next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Restructured Company Retention</h3>
+                               <p class="text-sm text-gray-500">80% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">90%</div>
+                                   <div class="text-sm text-blue-500">
+                                       <i class="fas fa-equals"></i> Predicted retention rate
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Restructuring Volume Growth: Companies seeking to optimize operations and streamline costs are driving restructuring activity.</li>
+                           <li>Success Rate: Enhanced advisory strategies are increasing the success rate of restructuring deals.</li>
+                           <li>Revenue Growth: Restructuring deals are contributing significantly to overall advisory revenue, particularly in energy and industrial sectors.</li>
+                           <li>Counterfactual: If interest rates decrease by 50 basis points, we project a 15% increase in M&A activity, potentially boosting restructuring volume by 8% (Confidence: 75%).</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">M&A Restructuring Process Flow Map <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">M&A Restructuring Volume Growth <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="restructuringVolumeChart"></canvas>
+                               </div>
+                               <p id="restructuringVolumeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Restructuring Success Rate Forecast <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="successRateChart"></canvas>
+                               </div>
+                               <p id="successRateExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue from Restructuring Trend <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="revenueChart"></canvas>
+                               </div>
+                               <p id="revenueExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Sector-wise Restructuring Activity <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="sectorChart"></canvas>
+                               </div>
+                               <p id="sectorExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Deal Size Distribution <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="dealSizeChart"></canvas>
+                               </div>
+                               <p id="dealSizeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Post-Restructuring Performance <span class="text-sm font-normal text-gray-500">(75% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="performanceChart"></canvas>
+                               </div>
+                               <p id="performanceExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initRestructuringVolumeChart() {
+           const ctx = document.getElementById('restructuringVolumeChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [110, 120, 125, 135, 140, 145, 148, 150, 150, null, null, null, null];
+           const forecastData = [null, null, null, null, null, null, null, null, 150, 155, 160, 165, 170];
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Forecast',
+                       data: forecastData,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Volume ($ Million)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('restructuringVolumeExplanation', 'Predicts growth in restructuring deal volume across different sectors, with a projected 13.3% increase over the next quarter.');
+       }
+
+       function initSuccessRateChart() {
+           const ctx = document.getElementById('successRateChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [60, 62, 65, 67, 68, 69, 70, 70, 70, null, null, null, null];
+           const forecastData = [null, null, null, null, null, null, null, null, 70, 72, 73, 75, 75];
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Forecast',
+                       data: forecastData,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Success Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('successRateExplanation', 'Forecasts improvements in restructuring deal success rates, with a projected increase to 75% due to enhanced advisory strategies.');
+       }
+
+       function initRevenueChart() {
+           const ctx = document.getElementById('revenueChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [22, 24, 25, 26, 28, 29, 30, 30, 30, null, null, null, null];
+           const forecastData = [null, null, null, null, null, null, null, null, 30, 32, 33, 34, 35];
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Forecast',
+                       data: forecastData,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Revenue ($ Million)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('revenueExplanation', 'Predicts an increase in revenue from restructuring deals, with a projected 16.7% growth over the next quarter, particularly driven by energy and industrial sectors.');
+       }
+
+       function initSectorChart() {
+           const ctx = document.getElementById('sectorChart').getContext('2d');
+           const data = {
+               labels: ['Energy', 'Industrial', 'Technology', 'Healthcare', 'Financial Services', 'Consumer Goods'],
+               datasets: [{
+                   label: 'Current Quarter',
+                   data: [30, 25, 20, 15, 5, 5],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)',
+               }, {
+                   label: 'Next Quarter (Forecast)',
+                   data: [35, 28, 18, 14, 4, 6],
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)',
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Percentage of Total Deals'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('sectorExplanation', 'Forecasts sector-wise restructuring activity, showing increased activity in Energy and Industrial sectors, with a slight decline in Technology.');
+       }
+
+       function initDealSizeChart() {
+           const ctx = document.getElementById('dealSizeChart').getContext('2d');
+           const data = {
+               labels: ['<$50M', '$50M-$100M', '$100M-$500M', '$500M-$1B', '>$1B'],
+               datasets: [{
+                   label: 'Current Quarter',
+                   data: [15, 25, 35, 15, 10],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)',
+               }, {
+                   label: 'Next Quarter (Forecast)',
+                   data: [12, 23, 38, 17, 10],
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)',
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Percentage of Total Deals'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('dealSizeExplanation', 'Projects changes in deal size distribution, with a slight shift towards larger deals in the $100M-$500M and $500M-$1B ranges.');
+       }
+
+       function initPerformanceChart() {
+           const ctx = document.getElementById('performanceChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [5, 7, 10, 12, 15, 18, 20, 22, 25, null, null, null, null];
+           const forecastData = [null, null, null, null, null, null, null, null, 25, 28, 30, 32, 35];
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Forecast',
+                       data: forecastData,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Performance Improvement (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('performanceExplanation', 'Predicts post-restructuring performance improvements, showing a projected 40% increase in performance metrics over the next quarter for restructured companies.');
+       }
+
+       function initCausalNetworkGraph() {
+           const container = document.getElementById('causalNetworkGraph');
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Identify Restructuring Opportunities', level: 0 },
+               { id: 2, label: 'Due Diligence', level: 1 },
+               { id: 3, label: 'Deal Structuring', level: 2 },
+               { id: 4, label: 'Negotiations', level: 3 },
+               { id: 5, label: 'Execution', level: 4 },
+               { id: 6, label: 'Post-Deal Integration', level: 5 },
+               { id: 7, label: 'Performance Monitoring', level: 6 }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 2, label: '90% Success' },
+               { from: 2, to: 3, label: '85% Success' },
+               { from: 3, to: 4, label: '80% Success' },
+               { from: 4, to: 5, label: '75% Success' },
+               { from: 5, to: 6, label: '70% Success' },
+               { from: 6, to: 7, label: '65% Success' }
+           ]);
+
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'box',
+                   margin: 10,
+                   widthConstraint: {
+                       maximum: 200
+                   }
+               },
+               edges: {
+                   arrows: 'to',
+                   smooth: {
+                       type: 'cubicBezier',
+                       forceDirection: 'horizontal',
+                       roundness: 0.4
+                   }
+               },
+               layout: {
+                   hierarchical: {
+                       direction: 'LR',
+                       levelSeparation: 150
+                   }
+               },
+               physics: false
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initRestructuringVolumeChart();
+           initSuccessRateChart();
+           initRevenueChart();
+           initSectorChart();
+           initDealSizeChart();
+           initPerformanceChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

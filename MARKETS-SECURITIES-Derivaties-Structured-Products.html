@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Markets and Securities Services: Derivatives and Structured Products</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Derivatives and Structured Products</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Total Notional Value</h3>
+                               <p class="text-sm text-gray-500">(92% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$2.73T</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 4.2%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Profit Margin</h3>
+                               <p class="text-sm text-gray-500">(88% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">18.7%</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 1.5%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Risk-Weighted Assets</h3>
+                               <p class="text-sm text-gray-500">(90% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$412B</div>
+                                   <div class="text-sm text-red-600"><i class="fas fa-arrow-down"></i> 2.8%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Satisfaction</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">8.4/10</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 0.3</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Interest rate derivatives volume projected to increase by 22% in Q4 due to anticipated Fed policy changes (Confidence: 91%).</li>
+                           <li>New AI-driven pricing model for exotic options expected to improve margins by 3.5% in the next 6 months (Confidence: 87%).</li>
+                           <li>Counterfactual: If regulatory changes hadn't tightened capital requirements, risk-weighted assets would be 15% higher, potentially increasing profitability by 7%.</li>
+                           <li>ESG-linked structured products demand forecast to grow 40% year-over-year, driven by increasing institutional investor focus on sustainability (Confidence: 89%).</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Derivatives Performance Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Notional Value by Product Type <span class="text-sm font-normal text-gray-500">(93% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="notionalValueChart"></canvas>
+                               </div>
+                               <p id="notionalValueChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Trading Volume Trends <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="tradingVolumeChart"></canvas>
+                               </div>
+                               <p id="tradingVolumeChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Risk Exposure by Counterparty <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="riskExposureChart"></canvas>
+                               </div>
+                               <p id="riskExposureChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Profit Margin Projection <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="profitMarginChart"></canvas>
+                               </div>
+                               <p id="profitMarginChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Segment Performance <span class="text-sm font-normal text-gray-500">(86% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientSegmentChart"></canvas>
+                               </div>
+                               <p id="clientSegmentChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Regulatory Capital Requirements <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="regulatoryCapitalChart"></canvas>
+                               </div>
+                               <p id="regulatoryCapitalChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initNotionalValueChart() {
+           const ctx = document.getElementById('notionalValueChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Interest Rate Swaps',
+                       data: [1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }, {
+                       label: 'Credit Default Swaps',
+                       data: [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.05, 1.1],
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }, {
+                       label: 'Equity Derivatives',
+                       data: [0.3, 0.32, 0.34, 0.36, 0.38, 0.4, 0.42, 0.44, 0.46, 0.48, 0.5, 0.52, 0.54],
+                       borderColor: 'rgba(255, 206, 86, 1)',
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Notional Value (Trillion USD)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       },
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('notionalValueChartExplanation',
+               'Interest rate swaps projected to grow 14% over the next quarter, driven by anticipated Fed policy changes. Equity derivatives expected to see 12% increase due to market volatility.');
+       }
+
+       function initTradingVolumeChart() {
+           const ctx = document.getElementById('tradingVolumeChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'OTC Derivatives',
+                       data: [500, 520, 540, 560, 580, 600, 620, 640, 660, 680, 700, 720, 740],
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                   }, {
+                       label: 'Exchange-Traded Derivatives',
+                       data: [300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420],
+                       backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Trading Volume (Billion USD)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('tradingVolumeChartExplanation',
+               'OTC derivatives trading volume forecast to increase by 9% in Q4, while exchange-traded derivatives expected to grow 7.5%. Shift towards centralized clearing driving exchange-traded volume.');
+       }
+
+       function initRiskExposureChart() {
+           const ctx = document.getElementById('riskExposureChart').getContext('2d');
+
+           new Chart(ctx, {
+               type: 'doughnut',
+               data: {
+                   labels: ['Banks', 'Asset Managers', 'Hedge Funds', 'Corporates', 'Insurance Companies'],
+                   datasets: [{
+                       data: [35, 25, 20, 12, 8],
+                       backgroundColor: [
+                           'rgba(75, 192, 192, 0.6)',
+                           'rgba(255, 99, 132, 0.6)',
+                           'rgba(255, 206, 86, 0.6)',
+                           'rgba(54, 162, 235, 0.6)',
+                           'rgba(153, 102, 255, 0.6)'
+                       ]
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           position: 'right'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('riskExposureChartExplanation',
+               'Banks remain the largest counterparty risk at 35%. Hedge fund exposure expected to increase by 3% next quarter due to increased volatility-driven trading strategies.');
+       }
+
+       function initProfitMarginChart() {
+           const ctx = document.getElementById('profitMarginChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Profit Margin',
+                       data: [16.2, 16.5, 16.8, 17.1, 17.4, 17.7, 18.0, 18.3, 18.6, 18.9, 19.2, 19.5, 19.8],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Profit Margin (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('profitMarginChartExplanation',
+               'Profit margin projected to reach 19.8% by Q1 2024, a 4.7% increase from current levels. Key drivers: improved pricing models and increased operational efficiency from AI implementation.');
+       }
+
+       function initClientSegmentChart() {
+           const ctx = document.getElementById('clientSegmentChart').getContext('2d');
+           const labels = ['Institutional', 'Corporate', 'Wealth Management', 'Retail'];
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Current Revenue',
+                       data: [450, 300, 150, 50],
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                   }, {
+                       label: 'Projected Revenue (Next Quarter)',
+                       data: [480, 320, 170, 60],
+                       backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Revenue (Million USD)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('clientSegmentChartExplanation',
+               'Institutional segment expected to grow 6.7% next quarter. Wealth Management showing strongest growth at 13.3%, driven by increased demand for structured products.');
+       }
+
+       function initRegulatoryCapitalChart() {
+           const ctx = document.getElementById('regulatoryCapitalChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Required Capital',
+                       data: [38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50],
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }, {
+                       label: 'Available Capital',
+                       data: [45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Capital (Billion USD)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('regulatoryCapitalChartExplanation',
+               'Required capital projected to increase by 6.4% over the next quarter due to anticipated regulatory changes. Available capital expected to grow 5.6%, maintaining a healthy buffer.');
+       }
+
+       function initCausalNetworkGraph() {
+           const container = document.getElementById('causalNetworkGraph');
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Market Volatility', color: '#FFA500' },
+               { id: 2, label: 'Interest Rates', color: '#FFA500' },
+               { id: 3, label: 'Regulatory Environment', color: '#FFA500' },
+               { id: 4, label: 'Client Demand', color: '#4CAF50' },
+               { id: 5, label: 'Pricing Models', color: '#4CAF50' },
+               { id: 6, label: 'Risk Management', color: '#4CAF50' },
+               { id: 7, label: 'Trading Volume', color: '#2196F3' },
+               { id: 8, label: 'Profit Margin', color: '#2196F3' },
+               { id: 9, label: 'Capital Requirements', color: '#2196F3' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 7, label: '0.7', arrows: 'to' },
+               { from: 2, to: 7, label: '0.8', arrows: 'to' },
+               { from: 3, to: 9, label: '0.9', arrows: 'to' },
+               { from: 4, to: 7, label: '0.6', arrows: 'to' },
+               { from: 5, to: 8, label: '0.7', arrows: 'to' },
+               { from: 6, to: 9, label: '0.5', arrows: 'to' },
+               { from: 7, to: 8, label: '0.8', arrows: 'to' },
+               { from: 9, to: 8, label: '-0.4', arrows: 'to' }
+           ]);
+
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 20,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: {
+                   enabled: true,
+                   barnesHut: {
+                       gravitationalConstant: -2000,
+                       centralGravity: 0.3,
+                       springLength: 95,
+                       springConstant: 0.04,
+                       damping: 0.09,
+                       avoidOverlap: 0.1
+                   },
+               },
+               height: '100%',
+               width: '100%'
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initNotionalValueChart();
+           initTradingVolumeChart();
+           initRiskExposureChart();
+           initProfitMarginChart();
+           initClientSegmentChart();
+           initRegulatoryCapitalChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

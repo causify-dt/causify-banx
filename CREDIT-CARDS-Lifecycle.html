@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Credit Card Lifecycle</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Credit Card Lifecycle</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Application Conversion Rate</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">25%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> Increase to 30% next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Card Upgrade Rate</h3>
+                               <p class="text-sm text-gray-500">(80% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">15%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> Predicted increase to 20%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Account Retention Rate</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">85%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> Increase to 88%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cross-Sell Opportunities</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">10%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> Predicted increase to 12%</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Application Efficiency: Streamlined credit card applications are driving higher conversion rates.</li>
+                           <li>Upgrade Opportunities: Targeted offers are encouraging customers to upgrade to higher-tier cards.</li>
+                           <li>Retention and Loyalty: Loyalty programs and cross-selling opportunities are improving retention.</li>
+                           <li>Counterfactual: If we had not implemented the new loyalty program, retention rates would have declined by 5% due to increased competition.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Credit Card Lifecycle Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Card Application Conversion Rate Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="applicationConversionChart"></canvas>
+                               </div>
+                               <p id="applicationConversionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Card Upgrade Rate Forecast <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="cardUpgradeChart"></canvas>
+                               </div>
+                               <p id="cardUpgradeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Account Retention Rate Trend <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="retentionRateChart"></canvas>
+                               </div>
+                               <p id="retentionRateExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cross-Sell Opportunities Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="crossSellChart"></canvas>
+                               </div>
+                               <p id="crossSellExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Lifetime Value Projection <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="lifetimeValueChart"></canvas>
+                               </div>
+                               <p id="lifetimeValueExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Credit Utilization Impact on Default Rates <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="creditUtilizationChart"></canvas>
+                               </div>
+                               <p id="creditUtilizationExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateTimeSeriesData(monthsBack, monthsForward, baseValue, growth) {
+           const labels = [];
+           const historical = [];
+           const forecast = [];
+           
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+               
+               const value = baseValue * (1 + (growth * i / 12));
+               
+               if (i < 0) {
+                   historical.push(value);
+                   forecast.push(null);
+               } else if (i === 0) {
+                   historical.push(value);
+                   forecast.push(value);
+               } else {
+                   historical.push(null);
+                   forecast.push(value);
+               }
+           }
+           
+           return { labels, historical, forecast };
+       }
+
+       function createChart(canvasId, chartType, label, data, yAxisTitle) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           new Chart(ctx, {
+               type: chartType,
+               data: {
+                   labels: data.labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: data.historical,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Forecast',
+                       data: data.forecast,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: yAxisTitle
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Application Process', shape: 'circle' },
+               { id: 2, label: 'Card Benefits', shape: 'circle' },
+               { id: 3, label: 'Customer Service', shape: 'circle' },
+               { id: 4, label: 'Loyalty Program', shape: 'circle' },
+               { id: 5, label: 'Credit Limit', shape: 'circle' },
+               { id: 6, label: 'Interest Rates', shape: 'circle' },
+               { id: 7, label: 'Digital Features', shape: 'circle' },
+               { id: 8, label: 'Conversion Rate', shape: 'diamond' },
+               { id: 9, label: 'Upgrade Rate', shape: 'diamond' },
+               { id: 10, label: 'Retention Rate', shape: 'diamond' },
+               { id: 11, label: 'Cross-Sell Rate', shape: 'diamond' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 8, label: '0.6' },
+               { from: 2, to: 8, label: '0.4' },
+               { from: 2, to: 9, label: '0.5' },
+               { from: 3, to: 10, label: '0.7' },
+               { from: 4, to: 10, label: '0.6' },
+               { from: 4, to: 11, label: '0.5' },
+               { from: 5, to: 9, label: '0.4' },
+               { from: 6, to: 10, label: '0.3' },
+               { from: 7, to: 11, label: '0.6' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   arrows: { to: { enabled: true, scaleFactor: 0.5 } }
+               },
+               physics: { enabled: false },
+               layout: { randomSeed: 2 }
+           };
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           const applicationConversionData = generateTimeSeriesData(9, 3, 25, 0.2);
+           createChart('applicationConversionChart', 'line', 'Application Conversion Rate', applicationConversionData, 'Conversion Rate (%)');
+           document.getElementById('applicationConversionExplanation').textContent = 'Forecast: 20% increase in application conversion rate over the next quarter, driven by streamlined online application process and targeted marketing campaigns.';
+
+           const cardUpgradeData = generateTimeSeriesData(9, 3, 15, 0.33);
+           createChart('cardUpgradeChart', 'line', 'Card Upgrade Rate', cardUpgradeData, 'Upgrade Rate (%)');
+           document.getElementById('cardUpgradeExplanation').textContent = 'Forecast: 33% increase in card upgrade rate, attributed to personalized upgrade offers and enhanced premium card benefits.';
+
+           const retentionRateData = generateTimeSeriesData(9, 3, 85, 0.035);
+           createChart('retentionRateChart', 'line', 'Account Retention Rate', retentionRateData, 'Retention Rate (%)');
+           document.getElementById('retentionRateExplanation').textContent = 'Trend: Steady increase in retention rate, expected to reach 88% by next quarter due to improved customer service and loyalty program enhancements.';
+
+           const crossSellData = generateTimeSeriesData(9, 3, 10, 0.2);
+           createChart('crossSellChart', 'line', 'Cross-Sell Opportunities', crossSellData, 'Cross-Sell Rate (%)');
+           document.getElementById('crossSellExplanation').textContent = 'Forecast: 20% growth in cross-sell opportunities, driven by AI-powered product recommendations and targeted email campaigns.';
+
+           const lifetimeValueData = generateTimeSeriesData(9, 3, 5000, 0.05);
+           createChart('lifetimeValueChart', 'line', 'Customer Lifetime Value', lifetimeValueData, 'Lifetime Value ($)');
+           document.getElementById('lifetimeValueExplanation').textContent = 'Projection: 5% increase in customer lifetime value, resulting from improved retention rates and successful cross-selling initiatives.';
+
+           const creditUtilizationData = {
+               labels: ['0-20%', '21-40%', '41-60%', '61-80%', '81-100%'],
+               historical: [0.5, 1.2, 2.8, 4.5, 7.2],
+               forecast: [0.4, 1.0, 2.5, 4.2, 6.8]
+           };
+           createChart('creditUtilizationChart', 'bar', 'Credit Utilization Impact', creditUtilizationData, 'Default Rate (%)');
+           document.getElementById('creditUtilizationExplanation').textContent = 'Analysis: Higher credit utilization correlates with increased default rates. Implementing early warning systems for high utilization accounts could reduce default rates by up to 5%.';
+
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

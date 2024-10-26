@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Credit Cards: Rewards Program Analysis</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Credit Cards: Rewards Program Analysis</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Rewards Program Engagement</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">70%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> Increase to 75% next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cashback Redemption Growth</h3>
+                               <p class="text-sm text-gray-500">90% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$100M</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> Predicted $110M next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Travel Rewards Usage</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">45%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> Increase to 50% with new offers
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Points Accumulation Rate</h3>
+                               <p class="text-sm text-gray-500">80% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">25%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> Increase to 28% next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Engagement Increase: Customers are increasingly engaging with rewards programs due to personalized offers.</li>
+                           <li>Cashback Growth: Cashback programs are driving customer loyalty and increasing card usage.</li>
+                           <li>Travel Mile Popularity: Travel rewards remain popular, especially with frequent travelers.</li>
+                           <li>Points Accumulation: New partnerships with retailers are projected to boost points accumulation by 15% (Confidence: 88%).</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Rewards Program Drivers <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Rewards Program Engagement Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="engagementForecastChart"></canvas>
+                               </div>
+                               <p id="engagementForecastExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cashback Redemption Growth <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="cashbackRedemptionChart"></canvas>
+                               </div>
+                               <p id="cashbackRedemptionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Travel Rewards Usage Trend <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="travelRewardsChart"></canvas>
+                               </div>
+                               <p id="travelRewardsExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Points Accumulation Rate <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="pointsAccumulationChart"></canvas>
+                               </div>
+                               <p id="pointsAccumulationExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Segment Reward Preferences <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="segmentPreferencesChart"></canvas>
+                               </div>
+                               <p id="segmentPreferencesExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Reward Program ROI <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="rewardROIChart"></canvas>
+                               </div>
+                               <p id="rewardROIExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateTimeSeriesData(monthsBack, monthsForward, baseValue, growth) {
+           const labels = [];
+           const historical = [];
+           const forecast = [];
+           
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+               
+               const value = baseValue * (1 + (growth * i / 12));
+               
+               if (i < 0) {
+                   historical.push(value);
+                   forecast.push(null);
+               } else if (i === 0) {
+                   historical.push(value);
+                   forecast.push(value);
+               } else {
+                   historical.push(null);
+                   forecast.push(value);
+               }
+           }
+           
+           return { labels, historical, forecast };
+       }
+
+       function createChart(canvasId, chartType, data, config) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           return new Chart(ctx, {
+               type: chartType,
+               data: data,
+               options: config
+           });
+       }
+
+       function initEngagementForecastChart() {
+           const data = generateTimeSeriesData(9, 3, 65, 0.10);
+           createChart('engagementForecastChart', 'line', {
+               labels: data.labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: data.historical,
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   tension: 0.1
+               }, {
+                   label: 'Forecast',
+                   data: data.forecast,
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   tension: 0.1
+               }]
+           }, {
+               scales: {
+                   y: {
+                       beginAtZero: false,
+                       title: {
+                           display: true,
+                           text: 'Engagement Rate (%)'
+                       }
+                   }
+               },
+               plugins: {
+                   tooltip: {
+                       callbacks: {
+                           label: function(context) {
+                               return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}%`;
+                           }
+                       }
+                   }
+               }
+           });
+           document.getElementById('engagementForecastExplanation').textContent = 'Predicts a 7% increase in engagement rate over the next quarter due to enhanced personalization and new reward options.';
+       }
+
+       function initCashbackRedemptionChart() {
+           const data = generateTimeSeriesData(9, 3, 90, 0.15);
+           createChart('cashbackRedemptionChart', 'line', {
+               labels: data.labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: data.historical,
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   tension: 0.1
+               }, {
+                   label: 'Forecast',
+                   data: data.forecast,
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   tension: 0.1
+               }]
+           }, {
+               scales: {
+                   y: {
+                       beginAtZero: false,
+                       title: {
+                           display: true,
+                           text: 'Redemption Amount ($ Millions)'
+                       }
+                   }
+               },
+               plugins: {
+                   tooltip: {
+                       callbacks: {
+                           label: function(context) {
+                               return `${context.dataset.label}: $${context.parsed.y.toFixed(1)}M`;
+                           }
+                       }
+                   }
+               }
+           });
+           document.getElementById('cashbackRedemptionExplanation').textContent = 'Forecasts a 10% growth in cashback redemptions, driven by new partnerships and increased card usage for everyday purchases.';
+       }
+
+       function initTravelRewardsChart() {
+           const data = generateTimeSeriesData(9, 3, 40, 0.20);
+           createChart('travelRewardsChart', 'line', {
+               labels: data.labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: data.historical,
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   tension: 0.1
+               }, {
+                   label: 'Forecast',
+                   data: data.forecast,
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   tension: 0.1
+               }]
+           }, {
+               scales: {
+                   y: {
+                       beginAtZero: false,
+                       title: {
+                           display: true,
+                           text: 'Usage Rate (%)'
+                       }
+                   }
+               },
+               plugins: {
+                   tooltip: {
+                       callbacks: {
+                           label: function(context) {
+                               return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}%`;
+                           }
+                       }
+                   }
+               }
+           });
+           document.getElementById('travelRewardsExplanation').textContent = 'Projects an 11% increase in travel rewards usage, attributed to post-pandemic travel surge and new airline partnerships.';
+       }
+
+       function initPointsAccumulationChart() {
+           const data = generateTimeSeriesData(9, 3, 22, 0.18);
+           createChart('pointsAccumulationChart', 'line', {
+               labels: data.labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: data.historical,
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   tension: 0.1
+               }, {
+                   label: 'Forecast',
+                   data: data.forecast,
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   tension: 0.1
+               }]
+           }, {
+               scales: {
+                   y: {
+                       beginAtZero: false,
+                       title: {
+                           display: true,
+                           text: 'Accumulation Rate (%)'
+                       }
+                   }
+               },
+               plugins: {
+                   tooltip: {
+                       callbacks: {
+                           label: function(context) {
+                               return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}%`;
+                           }
+                       }
+                   }
+               }
+           });
+           document.getElementById('pointsAccumulationExplanation').textContent = 'Anticipates a 12% boost in points accumulation rate, fueled by new retail partnerships and increased online shopping trends.';
+       }
+
+       function initSegmentPreferencesChart() {
+           createChart('segmentPreferencesChart', 'bar', {
+               labels: ['Millennials', 'Gen X', 'Baby Boomers', 'Gen Z', 'Silent Generation'],
+               datasets: [{
+                   label: 'Cashback',
+                   data: [35, 30, 25, 40, 20],
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)'
+               }, {
+                   label: 'Travel Miles',
+                   data: [30, 35, 20, 25, 15],
+                   backgroundColor: 'rgba(54, 162, 235, 0.6)'
+               }, {
+                   label: 'Points',
+                   data: [25, 25, 30, 20, 35],
+                   backgroundColor: 'rgba(255, 206, 86, 0.6)'
+               }, {
+                   label: 'Luxury Perks',
+                   data: [10, 10, 25, 15, 30],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)'
+               }]
+           }, {
+               scales: {
+                   x: {
+                       stacked: true,
+                   },
+                   y: {
+                       stacked: true,
+                       beginAtZero: true,
+                       title: {
+                           display: true,
+                           text: 'Preference (%)'
+                       }
+                   }
+               }
+           });
+           document.getElementById('segmentPreferencesExplanation').textContent = 'Reveals distinct reward preferences across generations, with Millennials and Gen Z favoring cashback, while older generations prefer points and luxury perks.';
+       }
+
+       function initRewardROIChart() {
+           const data = generateTimeSeriesData(9, 3, 1.8, 0.12);
+           createChart('rewardROIChart', 'line', {
+               labels: data.labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: data.historical,
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   tension: 0.1
+               }, {
+                   label: 'Forecast',
+                   data: data.forecast,
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   tension: 0.1
+               }]
+           }, {
+               scales: {
+                   y: {
+                       beginAtZero: false,
+                       title: {
+                           display: true,
+                           text: 'ROI'
+                       }
+                   }
+               },
+               plugins: {
+                   tooltip: {
+                       callbacks: {
+                           label: function(context) {
+                               return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}`;
+                           }
+                       }
+                   }
+               }
+           });
+           document.getElementById('rewardROIExplanation').textContent = 'Projects a 9% improvement in reward program ROI, driven by optimized reward structures and increased customer engagement.';
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Reward Program\nEngagement', shape: 'box' },
+               { id: 2, label: 'Cashback\nRedemption', shape: 'box' },
+               { id: 3, label: 'Travel Rewards\nUsage', shape: 'box' },
+               { id: 4, label: 'Points\nAccumulation', shape: 'box' },
+               { id: 5, label: 'Customer\nSegmentation', shape: 'box' },
+               { id: 6, label: 'Personalized\nOffers', shape: 'box' },
+               { id: 7, label: 'Partnerships', shape: 'box' },
+               { id: 8, label: 'Card Usage', shape: 'box' },
+               { id: 9, label: 'Customer\nLoyalty', shape: 'box' },
+               { id: 10, label: 'Program ROI', shape: 'box' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 6, to: 1, label: '0.8' },
+               { from: 7, to: 2, label: '0.6' },
+               { from: 7, to: 3, label: '0.7' },
+               { from: 7, to: 4, label: '0.5' },
+               { from: 5, to: 6, label: '0.9' },
+               { from: 1, to: 8, label: '0.7' },
+               { from: 8, to: 2, label: '0.8' },
+               { from: 8, to: 3, label: '0.6' },
+               { from: 8, to: 4, label: '0.7' },
+               { from: 2, to: 9, label: '0.6' },
+               { from: 3, to: 9, label: '0.5' },
+               { from: 4, to: 9, label: '0.6' },
+               { from: 9, to: 10, label: '0.9' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = {
+               nodes: nodes,
+               edges: edges
+           };
+           const options = {
+               nodes: {
+                   shape: 'box',
+                   margin: 10,
+                   font: {
+                       size: 14
+                   }
+               },
+               edges: {
+                   arrows: 'to',
+                   smooth: {
+                       type: 'cubicBezier',
+                       forceDirection: 'horizontal',
+                       roundness: 0.4
+                   }
+               },
+               layout: {
+                   hierarchical: {
+                       direction: 'LR',
+                       sortMethod: 'directed'
+                   }
+               },
+               physics: false
+           };
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initEngagementForecastChart();
+           initCashbackRedemptionChart();
+           initTravelRewardsChart();
+           initPointsAccumulationChart();
+           initSegmentPreferencesChart();
+           initRewardROIChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

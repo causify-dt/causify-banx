@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Credit Cards Customer Engagement</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Customer Engagement</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Engagement Score</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">70%</div>
+                                   <div class="text-sm text-green-600">
+                                       <i class="fas fa-arrow-up"></i> Predicted increase to 75%
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Lifetime Value (CLV)</h3>
+                               <p class="text-sm text-gray-500">(90% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$5,000</div>
+                                   <div class="text-sm text-green-600">
+                                       <i class="fas fa-arrow-up"></i> Predicted increase to $5,500
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Engagement by Age Group (18-34)</h3>
+                               <p class="text-sm text-gray-500">(80% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">50%</div>
+                                   <div class="text-sm text-green-600">
+                                       <i class="fas fa-arrow-up"></i> Predicted increase to 55%
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Retention Rate for Engaged Customers</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">90%</div>
+                                   <div class="text-sm text-green-600">
+                                       <i class="fas fa-arrow-up"></i> Predicted increase to 92%
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Personalized marketing and offers are driving higher engagement across key customer segments.</li>
+                           <li>Engaged customers show higher lifetime value, contributing more to overall profitability.</li>
+                           <li>Younger customers are showing higher engagement rates, especially with targeted digital offers.</li>
+                           <li>If the current trend continues, we project a 15% increase in overall customer engagement score by next quarter, potentially boosting CLV by 20% (Confidence: 88%).</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Engagement Drivers <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Engagement by Segment <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="engagementSegmentChart"></canvas>
+                               </div>
+                               <p id="engagementSegmentExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">CLV Growth for Engaged Customers <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clvGrowthChart"></canvas>
+                               </div>
+                               <p id="clvGrowthExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Engagement Channel Performance <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="channelPerformanceChart"></canvas>
+                               </div>
+                               <p id="channelPerformanceExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Retention Rate Trend <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="retentionRateChart"></canvas>
+                               </div>
+                               <p id="retentionRateExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Engagement Score Distribution <span class="text-sm font-normal text-gray-500">(86% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="engagementScoreDistributionChart"></canvas>
+                               </div>
+                               <p id="engagementScoreDistributionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Product Usage Correlation <span class="text-sm font-normal text-gray-500">(84% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="productUsageCorrelationChart"></canvas>
+                               </div>
+                               <p id="productUsageCorrelationExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function generateTimeSeriesData(baseValue, monthsBack, monthsForward, trendPercentage) {
+           const data = [];
+           const historicalDataPoints = monthsBack + 1;
+           const totalDataPoints = monthsBack + monthsForward + 1;
+           
+           for (let i = 0; i < totalDataPoints; i++) {
+               if (i < historicalDataPoints) {
+                   data.push(baseValue * (1 + (i / historicalDataPoints) * (trendPercentage / 100)));
+               } else {
+                   data.push(null);
+               }
+           }
+           
+           const forecastData = [];
+           for (let i = 0; i < totalDataPoints; i++) {
+               if (i < historicalDataPoints - 1) {
+                   forecastData.push(null);
+               } else {
+                   forecastData.push(baseValue * (1 + (i / totalDataPoints) * (trendPercentage / 100)));
+               }
+           }
+           
+           return { historical: data, forecast: forecastData };
+       }
+
+       function initEngagementSegmentChart() {
+           const ctx = document.getElementById('engagementSegmentChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(50, 9, 3, 10);
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [
+                       {
+                           label: 'Premium',
+                           data: data.historical.map(v => v * 1.2),
+                           borderColor: 'rgba(75, 192, 192, 1)',
+                           tension: 0.1
+                       },
+                       {
+                           label: 'Standard',
+                           data: data.historical,
+                           borderColor: 'rgba(255, 99, 132, 1)',
+                           tension: 0.1
+                       },
+                       {
+                           label: 'Basic',
+                           data: data.historical.map(v => v * 0.8),
+                           borderColor: 'rgba(255, 206, 86, 1)',
+                           tension: 0.1
+                       },
+                       {
+                           label: 'Premium (Forecast)',
+                           data: data.forecast.map(v => v ? v * 1.2 : null),
+                           borderColor: 'rgba(75, 192, 192, 1)',
+                           borderDash: [5, 5],
+                           tension: 0.1
+                       },
+                       {
+                           label: 'Standard (Forecast)',
+                           data: data.forecast,
+                           borderColor: 'rgba(255, 99, 132, 1)',
+                           borderDash: [5, 5],
+                           tension: 0.1
+                       },
+                       {
+                           label: 'Basic (Forecast)',
+                           data: data.forecast.map(v => v ? v * 0.8 : null),
+                           borderColor: 'rgba(255, 206, 86, 1)',
+                           borderDash: [5, 5],
+                           tension: 0.1
+                       }
+                   ]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Engagement Score'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('engagementSegmentExplanation').textContent = 
+               'Premium segment shows highest engagement, predicted to increase by 15% over next quarter. Standard segment growth plateauing, while Basic segment shows potential for 10% growth with targeted initiatives.';
+       }
+
+       function initCLVGrowthChart() {
+           const ctx = document.getElementById('clvGrowthChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(5000, 9, 3, 15);
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [
+                       {
+                           label: 'Historical CLV',
+                           data: data.historical,
+                           borderColor: 'rgba(75, 192, 192, 1)',
+                           tension: 0.1
+                       },
+                       {
+                           label: 'Forecast CLV',
+                           data: data.forecast,
+                           borderColor: 'rgba(255, 99, 132, 1)',
+                           borderDash: [5, 5],
+                           tension: 0.1
+                       }
+                   ]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Customer Lifetime Value ($)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('clvGrowthExplanation').textContent = 
+               'CLV for engaged customers projected to grow by 15% over next quarter, driven by increased product adoption and higher transaction volumes. Personalized offers contributing to 40% of the growth.';
+       }
+
+       function initChannelPerformanceChart() {
+           const ctx = document.getElementById('channelPerformanceChart').getContext('2d');
+           const data = {
+               labels: ['Mobile App', 'Website', 'Email', 'Social Media', 'In-Person'],
+               datasets: [
+                   {
+                       label: 'Current Quarter',
+                       data: [65, 59, 80, 81, 56],
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                   },
+                   {
+                       label: 'Next Quarter (Predicted)',
+                       data: [70, 65, 82, 85, 58],
+                       backgroundColor: 'rgba(255, 99, 132, 0.6)'
+                   }
+               ]
+           };
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Engagement Score'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('channelPerformanceExplanation').textContent = 
+               'Mobile app and social media channels show highest growth potential. Predicted 8% increase in mobile app engagement due to new features. Social media engagement expected to grow by 5% with targeted campaigns.';
+       }
+
+       function initRetentionRateChart() {
+           const ctx = document.getElementById('retentionRateChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(90, 9, 3, 2);
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [
+                       {
+                           label: 'Historical Retention Rate',
+                           data: data.historical,
+                           borderColor: 'rgba(75, 192, 192, 1)',
+                           tension: 0.1
+                       },
+                       {
+                           label: 'Forecast Retention Rate',
+                           data: data.forecast,
+                           borderColor: 'rgba(255, 99, 132, 1)',
+                           borderDash: [5, 5],
+                           tension: 0.1
+                       }
+                   ]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           min: 85,
+                           max: 100,
+                           title: {
+                               display: true,
+                               text: 'Retention Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('retentionRateExplanation').textContent = 
+               'Retention rate for engaged customers projected to increase from 90% to 92% next quarter. Key drivers: improved customer service (30% impact) and personalized loyalty programs (25% impact).';
+       }
+
+       function initEngagementScoreDistributionChart() {
+           const ctx = document.getElementById('engagementScoreDistributionChart').getContext('2d');
+           const data = {
+               labels: ['0-20', '21-40', '41-60', '61-80', '81-100'],
+               datasets: [
+                   {
+                       label: 'Current Distribution',
+                       data: [5, 15, 30, 35, 15],
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                   },
+                   {
+                       label: 'Predicted Distribution',
+                       data: [3, 12, 28, 37, 20],
+                       backgroundColor: 'rgba(255, 99, 132, 0.6)'
+                   }
+               ]
+           };
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Percentage of Customers'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('engagementScoreDistributionExplanation').textContent = 
+               'Predicted 33% increase in highly engaged customers (81-100 score). Key driver: AI-powered personalization engine, contributing to 60% of the improvement.';
+       }
+
+       function initProductUsageCorrelationChart() {
+           const ctx = document.getElementById('productUsageCorrelationChart').getContext('2d');
+           const data = {
+               labels: ['Credit Card', 'Savings Account', 'Personal Loan', 'Mortgage', 'Investment'],
+               datasets: [
+                   {
+                       label: 'Correlation with Engagement Score',
+                       data: [0.75, 0.62, 0.58, 0.7, 0.8],
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       borderWidth: 1
+                   }
+               ]
+           };
+
+           new Chart(ctx, {
+               type: 'radar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       r: {
+                           beginAtZero: true,
+                           max: 1
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('productUsageCorrelationExplanation').textContent = 
+               'Investment products show strongest correlation with engagement (0.8). Recommendation: Develop cross-sell strategies for investment products to boost overall engagement.';
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Customer Engagement', color: '#4CAF50' },
+               { id: 2, label: 'Personalized Offers', color: '#2196F3' },
+               { id: 3, label: 'Mobile App Usage', color: '#FFC107' },
+               { id: 4, label: 'Product Knowledge', color: '#9C27B0' },
+               { id: 5, label: 'Customer Service', color: '#F44336' },
+               { id: 6, label: 'Loyalty Program', color: '#FF9800' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 2, to: 1, label: '0.7', arrows: 'to' },
+               { from: 3, to: 1, label: '0.6', arrows: 'to' },
+               { from: 4, to: 1, label: '0.5', arrows: 'to' },
+               { from: 5, to: 1, label: '0.4', arrows: 'to' },
+               { from: 6, to: 1, label: '0.5', arrows: 'to' },
+               { from: 2, to: 3, label: '0.3', arrows: 'to' },
+               { from: 4, to: 2, label: '0.4', arrows: 'to' },
+               { from: 5, to: 6, label: '0.2', arrows: 'to' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'circle',
+                   size: 30,
+                   font: {
+                       size: 14
+                   }
+               },
+               edges: {
+                   font: {
+                       size: 14,
+                       align: 'middle'
+                   },
+                   color: { color: '#666', highlight: '#000' },
+                   arrows: { to: { enabled: true, scaleFactor: 0.5 } }
+               },
+               physics: {
+                   enabled: true,
+                   barnesHut: {
+                       gravitationalConstant: -2000,
+                       centralGravity: 0.3,
+                       springLength: 95,
+                       springConstant: 0.04,
+                       damping: 0.09,
+                       avoidOverlap: 0.1
+                   }
+               }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initEngagementSegmentChart();
+           initCLVGrowthChart();
+           initChannelPerformanceChart();
+           initRetentionRateChart();
+           initEngagementScoreDistributionChart();
+           initProductUsageCorrelationChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

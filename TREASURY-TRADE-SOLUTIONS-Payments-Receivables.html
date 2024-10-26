@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Treasury and Trade Solutions: Payments and Receivables</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Payments and Receivables</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Payment Volume</h3>
+                               <p class="text-sm text-gray-500"></p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$3.72B</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up mr-1"></i>5.2% ($3.91B)
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Transaction Count</h3>
+                               <p class="text-sm text-gray-500"></p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">8.45M</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up mr-1"></i>3.8% (8.77M)
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">STP Rate</h3>
+                               <p class="text-sm text-gray-500"></p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">92.3%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up mr-1"></i>1.5% (93.7%)
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Receivables Turnover</h3>
+                               <p class="text-sm text-gray-500"></p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">9.8 days</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-down mr-1"></i>4.1% (9.4 days)
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Global payment volumes projected to increase by 7.3% in Q4, driven by expansion in emerging markets and increased cross-border transactions. (Confidence: 89%)</li>
+                           <li>Straight-through processing (STP) rates expected to improve by 2.1 percentage points due to AI-powered anomaly detection and enhanced data validation. (Confidence: 92%)</li>
+                           <li>Receivables turnover forecasted to decrease by 0.7 days, primarily attributed to the implementation of automated invoice matching and improved cash application processes. (Confidence: 87%)</li>
+                           <li>Counterfactual: If global trade tensions escalate, payment volumes could potentially decrease by 4.2%, offsetting the projected growth. Mitigation strategies include diversifying payment corridors and enhancing FX risk management tools. (Confidence: 78%)</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Payment Processing Efficiency <span class="text-sm font-normal text-gray-500">(84% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Payment Volume Trend <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="paymentVolumeChart"></canvas>
+                               </div>
+                               <p id="paymentVolumeChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Transaction Count by Channel <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="transactionCountChart"></canvas>
+                               </div>
+                               <p id="transactionCountChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">STP Rate Improvement <span class="text-sm font-normal text-gray-500">(93% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="stpRateChart"></canvas>
+                               </div>
+                               <p id="stpRateChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Receivables Turnover by Industry <span class="text-sm font-normal text-gray-500">(86% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="receivablesTurnoverChart"></canvas>
+                               </div>
+                               <p id="receivablesTurnoverChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cross-Border Payment Volume <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="crossBorderPaymentChart"></canvas>
+                               </div>
+                               <p id="crossBorderPaymentChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Payment Method Distribution <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="paymentMethodChart"></canvas>
+                               </div>
+                               <p id="paymentMethodChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           const today = new Date();
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initPaymentVolumeChart() {
+           const ctx = document.getElementById('paymentVolumeChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Payment Volume (Billion $)',
+                   data: [3.15, 3.22, 3.30, 3.38, 3.45, 3.53, 3.60, 3.68, 3.72, 3.79, 3.85, 3.91],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true,
+                   pointRadius: 0,
+                   borderWidth: 2,
+                   segment: {
+                       borderColor: ctx => ctx.p0.parsed.x >= 9 ? 'rgba(255, 99, 132, 1)' : undefined,
+                       borderDash: ctx => ctx.p0.parsed.x >= 9 ? [5, 5] : undefined,
+                   }
+               }]
+           };
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Volume (Billion $)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       },
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= 9 ? 'Forecast' : 'Historical';
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('paymentVolumeChartExplanation', 'Payment volumes projected to grow by 5.2% in the next quarter, driven by increased digital adoption and expansion in emerging markets.');
+       }
+
+       function initTransactionCountChart() {
+           const ctx = document.getElementById('transactionCountChart').getContext('2d');
+           const data = {
+               labels: ['API', 'Web Portal', 'Mobile App', 'File Transfer', 'Branch'],
+               datasets: [{
+                   label: 'Current',
+                   data: [3.2, 2.1, 1.5, 1.1, 0.55],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)',
+               }, {
+                   label: 'Forecast (Next Quarter)',
+                   data: [3.5, 2.3, 1.7, 1.0, 0.47],
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)',
+               }]
+           };
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Transaction Count (Million)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('transactionCountChartExplanation', 'API and mobile app transactions expected to grow by 9.4% and 13.3% respectively, while branch transactions are forecasted to decline by 14.5%.');
+       }
+
+       function initSTPRateChart() {
+           const ctx = document.getElementById('stpRateChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'STP Rate (%)',
+                   data: [89.5, 90.1, 90.6, 91.0, 91.4, 91.7, 92.0, 92.2, 92.3, 92.8, 93.2, 93.7],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true,
+                   pointRadius: 0,
+                   borderWidth: 2,
+                   segment: {
+                       borderColor: ctx => ctx.p0.parsed.x >= 9 ? 'rgba(255, 99, 132, 1)' : undefined,
+                       borderDash: ctx => ctx.p0.parsed.x >= 9 ? [5, 5] : undefined,
+                   }
+               }]
+           };
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'STP Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       },
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= 9 ? 'Forecast' : 'Historical';
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('stpRateChartExplanation', 'STP rate projected to improve by 1.5 percentage points, primarily due to enhanced data validation and AI-powered error detection.');
+       }
+
+       function initReceivablesTurnoverChart() {
+           const ctx = document.getElementById('receivablesTurnoverChart').getContext('2d');
+           const data = {
+               labels: ['Technology', 'Manufacturing', 'Retail', 'Healthcare', 'Financial Services'],
+               datasets: [{
+                   label: 'Current',
+                   data: [8.2, 11.5, 9.8, 12.3, 7.5],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)',
+               }, {
+                   label: 'Forecast (Next Quarter)',
+                   data: [7.8, 11.1, 9.4, 11.8, 7.2],
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)',
+               }]
+           };
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Days Sales Outstanding (DSO)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('receivablesTurnoverChartExplanation', 'Receivables turnover expected to improve across all industries, with technology sector showing the most significant reduction of 0.4 days in DSO.');
+       }
+
+       function initCrossBorderPaymentChart() {
+           const ctx = document.getElementById('crossBorderPaymentChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Cross-Border Payment Volume (Billion $)',
+                   data: [0.95, 0.98, 1.02, 1.05, 1.09, 1.12, 1.16, 1.19, 1.22, 1.26, 1.29, 1.33],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true,
+                   pointRadius: 0,
+                   borderWidth: 2,
+                   segment: {
+                       borderColor: ctx => ctx.p0.parsed.x >= 9 ? 'rgba(255, 99, 132, 1)' : undefined,
+                       borderDash: ctx => ctx.p0.parsed.x >= 9 ? [5, 5] : undefined,
+                   }
+               }]
+           };
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Volume (Billion $)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       },
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= 9 ? 'Forecast' : 'Historical';
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('crossBorderPaymentChartExplanation', 'Cross-border payment volumes expected to grow by 9.0% in the next quarter, driven by increased global trade and e-commerce activities.');
+       }
+
+       function initPaymentMethodChart() {
+           const ctx = document.getElementById('paymentMethodChart').getContext('2d');
+           const data = {
+               labels: ['ACH', 'Wire Transfer', 'Credit Card', 'Real-Time Payments', 'Check'],
+               datasets: [{
+                   data: [42, 28, 15, 10, 5],
+                   backgroundColor: [
+                       'rgba(255, 99, 132, 0.8)',
+                       'rgba(54, 162, 235, 0.8)',
+                       'rgba(255, 206, 86, 0.8)',
+                       'rgba(75, 192, 192, 0.8)',
+                       'rgba(153, 102, 255, 0.8)'
+                   ]
+               }]
+           };
+           new Chart(ctx, {
+               type: 'doughnut',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           position: 'right'
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('paymentMethodChartExplanation', 'Real-time payments expected to grow by 40% in the next quarter, while check payments are forecasted to decline by 20%. ACH and wire transfers remain dominant but with slower growth rates.');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Payment Volume', color: '#FFA500' },
+               { id: 2, label: 'STP Rate', color: '#00CED1' },
+               { id: 3, label: 'Transaction Count', color: '#FF69B4' },
+               { id: 4, label: 'Receivables Turnover', color: '#32CD32' },
+               { id: 5, label: 'Digital Adoption', color: '#9370DB' },
+               { id: 6, label: 'AI/ML Integration', color: '#FF6347' },
+               { id: 7, label: 'Regulatory Changes', color: '#4682B4' },
+               { id: 8, label: 'Global Economic Factors', color: '#DAA520' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 5, to: 1, label: '0.75', arrows: 'to' },
+               { from: 5, to: 3, label: '0.68', arrows: 'to' },
+               { from: 6, to: 2, label: '0.82', arrows: 'to' },
+               { from: 6, to: 4, label: '0.61', arrows: 'to' },
+               { from: 7, to: 1, label: '0.45', arrows: 'to' },
+               { from: 7, to: 2, label: '0.53', arrows: 'to' },
+               { from: 8, to: 1, label: '0.70', arrows: 'to' },
+               { from: 8, to: 4, label: '0.58', arrows: 'to' },
+               { from: 3, to: 1, label: '0.89', arrows: 'to' },
+               { from: 2, to: 4, label: '0.72', arrows: 'to' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 20,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   arrows: { to: { enabled: true, scaleFactor: 0.5 } }
+               },
+               physics: {
+                   enabled: true,
+                   barnesHut: {
+                       gravitationalConstant: -2000,
+                       centralGravity: 0.3,
+                       springLength: 95,
+                       springConstant: 0.04,
+                       damping: 0.09,
+                       avoidOverlap: 0.1
+                   }
+               }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initPaymentVolumeChart();
+           initTransactionCountChart();
+           initSTPRateChart();
+           initReceivablesTurnoverChart();
+           initCrossBorderPaymentChart();
+           initPaymentMethodChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Corporate Accounts Client Profitability Analysis</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Client Profitability Analysis</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Top 10% Client Profit Contribution</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">60%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up mr-1"></i>
+                                       Predicted increase to 65% next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue per Client</h3>
+                               <p class="text-sm text-gray-500">88% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$500,000</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up mr-1"></i>
+                                       Predicted increase to $525,000 next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Profitability of High-Value Clients</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">70%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up mr-1"></i>
+                                       Predicted increase to 72% with new premium services
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Retention for Top-Tier Accounts</h3>
+                               <p class="text-sm text-gray-500">82% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">90%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up mr-1"></i>
+                                       Increase to 92% with loyalty programs
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>The top 10% of clients are contributing more to overall profitability as premium services are adopted.</li>
+                           <li>Revenue per client is increasing, particularly from high-value clients in the tech and real estate sectors.</li>
+                           <li>Loyalty programs and tailored services are improving retention rates for top-tier clients.</li>
+                           <li>Counterfactual: If we had not implemented the new premium services, high-value client profitability would have remained stagnant at 70%, potentially leading to a 5% decrease in overall revenue.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Client Profitability Flow Map <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Top Client Profit Contribution <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="topClientProfitChart"></canvas>
+                               </div>
+                               <p id="topClientProfitExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue per Client Growth <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="revenuePerClientChart"></canvas>
+                               </div>
+                               <p id="revenuePerClientExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">High-Value Client Profitability <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="highValueClientChart"></canvas>
+                               </div>
+                               <p id="highValueClientExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Top-Tier Account Retention <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="topTierRetentionChart"></canvas>
+                               </div>
+                               <p id="topTierRetentionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Premium Services Adoption <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="premiumServicesChart"></canvas>
+                               </div>
+                               <p id="premiumServicesExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Sector-wise Client Profitability <span class="text-sm font-normal text-gray-500">(86% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="sectorProfitabilityChart"></canvas>
+                               </div>
+                               <p id="sectorProfitabilityExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function generateTimeSeriesData(monthsBack, monthsForward, startValue, growthRate) {
+           const data = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const value = startValue * Math.pow(1 + growthRate, i);
+               data.push(parseFloat(value.toFixed(2)));
+           }
+           return data;
+       }
+
+       function initChart(chartId, type, labels, datasets, yAxisLabel, tooltipLabel) {
+           const ctx = document.getElementById(chartId).getContext('2d');
+           const totalDataPoints = labels.length;
+           const transitionPoint = Math.floor(totalDataPoints * 0.75);
+
+           return new Chart(ctx, {
+               type: type,
+               data: {
+                   labels: labels,
+                   datasets: datasets.map(dataset => ({
+                       ...dataset,
+                       borderWidth: 2,
+                       pointRadius: 0,
+                       tension: 0.4,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= transitionPoint ? [6, 6] : undefined,
+                       }
+                   }))
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: {
+                           grid: {
+                               display: false
+                           }
+                       },
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: yAxisLabel
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       },
+                       tooltip: {
+                           callbacks: {
+                               label: function(context) {
+                                   let label = context.dataset.label || '';
+                                   if (label) {
+                                       label += ': ';
+                                   }
+                                   if (context.parsed.y !== null) {
+                                       label += tooltipLabel(context.parsed.y);
+                                   }
+                                   return label;
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+       }
+
+       function initTopClientProfitChart() {
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(9, 3, 60, 0.01);
+           initChart('topClientProfitChart', 'line', labels, [{
+               label: 'Top 10% Client Profit Contribution',
+               data: data,
+               borderColor: 'rgba(75, 192, 192, 1)',
+               backgroundColor: 'rgba(75, 192, 192, 0.2)',
+               fill: true
+           }], 'Contribution (%)', value => `${value.toFixed(2)}%`);
+           document.getElementById('topClientProfitExplanation').textContent = 'Forecast: Top 10% client profit contribution expected to rise to 65% due to increased adoption of premium services and targeted relationship management strategies.';
+       }
+
+       function initRevenuePerClientChart() {
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(9, 3, 500000, 0.005);
+           initChart('revenuePerClientChart', 'line', labels, [{
+               label: 'Revenue per Client',
+               data: data,
+               borderColor: 'rgba(255, 99, 132, 1)',
+               backgroundColor: 'rgba(255, 99, 132, 0.2)',
+               fill: true
+           }], 'Revenue ($)', value => `$${value.toFixed(0)}`);
+           document.getElementById('revenuePerClientExplanation').textContent = 'Prediction: Revenue per client projected to increase to $525,000, driven by cross-selling of high-margin products and personalized financial solutions.';
+       }
+
+       function initHighValueClientChart() {
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(9, 3, 70, 0.003);
+           initChart('highValueClientChart', 'line', labels, [{
+               label: 'High-Value Client Profitability',
+               data: data,
+               borderColor: 'rgba(255, 206, 86, 1)',
+               backgroundColor: 'rgba(255, 206, 86, 0.2)',
+               fill: true
+           }], 'Profitability (%)', value => `${value.toFixed(2)}%`);
+           document.getElementById('highValueClientExplanation').textContent = 'Forecast: High-value client profitability expected to reach 72% with the introduction of new premium services and tailored financial advisory.';
+       }
+
+       function initTopTierRetentionChart() {
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(9, 3, 90, 0.002);
+           initChart('topTierRetentionChart', 'line', labels, [{
+               label: 'Top-Tier Account Retention',
+               data: data,
+               borderColor: 'rgba(153, 102, 255, 1)',
+               backgroundColor: 'rgba(153, 102, 255, 0.2)',
+               fill: true
+           }], 'Retention Rate (%)', value => `${value.toFixed(2)}%`);
+           document.getElementById('topTierRetentionExplanation').textContent = 'Prediction: Top-tier account retention rate to improve to 92% through enhanced loyalty programs and personalized relationship management.';
+       }
+
+       function initPremiumServicesChart() {
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(9, 3, 40, 0.02);
+           initChart('premiumServicesChart', 'line', labels, [{
+               label: 'Premium Services Adoption',
+               data: data,
+               borderColor: 'rgba(75, 192, 192, 1)',
+               backgroundColor: 'rgba(75, 192, 192, 0.2)',
+               fill: true
+           }], 'Adoption Rate (%)', value => `${value.toFixed(2)}%`);
+           document.getElementById('premiumServicesExplanation').textContent = 'Forecast: Premium services adoption rate expected to grow to 52% next quarter, driven by new product launches and targeted marketing campaigns.';
+       }
+
+       function initSectorProfitabilityChart() {
+           const ctx = document.getElementById('sectorProfitabilityChart').getContext('2d');
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: ['Technology', 'Real Estate', 'Finance', 'Healthcare', 'Manufacturing'],
+                   datasets: [{
+                       label: 'Current Profitability',
+                       data: [28, 22, 20, 18, 15],
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                   }, {
+                       label: 'Predicted Profitability',
+                       data: [32, 25, 22, 20, 17],
+                       backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Profitability (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'top',
+                       },
+                       tooltip: {
+                           callbacks: {
+                               label: function(context) {
+                                   let label = context.dataset.label || '';
+                                   if (label) {
+                                       label += ': ';
+                                   }
+                                   if (context.parsed.y !== null) {
+                                       label += context.parsed.y + '%';
+                                   }
+                                   return label;
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+           document.getElementById('sectorProfitabilityExplanation').textContent = 'Prediction: Technology sector profitability expected to increase from 28% to 32% due to rapid digital transformation and increased demand for fintech solutions.';
+       }
+
+       function initCausalNetworkGraph() {
+           const container = document.getElementById('causalNetworkGraph');
+           const data = {
+               nodes: [
+                   {id: 1, label: 'Premium Services', color: '#97C2FC'},
+                   {id: 2, label: 'Client Retention', color: '#FFFF00'},
+                   {id: 3, label: 'Revenue per Client', color: '#FB7E81'},
+                   {id: 4, label: 'Top 10% Profit', color: '#7BE141'},
+                   {id: 5, label: 'Loyalty Programs', color: '#FFA807'},
+                   {id: 6, label: 'Tailored Solutions', color: '#6E6EFD'}
+               ],
+               edges: [
+                   {from: 1, to: 2, label: '+15%'},
+                   {from: 1, to: 3, label: '+10%'},
+                   {from: 1, to: 4, label: '+20%'},
+                   {from: 5, to: 2, label: '+8%'},
+                   {from: 5, to: 3, label: '+5%'},
+                   {from: 6, to: 3, label: '+12%'},
+                   {from: 6, to: 4, label: '+18%'}
+               ]
+           };
+           const options = {
+               nodes: {
+                   shape: 'box',
+                   margin: 10,
+                   widthConstraint: {
+                       maximum: 120
+                   }
+               },
+               edges: {
+                   arrows: {to: true},
+                   smooth: {type: 'cubicBezier'}
+               },
+               physics: false,
+               layout: {
+                   hierarchical: {
+                       direction: 'UD',
+                       sortMethod: 'directed',
+                       nodeSpacing: 150,
+                       levelSeparation: 150
+                   }
+               }
+           };
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initTopClientProfitChart();
+           initRevenuePerClientChart();
+           initHighValueClientChart();
+           initTopTierRetentionChart();
+           initPremiumServicesChart();
+           initSectorProfitabilityChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

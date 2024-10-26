@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Capital Raising and Syndication</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Capital Raising and Syndication</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Capital Raised from Syndication</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$500 million</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> Predicted increase to $550 million next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Syndication Deal Volume</h3>
+                               <p class="text-sm text-gray-500">(88% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">30 deals</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> Predicted increase to 35 next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue from Syndicated Deals</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$100 million</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> Predicted increase to $110 million next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Syndication Success Rate</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">90%</div>
+                                   <div class="text-sm text-gray-600"><i class="fas fa-equals"></i> Predicted stability in success rates</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Capital raising activity through syndication is projected to grow by 12% in the next quarter, driven by increased demand in infrastructure and real estate sectors. (Confidence: 87%)</li>
+                           <li>Syndication deal volume is expected to rise by 16%, with a notable surge in cross-border transactions, particularly in emerging markets. (Confidence: 85%)</li>
+                           <li>Revenue from syndicated deals is forecasted to increase by 10%, primarily due to larger, more complex deals in the technology and healthcare sectors. (Confidence: 83%)</li>
+                           <li>If interest rates stabilize, we predict a 20% increase in long-term infrastructure financing deals, potentially boosting overall syndication volume by an additional 5%. (Confidence: 80%)</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Syndication Success Drivers <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Capital Raised from Syndication Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="capitalRaisedChart"></canvas>
+                               </div>
+                               <p id="capitalRaisedExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Syndication Deal Volume Growth <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="dealVolumeChart"></canvas>
+                               </div>
+                               <p id="dealVolumeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue from Syndicated Deals Trend <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="revenueChart"></canvas>
+                               </div>
+                               <p id="revenueExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Syndication Success Rate Analysis <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="successRateChart"></canvas>
+                               </div>
+                               <p id="successRateExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Sector-wise Syndication Distribution <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="sectorDistributionChart"></canvas>
+                               </div>
+                               <p id="sectorDistributionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Geographic Distribution of Syndicated Deals <span class="text-sm font-normal text-gray-500">(86% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="geographicDistributionChart"></canvas>
+                               </div>
+                               <p id="geographicDistributionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function generateTimeSeriesData(startValue, growth, volatility, monthsBack, monthsForward) {
+           const historical = [];
+           const forecast = [];
+           let value = startValue;
+
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               value *= (1 + growth + (Math.random() - 0.5) * volatility);
+               if (i < 0) {
+                   historical.push(value);
+                   forecast.push(null);
+               } else if (i === 0) {
+                   historical.push(value);
+                   forecast.push(value);
+               } else {
+                   historical.push(null);
+                   forecast.push(value);
+               }
+           }
+
+           return { historical, forecast };
+       }
+
+       function initChart(canvasId, chartType, labels, datasets, yAxisTitle, explanationId, explanation) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           new Chart(ctx, {
+               type: chartType,
+               data: { labels, datasets },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: { display: true, text: yAxisTitle }
+                       }
+                   },
+                   plugins: {
+                       legend: { position: chartType === 'pie' ? 'right' : 'bottom' }
+                   }
+               }
+           });
+           document.getElementById(explanationId).textContent = explanation;
+       }
+
+       function initCapitalRaisedChart() {
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(450, 0.02, 0.05, 9, 3);
+           initChart('capitalRaisedChart', 'line', labels, [
+               {
+                   label: 'Historical',
+                   data: data.historical,
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   tension: 0.1
+               },
+               {
+                   label: 'Forecast',
+                   data: data.forecast,
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   tension: 0.1
+               }
+           ], 'Capital Raised ($ millions)', 'capitalRaisedExplanation',
+           'Forecast: 10% increase in capital raised over the next quarter, driven by growing demand in infrastructure and real estate sectors.');
+       }
+
+       function initDealVolumeChart() {
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(25, 0.03, 0.1, 9, 3);
+           initChart('dealVolumeChart', 'line', labels, [
+               {
+                   label: 'Historical',
+                   data: data.historical,
+                   borderColor: 'rgba(153, 102, 255, 1)',
+                   tension: 0.1
+               },
+               {
+                   label: 'Forecast',
+                   data: data.forecast,
+                   borderColor: 'rgba(255, 159, 64, 1)',
+                   borderDash: [5, 5],
+                   tension: 0.1
+               }
+           ], 'Number of Deals', 'dealVolumeExplanation',
+           'Prediction: 16% increase in deal volume, with a notable surge in cross-border transactions, particularly in emerging markets.');
+       }
+
+       function initRevenueChart() {
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(90, 0.015, 0.03, 9, 3);
+           initChart('revenueChart', 'line', labels, [
+               {
+                   label: 'Historical',
+                   data: data.historical,
+                   borderColor: 'rgba(255, 206, 86, 1)',
+                   tension: 0.1
+               },
+               {
+                   label: 'Forecast',
+                   data: data.forecast,
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   borderDash: [5, 5],
+                   tension: 0.1
+               }
+           ], 'Revenue ($ millions)', 'revenueExplanation',
+           'Forecast: 10% increase in revenue from syndicated deals, primarily due to larger, more complex deals in technology and healthcare sectors.');
+       }
+
+       function initSuccessRateChart() {
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(88, 0.005, 0.02, 9, 3);
+           initChart('successRateChart', 'line', labels, [
+               {
+                   label: 'Historical',
+                   data: data.historical,
+                   borderColor: 'rgba(54, 162, 235, 1)',
+                   tension: 0.1
+               },
+               {
+                   label: 'Forecast',
+                   data: data.forecast,
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   tension: 0.1
+               }
+           ], 'Success Rate (%)', 'successRateExplanation',
+           'Prediction: Stability in syndication success rates, with a slight upward trend due to improved risk assessment models and market expertise.');
+       }
+
+       function initSectorDistributionChart() {
+           initChart('sectorDistributionChart', 'pie', 
+               ['Infrastructure', 'Real Estate', 'Technology', 'Healthcare', 'Energy', 'Others'],
+               [{
+                   data: [30, 25, 20, 15, 7, 3],
+                   backgroundColor: [
+                       'rgba(255, 99, 132, 0.8)',
+                       'rgba(54, 162, 235, 0.8)',
+                       'rgba(255, 206, 86, 0.8)',
+                       'rgba(75, 192, 192, 0.8)',
+                       'rgba(153, 102, 255, 0.8)',
+                       'rgba(255, 159, 64, 0.8)'
+                   ]
+               }],
+               '', 'sectorDistributionExplanation',
+               'Forecast: Infrastructure and real estate sectors to dominate, accounting for 55% of syndicated deals. Technology sector showing rapid growth, expected to increase by 5% in the next quarter.');
+       }
+
+       function initGeographicDistributionChart() {
+           initChart('geographicDistributionChart', 'bar',
+               ['North America', 'Europe', 'Asia Pacific', 'Latin America', 'Middle East & Africa'],
+               [{
+                   label: 'Current Quarter',
+                   data: [35, 30, 20, 10, 5],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)'
+               },
+               {
+                   label: 'Next Quarter (Forecast)',
+                   data: [33, 28, 24, 11, 4],
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)'
+               }],
+               'Distribution (%)', 'geographicDistributionExplanation',
+               'Prediction: Asia Pacific to see the highest growth (20% increase) in syndicated deals, driven by infrastructure projects and cross-border transactions. North America and Europe to maintain dominant positions but with slight decreases.');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Market Conditions', shape: 'circle' },
+               { id: 2, label: 'Regulatory Environment', shape: 'circle' },
+               { id: 3, label: 'Deal Complexity', shape: 'circle' },
+               { id: 4, label: 'Investor Appetite', shape: 'circle' },
+               { id: 5, label: 'Syndication Success', shape: 'circle' },
+               { id: 6, label: 'Bank Reputation', shape: 'circle' },
+               { id: 7, label: 'Sector Trends', shape: 'circle' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 4, label: '0.7' },
+               { from: 1, to: 5, label: '0.6' },
+               { from: 2, to: 3, label: '0.5' },
+               { from: 2, to: 5, label: '0.4' },
+               { from: 3, to: 5, label: '0.8' },
+               { from: 4, to: 5, label: '0.9' },
+               { from: 6, to: 4, label: '0.6' },
+               { from: 6, to: 5, label: '0.7' },
+               { from: 7, to: 3, label: '0.5' },
+               { from: 7, to: 4, label: '0.6' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'circle',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   arrows: { to: { enabled: true, scaleFactor: 0.5 } }
+               },
+               physics: { enabled: false },
+               layout: { randomSeed: 2 }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initCapitalRaisedChart();
+           initDealVolumeChart();
+           initRevenueChart();
+           initSuccessRateChart();
+           initSectorDistributionChart();
+           initGeographicDistributionChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

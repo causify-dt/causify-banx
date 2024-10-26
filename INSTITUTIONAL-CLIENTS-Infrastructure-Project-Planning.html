@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Infrastructure Project Financing</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Infrastructure Project Financing</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Project Approval Rate</h3>
+                               <p class="text-sm text-gray-500">89% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">73.4%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> 74.2%
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Loan Size</h3>
+                               <p class="text-sm text-gray-500">92% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$52.7M</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> $53.9M
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Risk-Adjusted Return</h3>
+                               <p class="text-sm text-gray-500">87% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">8.3%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> 8.5%
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Project Completion Rate</h3>
+                               <p class="text-sm text-gray-500">91% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">86.2%</div>
+                                   <div class="text-sm text-red-500">
+                                       <i class="fas fa-arrow-down"></i> 85.9%
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Project approval rates are projected to increase by 2.3% in the next quarter, primarily driven by improved risk assessment models and increased government support for green infrastructure initiatives.</li>
+                           <li>Average loan size is expected to grow by 4% due to a shift towards larger, more complex infrastructure projects, particularly in renewable energy and smart city developments.</li>
+                           <li>Risk-adjusted returns are forecasted to improve by 30 basis points, benefiting from enhanced project selection criteria and more favorable economic conditions in key markets.</li>
+                           <li>Counterfactual analysis: If global interest rates were to rise by 50 basis points, project completion rates would likely decrease by 1.8% due to increased financing costs and potential project delays.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Infrastructure Financing Drivers <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Project Approval Trend <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="projectApprovalChart"></canvas>
+                               </div>
+                               <p id="projectApprovalExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Loan Size Distribution <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="loanSizeChart"></canvas>
+                               </div>
+                               <p id="loanSizeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Risk-Adjusted Return by Sector <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="riskAdjustedReturnChart"></canvas>
+                               </div>
+                               <p id="riskAdjustedReturnExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Project Completion Rate <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="projectCompletionChart"></canvas>
+                               </div>
+                               <p id="projectCompletionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Funding Sources <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="fundingSourcesChart"></canvas>
+                               </div>
+                               <p id="fundingSourcesExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Environmental Impact Score <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="environmentalImpactChart"></canvas>
+                               </div>
+                               <p id="environmentalImpactExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           const today = new Date();
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initProjectApprovalChart() {
+           const ctx = document.getElementById('projectApprovalChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [68.2, 69.7, 70.1, 71.5, 72.3, 72.8, 73.1, 73.4, 73.4, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, 73.4, 73.7, 74.0, 74.2],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Approval Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('projectApprovalExplanation', 'Project approval rates are projected to increase to 74.2% by Q3 2024, driven by incremental improvements in risk assessment models and steady government support for sustainable infrastructure projects.');
+       }
+
+       function initLoanSizeChart() {
+           const ctx = document.getElementById('loanSizeChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [47.2, 48.9, 49.5, 50.8, 51.3, 52.0, 52.4, 52.7, 52.7, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, 52.7, 53.2, 53.6, 53.9],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Average Loan Size ($ Million)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('loanSizeExplanation', 'Average loan size is expected to reach $53.9M by Q3 2024, reflecting a gradual shift towards larger infrastructure projects, particularly in renewable energy and urban development sectors.');
+       }
+
+       function initRiskAdjustedReturnChart() {
+           const ctx = document.getElementById('riskAdjustedReturnChart').getContext('2d');
+           const data = {
+               labels: ['Energy', 'Transportation', 'Water', 'Telecom', 'Social Infrastructure'],
+               datasets: [{
+                   label: 'Current',
+                   data: [8.7, 8.2, 7.9, 8.5, 8.1],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)',
+               }, {
+                   label: 'Forecast (Next Quarter)',
+                   data: [8.9, 8.3, 8.1, 8.6, 8.2],
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)',
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Risk-Adjusted Return (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('riskAdjustedReturnExplanation', 'Risk-adjusted returns are projected to improve moderately across all sectors, with energy projects showing the highest increase due to ongoing advancements in renewable technologies and supportive policy environments.');
+       }
+
+       function initProjectCompletionChart() {
+           const ctx = document.getElementById('projectCompletionChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [84.5, 85.2, 85.7, 86.1, 86.4, 86.5, 86.3, 86.2, 86.2, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, 86.2, 86.1, 86.0, 85.9],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Completion Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('projectCompletionExplanation', 'Project completion rates are forecasted to slightly decrease to 85.9% by Q3 2024, potentially due to increased complexity of projects and ongoing global supply chain challenges.');
+       }
+
+       function initFundingSourcesChart() {
+           const ctx = document.getElementById('fundingSourcesChart').getContext('2d');
+           const data = {
+               labels: ['Bank Loans', 'Project Bonds', 'Equity', 'Government Grants', 'Multilateral Agencies'],
+               datasets: [{
+                   data: [37, 24, 19, 13, 7],
+                   backgroundColor: [
+                       'rgba(255, 99, 132, 0.6)',
+                       'rgba(54, 162, 235, 0.6)',
+                       'rgba(255, 206, 86, 0.6)',
+                       'rgba(75, 192, 192, 0.6)',
+                       'rgba(153, 102, 255, 0.6)'
+                   ]
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'doughnut',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           position: 'right',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('fundingSourcesExplanation', 'Bank loans remain the primary funding source, but project bonds and government grants are expected to gain slight market share in the coming quarters due to favorable capital market conditions and increased public sector involvement in infrastructure development.');
+       }
+
+       function initEnvironmentalImpactChart() {
+           const ctx = document.getElementById('environmentalImpactChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [62.3, 63.8, 65.1, 66.7, 68.2, 69.5, 70.9, 71.8, 71.8, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, 71.8, 72.6, 73.3, 73.9],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Environmental Impact Score'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('environmentalImpactExplanation', 'Environmental impact scores are projected to improve to 73.9 by Q3 2024, driven by increased focus on sustainable infrastructure and gradual implementation of stricter environmental regulations.');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Project Approval Rate', shape: 'circle' },
+               { id: 2, label: 'Risk Assessment Models', shape: 'box' },
+               { id: 3, label: 'Government Support', shape: 'box' },
+               { id: 4, label: 'Average Loan Size', shape: 'circle' },
+               { id: 5, label: 'Renewable Energy Projects', shape: 'box' },
+               { id: 6, label: 'Smart City Developments', shape: 'box' },
+               { id: 7, label: 'Risk-Adjusted Return', shape: 'circle' },
+               { id: 8, label: 'Project Selection Criteria', shape: 'box' },
+               { id: 9, label: 'Economic Conditions', shape: 'box' },
+               { id: 10, label: 'Project Completion Rate', shape: 'circle' },
+               { id: 11, label: 'Project Complexity', shape: 'box' },
+               { id: 12, label: 'Supply Chain Challenges', shape: 'box' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 2, to: 1, arrows: 'to', label: '+' },
+               { from: 3, to: 1, arrows: 'to', label: '+' },
+               { from: 5, to: 4, arrows: 'to', label: '+' },
+               { from: 6, to: 4, arrows: 'to', label: '+' },
+               { from: 8, to: 7, arrows: 'to', label: '+' },
+               { from: 9, to: 7, arrows: 'to', label: '+' },
+               { from: 11, to: 10, arrows: 'to', label: '-' },
+               { from: 12, to: 10, arrows: 'to', label: '-' },
+               { from: 1, to: 7, arrows: 'to', label: '+' },
+               { from: 4, to: 7, arrows: 'to', label: '+' },
+               { from: 7, to: 10, arrows: 'to', label: '+' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = {
+               nodes: nodes,
+               edges: edges
+           };
+          const options = {
+              nodes: {
+                  shape: 'dot',
+                  size: 30,
+                  font: { size: 14 }
+              },
+              edges: {
+                  font: { size: 14, align: 'middle' },
+                  color: { color: '#666', highlight: '#000' },
+                  width: 2
+              },
+              physics: false,
+              height: '100%',
+              width: '100%'
+          };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initProjectApprovalChart();
+           initLoanSizeChart();
+           initRiskAdjustedReturnChart();
+           initProjectCompletionChart();
+           initFundingSourcesChart();
+           initEnvironmentalImpactChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

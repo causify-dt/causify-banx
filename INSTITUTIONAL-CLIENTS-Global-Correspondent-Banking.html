@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Global Correspondent Banking</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Global Correspondent Banking</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cross-Border Transactions</h3>
+                               <p class="text-sm text-gray-500">94% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$5.2B</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 8.3%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Network Coverage</h3>
+                               <p class="text-sm text-gray-500">92% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">187</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 5.6%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Service Quality Score</h3>
+                               <p class="text-sm text-gray-500">89% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">4.7</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 0.2</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Compliance Score</h3>
+                               <p class="text-sm text-gray-500">97% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">98.2%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 1.5%</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Cross-border transaction volume projected to increase by 12% in Q4, driven by expanding trade relationships in emerging markets (Confidence: 91%).</li>
+                           <li>Network coverage expected to grow by 7% in the next 6 months, with a focus on APAC region partnerships (Confidence: 88%).</li>
+                           <li>Counterfactual: If regulatory compliance standards were to tighten by 15%, our compliance score would drop to 94.5%, necessitating a $12M investment in advanced AML systems.</li>
+                           <li>Service quality improvements from AI-powered transaction monitoring could boost client satisfaction by 8% and reduce operational costs by 6% (Confidence: 86%).</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Correspondent Banking Performance Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cross-Border Transaction Volume <span class="text-sm font-normal text-gray-500">(94% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="transactionVolumeChart"></canvas>
+                               </div>
+                               <p id="transactionVolumeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Network Coverage by Region <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="networkCoverageChart"></canvas>
+                               </div>
+                               <p id="networkCoverageExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Service Quality Metrics <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="serviceQualityChart"></canvas>
+                               </div>
+                               <p id="serviceQualityExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Compliance Score Trend <span class="text-sm font-normal text-gray-500">(97% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="complianceScoreChart"></canvas>
+                               </div>
+                               <p id="complianceScoreExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Transaction Processing Time <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="processingTimeChart"></canvas>
+                               </div>
+                               <p id="processingTimeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue by Correspondent Bank Tier <span class="text-sm font-normal text-gray-500">(93% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="revenueTierChart"></canvas>
+                               </div>
+                               <p id="revenueTierExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+      function showPage(pageId) {
+          document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+          document.getElementById(pageId + 'Page').classList.add('active');
+        
+          document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+          document.getElementById(pageId + 'Btn').classList.add('active');
+      }
+
+      function generateDateLabels(monthsBack, monthsForward) {
+          const labels = [];
+          const today = new Date();
+          for (let i = -monthsBack; i <= monthsForward; i++) {
+              const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+              labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+          }
+          return labels;
+      }
+
+      function setPredictionExplanation(elementId, explanation) {
+          const element = document.getElementById(elementId);
+          if (element) {
+              element.textContent = explanation;
+          }
+      }
+
+      function initTransactionVolumeChart() {
+          const ctx = document.getElementById('transactionVolumeChart').getContext('2d');
+          const labels = generateDateLabels(9, 3);
+          const historicalDataPoints = 10;
+
+          new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      label: 'Historical',
+                      data: [4.2, 4.3, 4.5, 4.6, 4.7, 4.8, 4.9, 5.0, 5.1, 5.2, null, null, null],
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                      fill: true
+                  }, {
+                      label: 'Predicted',
+                      data: [null, null, null, null, null, null, null, null, null, 5.2, 5.4, 5.6, 5.8],
+                      borderColor: 'rgba(255, 99, 132, 1)',
+                      borderDash: [5, 5],
+                      fill: false
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                      y: {
+                          beginAtZero: false,
+                          title: {
+                              display: true,
+                              text: 'Transaction Volume (Billion $)'
+                          }
+                      }
+                  },
+                  plugins: {
+                      tooltip: {
+                          callbacks: {
+                              title: function(context) {
+                                  return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                              }
+                          }
+                      },
+                      annotation: {
+                          annotations: {
+                              line1: {
+                                  type: 'line',
+                                  xMin: historicalDataPoints - 0.5,
+                                  xMax: historicalDataPoints - 0.5,
+                                  borderColor: 'rgb(169, 169, 169)',
+                                  borderWidth: 2,
+                                  label: {
+                                      content: 'Now',
+                                      enabled: true,
+                                      position: 'top'
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          });
+
+          setPredictionExplanation('transactionVolumeExplanation',
+              'Transaction volume projected to grow by 12% over the next quarter, driven by increased trade flows in APAC and LATAM regions. Key factors: new partnerships (+5%) and improved FX services (+4%).');
+      }
+
+      function initNetworkCoverageChart() {
+          const ctx = document.getElementById('networkCoverageChart').getContext('2d');
+          new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: ['North America', 'Europe', 'Asia Pacific', 'Latin America', 'Middle East', 'Africa'],
+                  datasets: [{
+                      label: 'Current',
+                      data: [52, 63, 41, 18, 9, 4],
+                      backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                  }, {
+                      label: 'Projected (Next 6 Months)',
+                      data: [54, 65, 47, 22, 11, 6],
+                      backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                      y: {
+                          beginAtZero: true,
+                          title: {
+                              display: true,
+                              text: 'Number of Partner Banks'
+                          }
+                      }
+                  },
+                  plugins: {
+                      title: {
+                          display: false
+                      }
+                  }
+              }
+          });
+
+          setPredictionExplanation('networkCoverageExplanation',
+              'Network coverage expected to grow by 7% globally, with APAC (+15%) and LATAM (+22%) showing strongest growth. Drivers: strategic partnerships and regulatory easing in emerging markets.');
+      }
+
+      function initServiceQualityChart() {
+          const ctx = document.getElementById('serviceQualityChart').getContext('2d');
+          const labels = generateDateLabels(9, 3);
+          const historicalDataPoints = 10;
+
+          new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      label: 'Response Time (minutes)',
+                      data: [12, 11, 10, 9, 8, 7, 6, 5, 4.8, 4.7, 4.5, 4.3, 4.1],
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      yAxisID: 'y',
+                      segment: {
+                          borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                      }
+                  }, {
+                      label: 'Customer Satisfaction',
+                      data: [4.2, 4.3, 4.4, 4.5, 4.5, 4.6, 4.6, 4.7, 4.7, 4.7, 4.8, 4.8, 4.9],
+                      borderColor: 'rgba(255, 99, 132, 1)',
+                      yAxisID: 'y1',
+                      segment: {
+                          borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                      }
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                      y: {
+                          type: 'linear',
+                          display: true,
+                          position: 'left',
+                          title: {
+                              display: true,
+                              text: 'Response Time (minutes)'
+                          }
+                      },
+                      y1: {
+                          type: 'linear',
+                          display: true,
+                          position: 'right',
+                          title: {
+                              display: true,
+                              text: 'Customer Satisfaction (1-5)'
+                          },
+                          grid: {
+                              drawOnChartArea: false
+                          }
+                      }
+                  },
+                  plugins: {
+                      tooltip: {
+                          callbacks: {
+                              title: function(context) {
+                                  return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                              }
+                          }
+                      }
+                  }
+              }
+          });
+
+          setPredictionExplanation('serviceQualityExplanation',
+              'Service quality metrics show continuous improvement. Response time expected to decrease by 13% and customer satisfaction to increase by 4% over the next quarter. Key driver: AI-powered support systems.');
+      }
+
+      function initComplianceScoreChart() {
+          const ctx = document.getElementById('complianceScoreChart').getContext('2d');
+          const labels = generateDateLabels(9, 3);
+          const historicalDataPoints = 10;
+
+          new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      label: 'Compliance Score',
+                      data: [95.2, 95.6, 96.1, 96.5, 96.8, 97.2, 97.5, 97.8, 98.0, 98.2, 98.4, 98.6, 98.8],
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                      fill: true,
+                      segment: {
+                          borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                      }
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                      y: {
+                          beginAtZero: false,
+                          min: 94,
+                          max: 100,
+                          title: {
+                              display: true,
+                              text: 'Compliance Score (%)'
+                          }
+                      }
+                  },
+                  plugins: {
+                      tooltip: {
+                          callbacks: {
+                              title: function(context) {
+                                  return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                              }
+                          }
+                      }
+                  }
+              }
+          });
+
+          setPredictionExplanation('complianceScoreExplanation',
+              'Compliance score projected to improve by 0.6% over the next quarter. Main contributors: enhanced AML algorithms (+0.3%) and staff training programs (+0.2%). Risk: potential regulatory changes could impact scores.');
+      }
+
+      function initProcessingTimeChart() {
+          const ctx = document.getElementById('processingTimeChart').getContext('2d');
+          const labels = generateDateLabels(9, 3);
+          const historicalDataPoints = 10;
+
+          new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      label: 'Processing Time',
+                      data: [120, 115, 110, 105, 100, 95, 90, 85, 80, 75, 70, 65, 60],
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                      fill: true,
+                      segment: {
+                          borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                      }
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                      y: {
+                          beginAtZero: false,
+                          title: {
+                              display: true,
+                              text: 'Processing Time (seconds)'
+                          }
+                      }
+                  },
+                  plugins: {
+                      tooltip: {
+                          callbacks: {
+                              title: function(context) {
+                                  return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                              }
+                          }
+                      }
+                  }
+              }
+          });
+
+          setPredictionExplanation('processingTimeExplanation',
+              'Transaction processing time expected to decrease by 20% in the next quarter. Key factors: blockchain integration (-10%) and AI-powered fraud detection (-7%). Counterfactual: Without tech upgrades, processing time would increase by 5% due to volume growth.');
+      }
+
+      function initRevenueTierChart() {
+          const ctx = document.getElementById('revenueTierChart').getContext('2d');
+          new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: ['Tier 1', 'Tier 2', 'Tier 3'],
+                  datasets: [{
+                      label: 'Current Quarter',
+                      data: [250, 180, 70],
+                      backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                  }, {
+                      label: 'Next Quarter (Projected)',
+                      data: [275, 205, 85],
+                      backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                      y: {
+                          beginAtZero: true,
+                          title: {
+                              display: true,
+                              text: 'Revenue (Million $)'
+                          }
+                      }
+                  },
+                  plugins: {
+                      title: {
+                          display: false
+                      }
+                  }
+              }
+          });
+
+          setPredictionExplanation('revenueTierExplanation',
+              'Revenue growth projected across all tiers: Tier 1 (+10%), Tier 2 (+14%), Tier 3 (+21%). Drivers: new value-added services for Tier 1, expanded FX offerings for Tier 2, and targeted onboarding programs for Tier 3.');
+      }
+
+      function initCausalNetworkGraph() {
+          const container = document.getElementById('causalNetworkGraph');
+          const nodes = new vis.DataSet([
+              { id: 1, label: 'Transaction\nVolume', shape: 'circle' },
+              { id: 2, label: 'Network\nCoverage', shape: 'circle' },
+              { id: 3, label: 'Service\nQuality', shape: 'circle' },
+              { id: 4, label: 'Compliance\nScore', shape: 'circle' },
+              { id: 5, label: 'Processing\nTime', shape: 'circle' },
+              { id: 6, label: 'Revenue', shape: 'circle' },
+              { id: 7, label: 'Market\nConditions', shape: 'diamond' },
+              { id: 8, label: 'Regulatory\nEnvironment', shape: 'diamond' },
+              { id: 9, label: 'Technology\nInvestments', shape: 'diamond' }
+          ]);
+
+          const edges = new vis.DataSet([
+              { from: 1, to: 6, arrows: 'to', label: '0.7' },
+              { from: 2, to: 1, arrows: 'to', label: '0.6' },
+              { from: 2, to: 6, arrows: 'to', label: '0.5' },
+              { from: 3, to: 6, arrows: 'to', label: '0.4' },
+              { from: 4, to: 6, arrows: 'to', label: '0.3' },
+              { from: 5, to: 3, arrows: 'to', label: '-0.5' },
+              { from: 7, to: 1, arrows: 'to', label: '0.4' },
+              { from: 8, to: 4, arrows: 'to', label: '0.6' },
+              { from: 9, to: 5, arrows: 'to', label: '-0.7' },
+              { from: 9, to: 3, arrows: 'to', label: '0.5' }
+          ]);
+
+          const data = { nodes: nodes, edges: edges };
+          const options = {
+              nodes: {
+                  shape: 'dot',
+                  size: 30,
+                  font: { size: 14 }
+              },
+              edges: {
+                  font: { size: 14, align: 'middle' },
+                  color: { color: '#666', highlight: '#000' },
+                  width: 2
+              },
+              physics: false,
+              height: '100%',
+              width: '100%'
+          };
+
+          new vis.Network(container, data, options);
+      }
+
+      function initDashboard() {
+          console.log('Initializing dashboard');
+          initTransactionVolumeChart();
+          initNetworkCoverageChart();
+          initServiceQualityChart();
+          initComplianceScoreChart();
+          initProcessingTimeChart();
+          initRevenueTierChart();
+          initCausalNetworkGraph();
+          console.log('Dashboard initialization complete');
+      }
+
+      document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+
+</body>
+</html>

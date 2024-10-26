@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Retail Banking Customer Acquisition</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Revenue and Profitability Analysis</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Total Revenue</h3>
+                               <p class="text-sm text-gray-500"></p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$892.7M</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up mr-1"></i>
+                                       $948.3M
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Net Profit Margin</h3>
+                               <p class="text-sm text-gray-500"></p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">18.3%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up mr-1"></i>
+                                       19.1%
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Acquisition Cost</h3>
+                               <p class="text-sm text-gray-500"></p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$284</div>
+                                   <div class="text-sm text-red-500">
+                                       <i class="fas fa-arrow-down mr-1"></i>
+                                       $276
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Lifetime Value</h3>
+                               <p class="text-sm text-gray-500"></p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$5,892</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up mr-1"></i>
+                                       $6,187
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Revenue projected to increase by 6.2% next quarter, driven by expansion of digital banking services and new product offerings.</li>
+                           <li>Net profit margin expected to improve by 0.8 percentage points due to operational efficiencies and increased cross-selling.</li>
+                           <li>Customer acquisition cost likely to decrease by 2.8% through targeted marketing campaigns and improved digital onboarding processes.</li>
+                           <li>Customer Lifetime Value forecasted to grow by 5% as a result of enhanced customer retention strategies and personalized financial advisory services.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Revenue and Profitability Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue Growth Trend <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="revenueGrowthChart"></canvas>
+                               </div>
+                               <p id="revenueGrowthExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Net Profit Margin Forecast <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="profitMarginChart"></canvas>
+                               </div>
+                               <p id="profitMarginExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Acquisition Cost Trend <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="acquisitionCostChart"></canvas>
+                               </div>
+                               <p id="acquisitionCostExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Lifetime Value Projection <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="lifetimeValueChart"></canvas>
+                               </div>
+                               <p id="lifetimeValueExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Operating Expense Ratio <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="operatingExpenseChart"></canvas>
+                               </div>
+                               <p id="operatingExpenseExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Product Mix Profitability <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="productMixChart"></canvas>
+                               </div>
+                               <p id="productMixExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initRevenueGrowthChart() {
+           const ctx = document.getElementById('revenueGrowthChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [810, 825, 845, 860, 875, 885, 892, 898, 905, 912, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 912, 920, 935, 948],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Revenue ($ Millions)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('revenueGrowthExplanation', 'Revenue projected to grow by 6.2% over the next quarter, driven by increased digital banking adoption and new product launches. Key growth factors include mobile app enhancements (30% impact) and personalized financial advisory services (25% impact).');
+       }
+
+       function initProfitMarginChart() {
+           const ctx = document.getElementById('profitMarginChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [16.8, 17.1, 17.3, 17.6, 17.8, 18.0, 18.2, 18.3, 18.4, 18.5, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 18.5, 18.7, 18.9, 19.1],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Net Profit Margin (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('profitMarginExplanation', 'Net profit margin expected to improve by 0.8 percentage points due to operational efficiencies (40% impact) and increased cross-selling (35% impact). AI-driven cost optimization projected to contribute 20% to margin improvement.');
+       }
+
+       function initAcquisitionCostChart() {
+           const ctx = document.getElementById('acquisitionCostChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [305, 300, 296, 292, 289, 287, 285, 284, 283, 282, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 282, 280, 278, 276],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Customer Acquisition Cost ($)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('acquisitionCostExplanation', 'Customer acquisition cost projected to decrease by 2.8% through targeted digital marketing (45% impact) and improved onboarding processes (30% impact). Referral program optimization expected to contribute 20% to cost reduction.');
+       }
+
+       function initLifetimeValueChart() {
+           const ctx = document.getElementById('lifetimeValueChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [5500, 5580, 5650, 5720, 5780, 5830, 5870, 5892, 5920, 5950, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 5950, 6020, 6100, 6187],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Customer Lifetime Value ($)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('lifetimeValueExplanation', 'Customer Lifetime Value forecasted to grow by 5% due to enhanced retention strategies (40% impact) and personalized financial advisory services (35% impact). Introduction of loyalty rewards program expected to contribute 20% to CLV growth.');
+       }
+
+       function initOperatingExpenseChart() {
+           const ctx = document.getElementById('operatingExpenseChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [62.5, 62.1, 61.8, 61.5, 61.2, 60.9, 60.7, 60.5, 60.3, 60.1, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 60.1, 59.8, 59.5, 59.2],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Operating Expense Ratio (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('operatingExpenseExplanation', 'Operating expense ratio projected to improve by 0.9 percentage points through process automation (35% impact) and branch network optimization (30% impact). AI-driven fraud detection expected to contribute 20% to expense reduction.');
+       }
+
+       function initProductMixChart() {
+           const ctx = document.getElementById('productMixChart').getContext('2d');
+           const data = {
+               labels: ['Checking Accounts', 'Savings Accounts', 'Mortgages', 'Personal Loans', 'Credit Cards', 'Investment Products'],
+               datasets: [{
+                   label: 'Current Profitability',
+                   data: [15, 22, 30, 18, 25, 20],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)',
+               }, {
+                   label: 'Projected Profitability',
+                   data: [16, 24, 32, 19, 27, 23],
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)',
+               }]
+           };
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Profitability (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('productMixExplanation', 'Product mix profitability expected to improve across all categories. Highest growth projected in investment products (15% increase) and savings accounts (9% increase). New "Smart Savings" account launch anticipated to drive 30% of savings account profitability growth.');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Revenue Growth', shape: 'circle', color: '#4CAF50' },
+               { id: 2, label: 'Digital Banking Adoption', shape: 'circle', color: '#2196F3' },
+               { id: 3, label: 'Customer Retention', shape: 'circle', color: '#FFC107' },
+               { id: 4, label: 'Cross-Selling', shape: 'circle', color: '#9C27B0' },
+               { id: 5, label: 'Operational Efficiency', shape: 'circle', color: '#FF5722' },
+               { id: 6, label: 'Product Innovation', shape: 'circle', color: '#795548' },
+               { id: 7, label: 'Market Competition', shape: 'circle', color: '#607D8B' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 2, to: 1, label: '0.4', arrows: 'to' },
+               { from: 3, to: 1, label: '0.35', arrows: 'to' },
+               { from: 4, to: 1, label: '0.3', arrows: 'to' },
+               { from: 5, to: 1, label: '0.25', arrows: 'to' },
+               { from: 6, to: 1, label: '0.3', arrows: 'to' },
+               { from: 7, to: 1, label: '-0.2', arrows: 'to' },
+               { from: 2, to: 3, label: '0.3', arrows: 'to' },
+               { from: 2, to: 4, label: '0.25', arrows: 'to' },
+               { from: 6, to: 2, label: '0.2', arrows: 'to' },
+               { from: 5, to: 3, label: '0.15', arrows: 'to' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: {
+                   forceAtlas2Based: {
+                       gravitationalConstant: -26,
+                       centralGravity: 0.005,
+                       springLength: 230,
+                       springConstant: 0.18
+                   },
+                   maxVelocity: 146,
+                   solver: 'forceAtlas2Based',
+                   timestep: 0.35,
+                   stabilization: { iterations: 150 }
+               }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initRevenueGrowthChart();
+           initProfitMarginChart();
+           initAcquisitionCostChart();
+           initLifetimeValueChart();
+           initOperatingExpenseChart();
+           initProductMixChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

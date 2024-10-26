@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Financial Institutions</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Financial Institutions</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Correspondent Banking Revenue</h3>
+                               <p class="text-sm text-gray-500">(92% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$478.3M</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 5.2%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cross-Border Transaction Volume</h3>
+                               <p class="text-sm text-gray-500">(89% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">2.7B</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 8.1%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Institutional Client Satisfaction</h3>
+                               <p class="text-sm text-gray-500">(94% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">8.7/10</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 0.3</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Compliance Cost Ratio</h3>
+                               <p class="text-sm text-gray-500">(91% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">3.2%</div>
+                                   <div class="text-sm text-red-500"><i class="fas fa-arrow-down"></i> 0.4%</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Correspondent banking revenue projected to grow 7.5% next quarter, driven by increased cross-border trade and new partnerships in emerging markets (Confidence: 92%).</li>
+                           <li>AI-powered fraud detection system expected to reduce compliance costs by 15% while improving detection rates by 22% (Confidence: 88%).</li>
+                           <li>Counterfactual: If global interest rates rise by 50 basis points, institutional deposit balances could decrease by 3-5%, potentially impacting liquidity ratios (Confidence: 86%).</li>
+                           <li>New blockchain-based settlement platform forecasted to reduce transaction times by 60% and costs by 40% for participating institutions (Confidence: 90%).</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Financial Institution Performance Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Correspondent Banking Revenue Trend <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="correspondentBankingRevenueChart"></canvas>
+                               </div>
+                               <p id="correspondentBankingRevenueExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cross-Border Transaction Volume <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="crossBorderTransactionChart"></canvas>
+                               </div>
+                               <p id="crossBorderTransactionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Institutional Client Satisfaction <span class="text-sm font-normal text-gray-500">(94% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientSatisfactionChart"></canvas>
+                               </div>
+                               <p id="clientSatisfactionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Compliance Cost Ratio <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="complianceCostRatioChart"></canvas>
+                               </div>
+                               <p id="complianceCostRatioExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Transaction Processing Time <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="transactionProcessingTimeChart"></canvas>
+                               </div>
+                               <p id="transactionProcessingTimeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Institutional Deposit Balance <span class="text-sm font-normal text-gray-500">(86% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="institutionalDepositBalanceChart"></canvas>
+                               </div>
+                               <p id="institutionalDepositBalanceExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initTimeSeriesChart(canvasId, data, yAxisLabel) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           const labels = generateDateLabels(data.monthsBack, data.monthsForward);
+           const historicalDataPoints = data.monthsBack + 1; // Including current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: data.historical,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Predicted',
+                       data: data.predicted,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: {
+                           title: {
+                               display: true,
+                               text: 'Month'
+                           }
+                       },
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: yAxisLabel
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].datasetIndex === 0 ? 'Historical' : 'Prediction';
+                               }
+                           }
+                       },
+                       annotation: {
+                           annotations: {
+                               line1: {
+                                   type: 'line',
+                                   xMin: historicalDataPoints - 0.5,
+                                   xMax: historicalDataPoints - 0.5,
+                                   borderColor: 'rgb(169, 169, 169)',
+                                   borderWidth: 2,
+                                   label: {
+                                       content: 'Now',
+                                       enabled: true,
+                                       position: 'top'
+                                   }
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation(canvasId + 'Explanation', data.explanation);
+       }
+
+       function initCausalNetworkGraph() {
+           const container = document.getElementById('causalNetworkGraph');
+           const data = {
+               nodes: [
+                   { id: 1, label: 'Global Economic Conditions', color: '#FFD700' },
+                   { id: 2, label: 'Regulatory Environment', color: '#87CEEB' },
+                   { id: 3, label: 'Technology Adoption', color: '#98FB98' },
+                   { id: 4, label: 'Correspondent Banking Revenue', color: '#FFA07A' },
+                   { id: 5, label: 'Cross-Border Transaction Volume', color: '#DDA0DD' },
+                   { id: 6, label: 'Client Satisfaction', color: '#F0E68C' },
+                   { id: 7, label: 'Compliance Cost Ratio', color: '#FF6347' }
+               ],
+               edges: [
+                   { from: 1, to: 4, label: '0.7', arrows: 'to' },
+                   { from: 1, to: 5, label: '0.8', arrows: 'to' },
+                   { from: 2, to: 7, label: '0.6', arrows: 'to' },
+                   { from: 3, to: 5, label: '0.5', arrows: 'to' },
+                   { from: 3, to: 6, label: '0.4', arrows: 'to' },
+                   { from: 3, to: 7, label: '-0.3', arrows: 'to' },
+                   { from: 5, to: 4, label: '0.9', arrows: 'to' },
+                   { from: 6, to: 4, label: '0.5', arrows: 'to' },
+                   { from: 7, to: 4, label: '-0.4', arrows: 'to' }
+               ]
+           };
+
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: false,
+               height: '100%',
+               width: '100%'
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           console.log('Initializing dashboard');
+          
+           const correspondentBankingRevenueData = {
+               monthsBack: 9,
+               monthsForward: 3,
+               historical: [410, 425, 440, 455, 462, 470, 478, 483, 490, 478.3],
+               predicted: [null, null, null, null, null, null, null, null, null, 478.3, 485, 492, 500],
+               explanation: "Forecast: 7.5% increase in correspondent banking revenue over the next quarter, driven by increased cross-border trade and new partnerships in emerging markets."
+           };
+           initTimeSeriesChart('correspondentBankingRevenueChart', correspondentBankingRevenueData, 'Revenue (Millions USD)');
+
+           const crossBorderTransactionData = {
+               monthsBack: 9,
+               monthsForward: 3,
+               historical: [2.2, 2.3, 2.4, 2.45, 2.5, 2.55, 2.6, 2.65, 2.7, 2.7],
+               predicted: [null, null, null, null, null, null, null, null, null, 2.7, 2.8, 2.9, 3.0],
+               explanation: "Projected 11% growth in cross-border transaction volume, supported by the expansion of digital payment solutions and increased global trade activities."
+           };
+           initTimeSeriesChart('crossBorderTransactionChart', crossBorderTransactionData, 'Transaction Volume (Billions)');
+
+           const clientSatisfactionData = {
+               monthsBack: 9,
+               monthsForward: 3,
+               historical: [8.1, 8.2, 8.3, 8.4, 8.5, 8.5, 8.6, 8.6, 8.7, 8.7],
+               predicted: [null, null, null, null, null, null, null, null, null, 8.7, 8.8, 8.9, 9.0],
+               explanation: "Client satisfaction expected to improve to 9.0/10 due to enhanced digital services and personalized relationship management strategies."
+           };
+           initTimeSeriesChart('clientSatisfactionChart', clientSatisfactionData, 'Satisfaction Score (out of 10)');
+
+           const complianceCostRatioData = {
+               monthsBack: 9,
+               monthsForward: 3,
+               historical: [4.0, 3.9, 3.8, 3.7, 3.6, 3.5, 3.4, 3.3, 3.2, 3.2],
+               predicted: [null, null, null, null, null, null, null, null, null, 3.2, 3.0, 2.9, 2.8],
+               explanation: "Compliance cost ratio forecasted to decrease to 2.8% due to implementation of AI-powered fraud detection and streamlined KYC processes."
+           };
+           initTimeSeriesChart('complianceCostRatioChart', complianceCostRatioData, 'Cost Ratio (%)');
+
+           const transactionProcessingTimeData = {
+               monthsBack: 9,
+               monthsForward: 3,
+               historical: [120, 115, 110, 105, 100, 95, 90, 85, 80, 80],
+               predicted: [null, null, null, null, null, null, null, null, null, 80, 75, 70, 65],
+               explanation: "Transaction processing time expected to decrease to 65 minutes on average with the implementation of blockchain-based settlement platform."
+           };
+           initTimeSeriesChart('transactionProcessingTimeChart', transactionProcessingTimeData, 'Processing Time (Minutes)');
+
+           const institutionalDepositBalanceData = {
+               monthsBack: 9,
+               monthsForward: 3,
+               historical: [850, 875, 900, 925, 950, 975, 1000, 1025, 1050, 1050],
+               predicted: [null, null, null, null, null, null, null, null, null, 1050, 1075, 1100, 1125],
+               explanation: "Institutional deposit balances projected to grow by 7% to $1.125B, driven by increased client trust and competitive interest rates."
+           };
+           initTimeSeriesChart('institutionalDepositBalanceChart', institutionalDepositBalanceData, 'Deposit Balance (Billions USD)');
+
+           initCausalNetworkGraph();
+           console.log('Dashboard initialization complete');
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

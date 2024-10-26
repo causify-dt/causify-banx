@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Fixed Income Trading</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Fixed Income Trading</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Trading Volume</h3>
+                               <p class="text-sm text-gray-500">(93% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$12.7B</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 5.2%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Net Interest Income</h3>
+                               <p class="text-sm text-gray-500">(88% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$437M</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 3.8%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Market Share</h3>
+                               <p class="text-sm text-gray-500">(91% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">8.3%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 0.5%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Spread</h3>
+                               <p class="text-sm text-gray-500">(87% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">32 bps</div>
+                                   <div class="text-sm text-red-500"><i class="fas fa-arrow-down"></i> 2 bps</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Trading volume projected to increase by 8.5% in Q4 due to anticipated market volatility and increased client hedging activity. (Confidence: 93%)</li>
+                           <li>Government bond yields expected to rise by 15-20 basis points over the next quarter, potentially impacting trading positions and market-making activities. (Confidence: 89%)</li>
+                           <li>Corporate bond issuance forecast to grow by 12% in the coming months, driven by favorable financing conditions and M&A activity. (Confidence: 87%)</li>
+                           <li>Counterfactual: If the Federal Reserve were to unexpectedly pause rate hikes, our fixed income trading revenues could potentially increase by 18% due to increased market activity and wider spreads. (Confidence: 82%)</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Fixed Income Trading Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Trading Volume by Product <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="tradingVolumeChart"></canvas>
+                               </div>
+                               <p id="tradingVolumeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Net Interest Income Trend <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="netInterestIncomeChart"></canvas>
+                               </div>
+                               <p id="netInterestIncomeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-normal">Market Share Projection <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="marketShareChart"></canvas>
+                               </div>
+                               <p id="marketShareExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Spread Analysis <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="averageSpreadChart"></canvas>
+                               </div>
+                               <p id="averageSpreadExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Activity by Sector <span class="text-sm font-normal text-gray-500">(86% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientActivityChart"></canvas>
+                               </div>
+                               <p id="clientActivityExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Risk-Adjusted Return on Capital (RAROC) <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="rarocChart"></canvas>
+                               </div>
+                               <p id="rarocExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initTradingVolumeChart() {
+           const ctx = document.getElementById('tradingVolumeChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Government Bonds',
+                       data: [5.2, 5.4, 5.6, 5.8, 6.0, 6.2, 6.4, 6.6, 6.8, 7.0, 7.2, 7.4, 7.6],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       tension: 0.1,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }, {
+                       label: 'Corporate Bonds',
+                       data: [3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5.0],
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       tension: 0.1,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }, {
+                       label: 'Emerging Market Bonds',
+                       data: [1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7],
+                       borderColor: 'rgba(255, 206, 86, 1)',
+                       tension: 0.1,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Trading Volume ($ Billion)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('tradingVolumeExplanation',
+               'Government bond trading volume projected to increase by 8.5% in Q4, driven by anticipated market volatility. Corporate bond trading expected to grow by 6.4% due to increased issuance and M&A activity. Emerging market bonds show a 12.5% projected increase, reflecting growing investor interest in higher-yield assets.');
+       }
+
+       function initNetInterestIncomeChart() {
+           const ctx = document.getElementById('netInterestIncomeChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Net Interest Income',
+                       data: [395, 402, 410, 418, 425, 430, 435, 440, 445, 450, 458, 465, 472],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true,
+                       tension: 0.1,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Net Interest Income ($ Million)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('netInterestIncomeExplanation',
+               'Net Interest Income forecast to grow by 4.9% over the next quarter, primarily driven by anticipated rate hikes and improved yield curve steepness. The projection factors in a potential 15-20 basis point increase in government bond yields, which is expected to positively impact our interest margins.');
+       }
+
+       function initMarketShareChart() {
+           const ctx = document.getElementById('marketShareChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Market Share',
+                       data: [7.6, 7.7, 7.8, 7.9, 8.0, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true,
+                       tension: 0.1,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Market Share (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('marketShareExplanation',
+               'Market share projected to increase from 8.3% to 8.8% over the next quarter. This growth is attributed to our enhanced electronic trading platform, expanded product offerings in emerging market bonds, and targeted client acquisition strategies in the corporate sector.');
+       }
+
+       function initAverageSpreadChart() {
+           const ctx = document.getElementById('averageSpreadChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Government Bonds',
+                       data: [36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       tension: 0.1,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }, {
+                       label: 'Corporate Bonds',
+                       data: [52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40],
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       tension: 0.1,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Average Spread (bps)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('averageSpreadExplanation',
+               'Average spreads for government bonds projected to tighten by 3 bps due to increased competition and market liquidity. Corporate bond spreads expected to narrow by 4 bps, reflecting improved market sentiment and reduced credit risk perceptions. Overall, the trend indicates a gradual compression of spreads across fixed income products.');
+       }
+
+       function initClientActivityChart() {
+           const ctx = document.getElementById('clientActivityChart').getContext('2d');
+           const data = {
+               labels: ['Financial Institutions', 'Corporates', 'Governments', 'Hedge Funds', 'Asset Managers'],
+               datasets: [{
+                   label: 'Current Quarter',
+                   data: [30, 25, 20, 15, 10],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)'
+               }, {
+                   label: 'Next Quarter (Projected)',
+                   data: [32, 27, 19, 16, 11],
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)'
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Activity Level (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('clientActivityExplanation',
+               'Client activity from financial institutions projected to increase by 6.7% next quarter, driven by increased hedging needs. Corporate client activity expected to grow by 8% due to rising issuance. Government activity forecasted to decrease slightly by 5% as some entities reduce debt issuance. Hedge fund and asset manager activity projected to increase by 6.7% and 10% respectively, reflecting growing interest in fixed income strategies.');
+       }
+
+       function initRarocChart() {
+           const ctx = document.getElementById('rarocChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'RAROC',
+                       data: [14.2, 14.5, 14.8, 15.1, 15.4, 15.7, 16.0, 16.3, 16.6, 16.9, 17.2, 17.5, 17.8],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true,
+                       tension: 0.1,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'RAROC (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('rarocExplanation',
+               'Risk-Adjusted Return on Capital (RAROC) projected to improve from 16.9% to 17.8% over the next quarter. This increase is driven by enhanced risk management practices, optimized capital allocation strategies, and improved trading efficiencies. The upward trend in RAROC indicates growing profitability relative to the risk taken in our fixed income trading activities.');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Market Volatility', shape: 'dot', size: 20 },
+               { id: 2, label: 'Interest Rates', shape: 'dot', size: 20 },
+               { id: 3, label: 'Economic Growth', shape: 'dot', size: 20 },
+               { id: 4, label: 'Regulatory Changes', shape: 'dot', size: 20 },
+               { id: 5, label: 'Trading Volume', shape: 'dot', size: 25 },
+               { id: 6, label: 'Net Interest Income', shape: 'dot', size: 25 },
+               { id: 7, label: 'Market Share', shape: 'dot', size: 25 },
+               { id: 8, label: 'Average Spread', shape: 'dot', size: 25 },
+               { id: 9, label: 'Client Activity', shape: 'dot', size: 25 },
+               { id: 10, label: 'RAROC', shape: 'dot', size: 25 }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 5, arrows: 'to', label: '++' },
+               { from: 1, to: 8, arrows: 'to', label: '+' },
+               { from: 2, to: 6, arrows: 'to', label: '++' },
+               { from: 2, to: 8, arrows: 'to', label: '-' },
+               { from: 3, to: 5, arrows: 'to', label: '+' },
+               { from: 3, to: 9, arrows: 'to', label: '+' },
+               { from: 4, to: 7, arrows: 'to', label: '+/-' },
+               { from: 4, to: 10, arrows: 'to', label: '-' },
+               { from: 5, to: 7, arrows: 'to', label: '+' },
+               { from: 5, to: 10, arrows: 'to', label: '+' },
+               { from: 6, to: 10, arrows: 'to', label: '++' },
+               { from: 8, to: 6, arrows: 'to', label: '+' },
+               { from: 9, to: 5, arrows: 'to', label: '++' },
+               { from: 9, to: 7, arrows: 'to', label: '+' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = {
+               nodes: nodes,
+               edges: edges
+           };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 20,
+                   font: {
+                       size: 14,
+                       color: '#343434'
+                   },
+                   borderWidth: 2
+               },
+               edges: {
+                   width: 2,
+                   color: { color: '#848484', highlight: '#1B5299', hover: '#848484' },
+                   font: {
+                       size: 14,
+                       align: 'middle'
+                   },
+                   arrows: {
+                       to: { enabled: true, scaleFactor: 0.5 }
+                   }
+               },
+               physics: {
+                   stabilization: false,
+                   barnesHut: {
+                       gravitationalConstant: -2000,
+                       centralGravity: 0.3,
+                       springLength: 150,
+                       springConstant: 0.04,
+                       damping: 0.09,
+                       avoidOverlap: 0.1
+                   }
+               }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initTradingVolumeChart();
+           initNetInterestIncomeChart();
+           initMarketShareChart();
+           initAverageSpreadChart();
+           initClientActivityChart();
+           initRarocChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

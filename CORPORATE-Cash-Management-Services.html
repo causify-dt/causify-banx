@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Cash Management Services</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Cash Management Services</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cash Flow Forecasting Adoption</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">60%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> Increase to 65%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">ACH Payment Volume</h3>
+                               <p class="text-sm text-gray-500">88% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$1.0B</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> Predicted $1.1B</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Receivables Growth</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$500M</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> Predicted $550M</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Satisfaction</h3>
+                               <p class="text-sm text-gray-500">80% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">85%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> Increase to 88%</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Cash flow forecasting adoption expected to increase by 8% due to new AI-powered predictive analytics features (Confidence: 85%).</li>
+                           <li>ACH payment volumes projected to grow by 10%, driven by increased digitization and improved fraud prevention measures (Confidence: 88%).</li>
+                           <li>Receivables growth forecast of 10% attributed to the implementation of advanced OCR technology for faster invoice processing (Confidence: 85%).</li>
+                           <li>Client satisfaction predicted to improve by 3 percentage points following the launch of a new mobile app with enhanced user experience (Confidence: 80%).</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Cash Management Service Adoption <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cash Flow Forecasting Adoption <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="cashFlowForecastingChart"></canvas>
+                               </div>
+                               <p id="cashFlowForecastingExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">ACH Payment Volume <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="achPaymentVolumeChart"></canvas>
+                               </div>
+                               <p id="achPaymentVolumeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Receivables Growth <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="receivablesGrowthChart"></canvas>
+                               </div>
+                               <p id="receivablesGrowthExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Satisfaction <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientSatisfactionChart"></canvas>
+                               </div>
+                               <p id="clientSatisfactionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function generateTimeSeriesData(monthsBack, monthsForward, initialValue, growthRate) {
+           const data = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const value = initialValue * Math.pow(1 + growthRate, i);
+               data.push(value);
+           }
+           return data;
+       }
+
+       function createChart(canvasId, label, data, yAxisLabel, confidence) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           const monthsBack = 9;
+           const monthsForward = 3;
+           const labels = generateDateLabels(monthsBack, monthsForward);
+           const historicalData = data.slice(0, monthsBack + 1);
+           const forecastData = data.slice(monthsBack);
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [
+                       {
+                           label: 'Historical',
+                           data: historicalData,
+                           borderColor: 'rgba(75, 192, 192, 1)',
+                           backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                           fill: true,
+                           pointRadius: 0,
+                           borderWidth: 2
+                       },
+                       {
+                           label: 'Forecast',
+                           data: Array(monthsBack).fill(null).concat(forecastData),
+                           borderColor: 'rgba(255, 99, 132, 1)',
+                           borderDash: [5, 5],
+                           pointRadius: 0,
+                           borderWidth: 2,
+                           fill: false
+                       }
+                   ]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: {
+                           grid: {
+                               display: false
+                           }
+                       },
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: yAxisLabel
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       },
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       }
+                   }
+               }
+           });
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'AI Predictive Analytics', color: '#E1F5FE' },
+               { id: 2, label: 'Digitization', color: '#E8F5E9' },
+               { id: 3, label: 'Fraud Prevention', color: '#FFF3E0' },
+               { id: 4, label: 'OCR Technology', color: '#F3E5F5' },
+               { id: 5, label: 'Mobile App UX', color: '#FFEBEE' },
+               { id: 6, label: 'Cash Flow Forecasting', color: '#E3F2FD' },
+               { id: 7, label: 'ACH Payment Volume', color: '#E0F2F1' },
+               { id: 8, label: 'Receivables Growth', color: '#FFF8E1' },
+               { id: 9, label: 'Client Satisfaction', color: '#FCE4EC' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 6, arrows: 'to', label: '++' },
+               { from: 2, to: 7, arrows: 'to', label: '++' },
+               { from: 3, to: 7, arrows: 'to', label: '+' },
+               { from: 4, to: 8, arrows: 'to', label: '++' },
+               { from: 5, to: 9, arrows: 'to', label: '+' },
+               { from: 6, to: 9, arrows: 'to', label: '+' },
+               { from: 7, to: 9, arrows: 'to', label: '+' },
+               { from: 8, to: 9, arrows: 'to', label: '+' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'box',
+                   margin: 10,
+                   widthConstraint: {
+                       maximum: 150
+                   }
+               },
+               edges: {
+                   arrows: {
+                       to: { enabled: true, scaleFactor: 0.5 }
+                   },
+                   font: { size: 12, align: 'middle' }
+               },
+               physics: {
+                   enabled: false
+               },
+               layout: {
+                   hierarchical: {
+                       direction: 'LR',
+                       sortMethod: 'directed',
+                       levelSeparation: 150
+                   }
+               }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           const cashFlowForecastingData = generateTimeSeriesData(9, 3, 50, 0.01);
+           createChart('cashFlowForecastingChart', 'Cash Flow Forecasting Adoption', cashFlowForecastingData, 'Adoption Rate (%)', 85);
+           document.getElementById('cashFlowForecastingExplanation').textContent = 'Cash flow forecasting adoption is expected to increase by 8% due to new AI-powered predictive analytics features, improving financial planning capabilities for clients.';
+
+           const achPaymentVolumeData = generateTimeSeriesData(9, 3, 900, 0.015);
+           createChart('achPaymentVolumeChart', 'ACH Payment Volume', achPaymentVolumeData, 'Volume ($ Millions)', 88);
+           document.getElementById('achPaymentVolumeExplanation').textContent = 'ACH payment volumes are projected to grow by 10%, driven by increased digitization efforts and improved fraud prevention measures, enhancing overall transaction security and efficiency.';
+
+           const receivablesGrowthData = generateTimeSeriesData(9, 3, 450, 0.012);
+           createChart('receivablesGrowthChart', 'Receivables Growth', receivablesGrowthData, 'Growth ($ Millions)', 85);
+           document.getElementById('receivablesGrowthExplanation').textContent = 'Receivables growth forecast of 10% is attributed to the implementation of advanced OCR technology, enabling faster invoice processing and improved cash flow management for clients.';
+
+           const clientSatisfactionData = generateTimeSeriesData(9, 3, 82, 0.004);
+           createChart('clientSatisfactionChart', 'Client Satisfaction', clientSatisfactionData, 'Satisfaction Rate (%)', 80);
+           document.getElementById('clientSatisfactionExplanation').textContent = 'Client satisfaction is predicted to improve by 3 percentage points following the launch of a new mobile app with enhanced user experience, providing easier access to cash management services.';
+
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

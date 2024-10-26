@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Securities Lending and Custody</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Securities Lending and Custody</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Securities Lending Revenue</h3>
+                               <p class="text-sm text-gray-500">(92% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$287.5M</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 5.2%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Assets Under Custody</h3>
+                               <p class="text-sm text-gray-500">(89% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$4.82T</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 3.8%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Custody Fee Income</h3>
+                               <p class="text-sm text-gray-500">(87% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$412.3M</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 2.7%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Satisfaction Score</h3>
+                               <p class="text-sm text-gray-500">(91% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">8.7/10</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 0.3 points</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Securities lending revenue projected to increase by 7.5% in Q4 due to rising interest rates and increased demand for high-quality collateral. (Confidence: 92%)</li>
+                           <li>Assets under custody expected to grow by 5.2% YoY, driven by new client acquisitions in emerging markets and expansion of ETF services. (Confidence: 89%)</li>
+                           <li>Custody fee income forecasted to rise 3.8% next quarter, primarily due to the implementation of a new fee structure for complex instruments. (Confidence: 87%)</li>
+                           <li>Counterfactual: If global equity markets experience a 10% downturn, assets under custody could decrease by 3.5%, potentially reducing custody fee income by 2.8%. (Confidence: 85%)</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Securities Lending and Custody Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Securities Lending Revenue Trend <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="securitiesLendingRevenueChart"></canvas>
+                               </div>
+                               <p id="securitiesLendingRevenueExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Assets Under Custody Growth <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="assetsUnderCustodyChart"></canvas>
+                               </div>
+                               <p id="assetsUnderCustodyExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Custody Fee Income Analysis <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="custodyFeeIncomeChart"></canvas>
+                               </div>
+                               <p id="custodyFeeIncomeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Satisfaction Trends <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientSatisfactionChart"></canvas>
+                               </div>
+                               <p id="clientSatisfactionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Securities Lending Utilization Rate <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="securitiesLendingUtilizationChart"></canvas>
+                               </div>
+                               <p id="securitiesLendingUtilizationExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Custody Market Share <span class="text-sm font-normal text-gray-500">(86% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="custodyMarketShareChart"></canvas>
+                               </div>
+                               <p id="custodyMarketShareExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function createTimeSeriesChart(canvasId, data, label, yAxisLabel) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: data.historical,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true,
+                       pointRadius: 0
+                   }, {
+                       label: 'Forecast',
+                       data: data.forecast,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false,
+                       pointRadius: 0
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: {
+                           grid: {
+                               display: false
+                           }
+                       },
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: yAxisLabel
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       },
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       }
+                   },
+                   elements: {
+                       line: {
+                           tension: 0.4
+                       }
+                   }
+               }
+           });
+       }
+
+       function initSecuritiesLendingRevenueChart() {
+           const data = {
+               historical: [265, 270, 275, 280, 285, 287, 290, 292, 295, 287.5],
+               forecast: [null, null, null, null, null, null, null, null, null, 287.5, 290, 292.5, 295]
+           };
+           createTimeSeriesChart('securitiesLendingRevenueChart', data, 'Securities Lending Revenue', 'Revenue ($ Million)');
+           setPredictionExplanation('securitiesLendingRevenueExplanation', 'Forecast: 7.5% increase in securities lending revenue over the next quarter, driven by rising interest rates and increased demand for high-quality collateral.');
+       }
+
+       function initAssetsUnderCustodyChart() {
+           const data = {
+               historical: [4.5, 4.55, 4.6, 4.65, 4.7, 4.72, 4.75, 4.78, 4.8, 4.82],
+               forecast: [null, null, null, null, null, null, null, null, null, 4.82, 4.85, 4.88, 4.91]
+           };
+           createTimeSeriesChart('assetsUnderCustodyChart', data, 'Assets Under Custody', 'Assets ($ Trillion)');
+           setPredictionExplanation('assetsUnderCustodyExplanation', 'Forecast: 5.2% YoY growth in assets under custody, primarily due to new client acquisitions in emerging markets and expansion of ETF services.');
+       }
+
+       function initCustodyFeeIncomeChart() {
+           const data = {
+               historical: [390, 395, 400, 402, 405, 408, 410, 411, 412, 412.3],
+               forecast: [null, null, null, null, null, null, null, null, null, 412.3, 415, 417, 419]
+           };
+           createTimeSeriesChart('custodyFeeIncomeChart', data, 'Custody Fee Income', 'Income ($ Million)');
+           setPredictionExplanation('custodyFeeIncomeExplanation', 'Forecast: 3.8% increase in custody fee income next quarter, driven by the implementation of a new fee structure for complex instruments.');
+       }
+
+       function initClientSatisfactionChart() {
+           const data = {
+               historical: [8.3, 8.35, 8.4, 8.45, 8.5, 8.55, 8.6, 8.65, 8.7, 8.7],
+               forecast: [null, null, null, null, null, null, null, null, null, 8.7, 8.75, 8.8, 8.85]
+           };
+           createTimeSeriesChart('clientSatisfactionChart', data, 'Client Satisfaction Score', 'Score (out of 10)');
+           setPredictionExplanation('clientSatisfactionExplanation', 'Forecast: Client satisfaction score expected to improve to 8.85 by Q4, driven by enhanced digital platforms and personalized service offerings.');
+       }
+
+       function initSecuritiesLendingUtilizationChart() {
+           const data = {
+               historical: [18, 18.5, 19, 19.2, 19.5, 19.8, 20, 20.2, 20.5, 20.7],
+               forecast: [null, null, null, null, null, null, null, null, null, 20.7, 21, 21.3, 21.6]
+           };
+           createTimeSeriesChart('securitiesLendingUtilizationChart', data, 'Securities Lending Utilization Rate', 'Utilization Rate (%)');
+           setPredictionExplanation('securitiesLendingUtilizationExplanation', 'Forecast: Securities lending utilization rate projected to reach 21.6% by Q4, indicating increased demand and improved lending strategies.');
+       }
+
+       function initCustodyMarketShareChart() {
+           const data = {
+               historical: [12.5, 12.6, 12.7, 12.8, 12.9, 13, 13.1, 13.2, 13.3, 13.4],
+               forecast: [null, null, null, null, null, null, null, null, null, 13.4, 13.5, 13.6, 13.7]
+           };
+           createTimeSeriesChart('custodyMarketShareChart', data, 'Custody Market Share', 'Market Share (%)');
+           setPredictionExplanation('custodyMarketShareExplanation', 'Forecast: Custody market share expected to grow to 13.7% by Q4, reflecting successful client acquisition strategies and competitive service offerings.');
+       }
+
+       function initCausalNetworkGraph() {
+           const container = document.getElementById('causalNetworkGraph');
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Interest Rates', shape: 'circle' },
+               { id: 2, label: 'Market Volatility', shape: 'circle' },
+               { id: 3, label: 'Regulatory Changes', shape: 'circle' },
+               { id: 4, label: 'Tech Innovation', shape: 'circle' },
+               { id: 5, label: 'Client Demand', shape: 'circle' },
+               { id: 6, label: 'Securities Lending Revenue', shape: 'box' },
+               { id: 7, label: 'Assets Under Custody', shape: 'box' },
+               { id: 8, label: 'Custody Fee Income', shape: 'box' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 6, label: '+0.6', arrows: 'to' },
+               { from: 2, to: 6, label: '+0.4', arrows: 'to' },
+               { from: 3, to: 6, label: '-0.2', arrows: 'to' },
+               { from: 3, to: 7, label: '+0.3', arrows: 'to' },
+               { from: 4, to: 7, label: '+0.5', arrows: 'to' },
+               { from: 5, to: 7, label: '+0.7', arrows: 'to' },
+               { from: 7, to: 8, label: '+0.8', arrows: 'to' },
+               { from: 4, to: 8, label: '+0.4', arrows: 'to' }
+           ]);
+
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 20,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   arrows: { to: { enabled: true, scaleFactor: 0.5 } }
+               },
+               physics: {
+                   enabled: false,
+                   barnesHut: {
+                       gravitationalConstant: -2000,
+                       centralGravity: 0.3,
+                       springLength: 95,
+                       springConstant: 0.04,
+                       damping: 0.09,
+                       avoidOverlap: 0.1
+                   }
+               },
+               layout: {
+                   improvedLayout: true
+               }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initSecuritiesLendingRevenueChart();
+           initAssetsUnderCustodyChart();
+           initCustodyFeeIncomeChart();
+           initClientSatisfactionChart();
+           initSecuritiesLendingUtilizationChart();
+           initCustodyMarketShareChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

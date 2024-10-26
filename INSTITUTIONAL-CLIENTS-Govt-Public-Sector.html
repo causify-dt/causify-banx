@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Services for Governments and Public Sector</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Services for Governments and Public Sector</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Public Sector Loans</h3>
+                               <p class="text-sm text-gray-500">(92% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$24.7B</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 3.8%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Government Deposits</h3>
+                               <p class="text-sm text-gray-500">(89% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$31.2B</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 2.6%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Treasury Services Revenue</h3>
+                               <p class="text-sm text-gray-500">(87% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$892M</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 4.2%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Public Sector Client Satisfaction</h3>
+                               <p class="text-sm text-gray-500">(91% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">8.7/10</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 0.2</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Public sector loans projected to increase by 7.5% in the next quarter (Confidence: 92%). Primary driver: Infrastructure development initiatives. Secondary factors: Increased government spending (30% impact) and favorable interest rates (25% impact).</li>
+                           <li>Treasury services revenue expected to grow by 8.2% year-over-year (Confidence: 87%). Key drivers: Digital transformation of government financial systems and increased adoption of real-time payment solutions.</li>
+                           <li>Government deposits forecast to rise by 5.1% in the next six months (Confidence: 89%). Main factors: Economic recovery efforts and improved cash management strategies by public entities.</li>
+                           <li>Counterfactual: If interest rates were to increase by 50 basis points, public sector loan growth would likely slow to 4.2%, potentially impacting revenue by $42M annually.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Public Sector Financial Services Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Public Sector Loan Growth <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="loanGrowthChart"></canvas>
+                               </div>
+                               <p id="loanGrowthChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Government Deposit Trends <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="depositTrendsChart"></canvas>
+                               </div>
+                               <p id="depositTrendsChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Treasury Services Revenue <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="treasuryRevenueChart"></canvas>
+                               </div>
+                               <p id="treasuryRevenueChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Public Sector Client Satisfaction <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientSatisfactionChart"></canvas>
+                               </div>
+                               <p id="clientSatisfactionChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Digital Services Adoption <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="digitalAdoptionChart"></canvas>
+                               </div>
+                               <p id="digitalAdoptionChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Public Finance Advisory Services <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="advisoryServicesChart"></canvas>
+                               </div>
+                               <p id="advisoryServicesChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           const today = new Date();
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initLoanGrowthChart() {
+           const ctx = document.getElementById('loanGrowthChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [21.8, 22.3, 22.7, 23.1, 23.4, 23.8, 24.1, 24.5, 24.7, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, 24.7, 25.0, 25.3, 25.6],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Loan Volume (Billion $)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('loanGrowthChartExplanation', 'Public sector loan growth forecast to increase by 3.6% over the next quarter, driven by moderate infrastructure spending and targeted economic stimulus measures.');
+       }
+
+       function initDepositTrendsChart() {
+           const ctx = document.getElementById('depositTrendsChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [28.7, 29.1, 29.5, 29.8, 30.2, 30.5, 30.8, 31.0, 31.2, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, 31.2, 31.5, 31.8, 32.1],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Deposit Volume (Billion $)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('depositTrendsChartExplanation', 'Government deposits projected to grow by 2.9% in the next two quarters, influenced by gradual improvements in cash management strategies and modest economic recovery efforts.');
+       }
+
+       function initTreasuryRevenueChart() {
+           const ctx = document.getElementById('treasuryRevenueChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [815, 830, 845, 858, 870, 879, 885, 889, 892, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, 892, 902, 912, 922],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Revenue (Million $)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('treasuryRevenueChartExplanation', 'Treasury services revenue expected to grow by 3.4% year-over-year, driven by steady adoption of digital payment solutions and enhanced cash management services.');
+       }
+
+       function initClientSatisfactionChart() {
+           const ctx = document.getElementById('clientSatisfactionChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [8.3, 8.4, 8.4, 8.5, 8.5, 8.6, 8.6, 8.7, 8.7, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, 8.7, 8.8, 8.8, 8.9],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           min: 7.5,
+                           max: 9.5,
+                           title: {
+                               display: true,
+                               text: 'Satisfaction Score (0-10)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('clientSatisfactionChartExplanation', 'Public sector client satisfaction projected to improve to 8.9/10 by Q1 2024, driven by continuous enhancements in digital services and personalized advisory support.');
+       }
+
+       function initDigitalAdoptionChart() {
+           const ctx = document.getElementById('digitalAdoptionChart').getContext('2d');
+           const data = {
+               labels: ['Online Banking', 'Mobile App', 'API Integration', 'Real-time Payments', 'Digital Document Management'],
+               datasets: [{
+                   label: 'Current Adoption',
+                   data: [78, 62, 47, 58, 43],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)',
+               }, {
+                   label: 'Projected Adoption (Next Year)',
+                   data: [85, 73, 59, 68, 54],
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)',
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           max: 100,
+                           title: {
+                               display: true,
+                               text: 'Adoption Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('digitalAdoptionChartExplanation', 'Digital services adoption expected to increase across all channels, with mobile app usage projected to grow by 17.7% and API integration by 25.5% in the next year.');
+       }
+
+       function initAdvisoryServicesChart() {
+           const ctx = document.getElementById('advisoryServicesChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [182, 187, 193, 198, 203, 207, 212, 216, 220, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, 220, 226, 232, 238],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Revenue (Million $)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('advisoryServicesChartExplanation', 'Public finance advisory services revenue forecast to grow by 8.2% in the next quarter, driven by increased demand for debt management and sustainable finance consulting.');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Public Sector\nLoan Growth', shape: 'circle' },
+               { id: 2, label: 'Government\nDeposits', shape: 'circle' },
+               { id: 3, label: 'Treasury Services\nRevenue', shape: 'circle' },
+               { id: 4, label: 'Infrastructure\nSpending', shape: 'box' },
+               { id: 5, label: 'Economic\nStimulus', shape: 'box' },
+               { id: 6, label: 'Digital Services\nAdoption', shape: 'box' },
+               { id: 7, label: 'Regulatory\nChanges', shape: 'box' },
+               { id: 8, label: 'Client\nSatisfaction', shape: 'circle' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 4, to: 1, arrows: 'to', label: '0.6' },
+               { from: 5, to: 1, arrows: 'to', label: '0.4' },
+               { from: 5, to: 2, arrows: 'to', label: '0.5' },
+               { from: 6, to: 3, arrows: 'to', label: '0.7' },
+               { from: 7, to: 1, arrows: 'to', label: '0.3' },
+               { from: 7, to: 2, arrows: 'to', label: '0.2' },
+               { from: 6, to: 8, arrows: 'to', label: '0.5' },
+               { from: 3, to: 8, arrows: 'to', label: '0.4' },
+               { from: 1, to: 3, arrows: 'to', label: '0.3' },
+               { from: 2, to: 3, arrows: 'to', label: '0.4' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = {
+               nodes: nodes,
+               edges: edges
+           };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: false
+           };
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initLoanGrowthChart();
+           initDepositTrendsChart();
+           initTreasuryRevenueChart();
+           initClientSatisfactionChart();
+           initDigitalAdoptionChart();
+           initAdvisoryServicesChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

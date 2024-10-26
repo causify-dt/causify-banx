@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Card Services Dashboard</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Card Services</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">24/7 Support Resolution Rate</h3>
+                               <p class="text-sm text-gray-500">(80% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">90%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up mr-1"></i>Increase to 92%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Fraud Protection Adoption</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">75%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up mr-1"></i>Increase to 80%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Fraud Detection Alerts</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">10,000</div>
+                                   <div class="text-sm text-red-500"><i class="fas fa-arrow-down mr-1"></i>Decrease to 9,500</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Zero-Liability Policy Satisfaction</h3>
+                               <p class="text-sm text-gray-500">(82% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">85%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up mr-1"></i>Increase to 88%</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Enhanced customer support systems are improving resolution rates, with a projected 2% increase in the coming quarter.</li>
+                           <li>Fraud protection adoption is growing, particularly among high-value customers, expected to reach 80% adoption rate.</li>
+                           <li>Improved detection systems are reducing the number of fraud alerts by an estimated 5%, enhancing customer trust and satisfaction.</li>
+                           <li>Targeted communication strategies are driving increased satisfaction with the zero-liability policy, projected to rise from 85% to 88%.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Card Services Performance Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Support Resolution Rate Trend <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="supportResolutionChart"></canvas>
+                               </div>
+                               <p id="supportResolutionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Fraud Protection Adoption Rate <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="fraudProtectionChart"></canvas>
+                               </div>
+                               <p id="fraudProtectionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Fraud Detection Alerts <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="fraudAlertsChart"></canvas>
+                               </div>
+                               <p id="fraudAlertsExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Zero-Liability Policy Satisfaction <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="zeroLiabilityChart"></canvas>
+                               </div>
+                               <p id="zeroLiabilityExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function generateTimeSeriesData(startValue, endValue, monthsBack, monthsForward) {
+           const historical = [];
+           const forecast = [];
+           const totalMonths = monthsBack + monthsForward + 1;
+           const increment = (endValue - startValue) / (totalMonths - 1);
+           
+           for (let i = 0; i < totalMonths; i++) {
+               const value = startValue + (i * increment);
+               if (i <= monthsBack) {
+                   historical.push(value);
+                   if (i === monthsBack) {
+                       forecast.push(value);
+                   } else {
+                       forecast.push(null);
+                   }
+               } else {
+                   historical.push(null);
+                   forecast.push(value);
+               }
+           }
+           
+           return { historical, forecast };
+       }
+
+       function initChart(canvasId, label, data, yAxisLabel, tooltipCallback) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const datasets = [
+               {
+                   label: 'Historical',
+                   data: data.historical,
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               },
+               {
+                   label: 'Forecast',
+                   data: data.forecast,
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                   borderDash: [5, 5],
+                   fill: true
+               }
+           ];
+
+           new Chart(ctx, {
+               type: 'line',
+               data: { labels, datasets },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: { title: { display: true, text: 'Month' } },
+                       y: { 
+                           beginAtZero: true,
+                           title: { display: true, text: yAxisLabel }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               label: tooltipCallback
+                           }
+                       },
+                       annotation: {
+                           annotations: {
+                               line1: {
+                                   type: 'line',
+                                   xMin: 9,
+                                   xMax: 9,
+                                   borderColor: 'rgb(169, 169, 169)',
+                                   borderWidth: 2,
+                                   label: {
+                                       content: 'Today',
+                                       enabled: true,
+                                       position: 'top'
+                                   }
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+       }
+
+       function initSupportResolutionChart() {
+           const data = generateTimeSeriesData(88, 92, 9, 3);
+           initChart('supportResolutionChart', 'Support Resolution Rate', data, 'Resolution Rate (%)', 
+               (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(2)}%`);
+           document.getElementById('supportResolutionExplanation').textContent = 
+               'Support resolution rate is projected to improve from 90% to 92% over the next quarter, driven by AI-powered chatbots and enhanced agent training programs.';
+       }
+
+       function initFraudProtectionChart() {
+           const data = generateTimeSeriesData(70, 80, 9, 3);
+           initChart('fraudProtectionChart', 'Fraud Protection Adoption', data, 'Adoption Rate (%)', 
+               (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(2)}%`);
+           document.getElementById('fraudProtectionExplanation').textContent = 
+               'Fraud protection adoption is expected to increase from 75% to 80%, largely due to targeted education campaigns and seamless integration with mobile banking apps.';
+       }
+
+       function initFraudAlertsChart() {
+           const data = generateTimeSeriesData(10500, 9500, 9, 3);
+           initChart('fraudAlertsChart', 'Fraud Detection Alerts', data, 'Number of Alerts', 
+               (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(0)}`);
+           document.getElementById('fraudAlertsExplanation').textContent = 
+               'Fraud detection alerts are predicted to decrease from 10,000 to 9,500 per month, reflecting improved AI-driven fraud detection algorithms and increased customer awareness.';
+       }
+
+       function initZeroLiabilityChart() {
+           const data = generateTimeSeriesData(82, 88, 9, 3);
+           initChart('zeroLiabilityChart', 'Zero-Liability Policy Satisfaction', data, 'Satisfaction Rate (%)', 
+               (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(2)}%`);
+           document.getElementById('zeroLiabilityExplanation').textContent = 
+               'Zero-liability policy satisfaction is forecasted to rise from 85% to 88%, driven by clearer communication strategies and faster claim resolution processes.';
+       }
+
+       function initCausalNetworkGraph() {
+           const container = document.getElementById('causalNetworkGraph');
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Support Systems', color: '#97C2FC' },
+               { id: 2, label: 'Fraud Protection', color: '#FFFF00' },
+               { id: 3, label: 'Customer Satisfaction', color: '#FB7E81' },
+               { id: 4, label: 'Resolution Rate', color: '#7BE141' },
+               { id: 5, label: 'Fraud Alerts', color: '#6E6EFD' },
+               { id: 6, label: 'Zero-Liability Policy', color: '#FFA807' },
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 4, label: '+ 0.6' },
+               { from: 2, to: 5, label: '- 0.4' },
+               { from: 4, to: 3, label: '+ 0.7' },
+               { from: 5, to: 3, label: '- 0.5' },
+               { from: 6, to: 3, label: '+ 0.8' },
+               { from: 2, to: 3, label: '+ 0.6' },
+           ]);
+
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+                   width: 2
+               },
+               physics: { enabled: false },
+               layout: { randomSeed: 2 }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initSupportResolutionChart();
+           initFraudProtectionChart();
+           initFraudAlertsChart();
+           initZeroLiabilityChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

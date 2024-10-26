@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Cash Flow and Liquidity Management</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Cash Flow and Liquidity Management</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Liquidity Position of Clients</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$2.0B</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> $0.2B increase</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cash Flow Volatility</h3>
+                               <p class="text-sm text-gray-500">(80% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">10%</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-down"></i> 2% decrease</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Liquidity Management Tool Adoption</h3>
+                               <p class="text-sm text-gray-500">(88% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">70%</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 5% increase</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Satisfaction with Liquidity Services</h3>
+                               <p class="text-sm text-gray-500">(82% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">80%</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 5% increase</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Corporate clients are projected to increase their liquidity positions by 10% in the next quarter, primarily due to improved cash flow forecasting tools and optimized working capital management strategies.</li>
+                           <li>Cash flow volatility is expected to decrease by 20% for clients who fully adopt our new AI-powered liquidity management platform, leading to more stable financial operations and reduced risk.</li>
+                           <li>Client satisfaction with liquidity services is forecasted to rise by 6.25% following the introduction of real-time cash position monitoring and automated cash pooling features, potentially increasing client retention rates.</li>
+                           <li>Counterfactual: If global interest rates were to unexpectedly decrease by 50 basis points, our analysis suggests that client liquidity positions would increase by an additional 15% due to lower borrowing costs and increased cash holdings.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Cash Flow and Liquidity Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Liquidity Position Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="liquidityPositionChart"></canvas>
+                               </div>
+                               <p id="liquidityPositionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cash Flow Volatility Reduction <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="cashFlowVolatilityChart"></canvas>
+                               </div>
+                               <p id="cashFlowVolatilityExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Liquidity Management Tool Adoption <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="toolAdoptionChart"></canvas>
+                               </div>
+                               <p id="toolAdoptionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Satisfaction Trends <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientSatisfactionChart"></canvas>
+                               </div>
+                               <p id="clientSatisfactionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Working Capital Efficiency <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="workingCapitalChart"></canvas>
+                               </div>
+                               <p id="workingCapitalExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cash Conversion Cycle <span class="text-sm font-normal text-gray-500">(84% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="cashConversionChart"></canvas>
+                               </div>
+                               <p id="cashConversionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           const today = new Date();
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initLiquidityPositionChart() {
+           const ctx = document.getElementById('liquidityPositionChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [1.7, 1.8, 1.85, 1.9, 1.95, 2.0, 2.05, 2.1, 2.15, 2.2, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 2.2, 2.25, 2.3, 2.35],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Liquidity Position ($ Billions)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('liquidityPositionExplanation', 'Forecast: 10% increase in liquidity positions over the next quarter, driven by improved cash flow management strategies and adoption of advanced forecasting tools.');
+       }
+
+       function initCashFlowVolatilityChart() {
+           const ctx = document.getElementById('cashFlowVolatilityChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [14, 13, 12.5, 12, 11.5, 11, 10.5, 10, 9.5, 9, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 9, 8.5, 8, 7.5],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Cash Flow Volatility (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('cashFlowVolatilityExplanation', 'Forecast: 25% reduction in cash flow volatility over the next quarter, attributed to the implementation of AI-powered liquidity management tools and improved forecasting accuracy.');
+       }
+
+       function initToolAdoptionChart() {
+           const ctx = document.getElementById('toolAdoptionChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [55, 57, 60, 62, 65, 67, 69, 70, 72, 73, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 73, 74, 75, 76],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Tool Adoption Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('toolAdoptionExplanation', 'Forecast: 7.1% increase in liquidity management tool adoption over the next quarter, driven by new features and increased awareness of benefits among corporate clients.');
+       }
+
+       function initClientSatisfactionChart() {
+           const ctx = document.getElementById('clientSatisfactionChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [74, 75, 76, 77, 78, 79, 80, 81, 82, 83, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 83, 84, 85, 86],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Client Satisfaction (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('clientSatisfactionExplanation', 'Forecast: 6.25% increase in client satisfaction over the next quarter, attributed to the introduction of real-time cash position monitoring and automated cash pooling features.');
+       }
+
+       function initWorkingCapitalChart() {
+           const ctx = document.getElementById('workingCapitalChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [28, 27, 26, 25, 24, 23, 22, 21, 20, 19, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 19, 18, 17, 16],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Working Capital Cycle (Days)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('workingCapitalExplanation', 'Forecast: 15.8% improvement in working capital efficiency over the next quarter, driven by optimized inventory management and accelerated receivables collection.');
+       }
+
+       function initCashConversionChart() {
+           const ctx = document.getElementById('cashConversionChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [45, 44, 43, 42, 41, 40, 39, 38, 37, 36, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 36, 35, 34, 33],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Cash Conversion Cycle (Days)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('cashConversionExplanation', 'Forecast: 8.3% reduction in cash conversion cycle over the next quarter, resulting from improved supply chain financing and optimized payment terms with suppliers and customers.');
+       }
+
+       function initCausalNetworkGraph() {
+           const container = document.getElementById('causalNetworkGraph');
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Liquidity Position', color: '#97c2fc' },
+               { id: 2, label: 'Cash Flow Volatility', color: '#ffb3ba' },
+               { id: 3, label: 'Tool Adoption', color: '#baffc9' },
+               { id: 4, label: 'Client Satisfaction', color: '#bae1ff' },
+               { id: 5, label: 'Working Capital Efficiency', color: '#ffffba' },
+               { id: 6, label: 'Cash Conversion Cycle', color: '#ffdfba' },
+               { id: 7, label: 'Market Conditions', color: '#f1cbff' },
+               { id: 8, label: 'Regulatory Environment', color: '#d0d0d0' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 3, to: 1, label: '+', arrows: 'to' },
+               { from: 3, to: 2, label: '-', arrows: 'to' },
+               { from: 5, to: 1, label: '+', arrows: 'to' },
+               { from: 6, to: 5, label: '-', arrows: 'to' },
+               { from: 1, to: 4, label: '+', arrows: 'to' },
+               { from: 2, to: 4, label: '-', arrows: 'to' },
+               { from: 7, to: 1, label: '±', arrows: 'to' },
+               { from: 7, to: 2, label: '±', arrows: 'to' },
+               { from: 8, to: 3, label: '±', arrows: 'to' },
+               { from: 8, to: 5, label: '±', arrows: 'to' }
+           ]);
+
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: false,
+               height: '100%',
+               width: '100%'
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           console.log('Initializing dashboard');
+           initLiquidityPositionChart();
+           initCashFlowVolatilityChart();
+           initToolAdoptionChart();
+           initClientSatisfactionChart();
+           initWorkingCapitalChart();
+           initCashConversionChart();
+           initCausalNetworkGraph();
+           console.log('Dashboard initialization complete');
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

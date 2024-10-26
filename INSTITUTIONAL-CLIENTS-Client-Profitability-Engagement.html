@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Client Profitability and Engagement</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Client Profitability and Engagement</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Revenue Per Client</h3>
+                               <p class="confidence mt-1">Confidence: 92%</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$2,345,890</div>
+                                   <div class="text-sm text-green-500 flex items-center"><i class="fas fa-arrow-up mr-1"></i>3.7%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Engagement Score</h3>
+                               <p class="confidence mt-1">Confidence: 89%</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">78</div>
+                                   <div class="text-sm text-red-500 flex items-center"><i class="fas fa-arrow-down mr-1"></i>2.5%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Services per Client</h3>
+                               <p class="confidence mt-1">Confidence: 91%</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">4.7</div>
+                                   <div class="text-sm text-green-500 flex items-center"><i class="fas fa-arrow-up mr-1"></i>6.8%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Wallet Share Percentage</h3>
+                               <p class="confidence mt-1">Confidence: 88%</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">35%</div>
+                                   <div class="text-sm text-green-500 flex items-center"><i class="fas fa-arrow-up mr-1"></i>2.9%</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Top-tier clients projected to increase engagement by 5% next quarter (Confidence: 92%). Primary driver: Enhanced digital platforms.</li>
+                           <li>Wallet share expected to grow by 3% due to cross-selling of treasury services (Confidence: 88%).</li>
+                           <li>Counterfactual: Without the new AI-driven analytics tool, client profitability would decrease by 4% (Confidence: 90%).</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Client Relationship Network <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue Growth Over Time <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="revenueGrowthChart"></canvas>
+                               </div>
+                               <p id="revenueGrowthChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Engagement Index <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="engagementIndexChart"></canvas>
+                               </div>
+                               <p id="engagementIndexChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Services Adoption Rate <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="servicesAdoptionChart"></canvas>
+                               </div>
+                               <p id="servicesAdoptionChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Profit Margin Analysis <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="profitMarginChart"></canvas>
+                               </div>
+                               <p id="profitMarginChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Wallet Share Trend <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="walletShareChart"></canvas>
+                               </div>
+                               <p id="walletShareChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Retention Forecast <span class="text-sm font-normal text-gray-500">(86% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientRetentionChart"></canvas>
+                               </div>
+                               <p id="clientRetentionChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+      function showPage(pageId) {
+          document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+          document.getElementById(pageId + 'Page').classList.add('active');
+        
+          document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+          document.getElementById(pageId + 'Btn').classList.add('active');
+      }
+
+      function generateDateLabels(monthsBack, monthsForward) {
+          const labels = [];
+          const today = new Date();
+          for (let i = -monthsBack; i <= monthsForward; i++) {
+              const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+              labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+          }
+          return labels;
+      }
+
+      function setPredictionExplanation(elementId, explanation) {
+          const element = document.getElementById(elementId);
+          if (element) {
+              element.textContent = explanation;
+          }
+      }
+
+      function initRevenueGrowthChart() {
+          const canvas = document.getElementById('revenueGrowthChart');
+          const ctx = canvas.getContext('2d');
+          const labels = generateDateLabels(9, 3);
+          const historicalDataPoints = 10; // 9 months back + current month
+          const dataPoints = labels.length;
+          const historicalData = [];
+          const forecastData = [];
+
+          // Simulate a realistic revenue growth scenario
+          const baseRevenue = 2000000;
+          const growthRates = [0.018, 0.015, 0.022, 0.019, 0.017, 0.021, 0.016, 0.023, 0.02, 0.018, 0.024, 0.022];
+          const seasonalityFactor = [1, 0.95, 1.02, 1.08, 1.12, 1.15, 1.1, 1.05, 0.98, 0.96, 1.03, 1.07];
+
+          for (let i = 0; i < dataPoints; i++) {
+              const monthIndex = i % 12;
+              const revenue = baseRevenue * (1 + growthRates[monthIndex]) * seasonalityFactor[monthIndex];
+              
+              if (i < historicalDataPoints) {
+                  historicalData.push(Math.round(revenue));
+                  forecastData.push(null);
+              } else {
+                  historicalData.push(null);
+                  forecastData.push(Math.round(revenue * (1 + (Math.random() - 0.5) * 0.05)));
+              }
+          }
+
+          new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      label: 'Revenue',
+                      data: historicalData.map((v, idx) => v !== null ? v : forecastData[idx]),
+                      fill: false,
+                      borderColor: 'rgba(54, 162, 235, 1)',
+                      tension: 0.1,
+                      segment: {
+                          borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints - 1 ? [6, 6] : undefined
+                      }
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                      legend: {
+                          display: false
+                      }
+                  },
+                  scales: {
+                      x: {
+                          title: {
+                              display: true,
+                              text: 'Month'
+                          }
+                      },
+                      y: {
+                          beginAtZero: false,
+                          title: {
+                              display: true,
+                              text: 'Revenue ($)'
+                          }
+                      }
+                  }
+              }
+          });
+
+          setPredictionExplanation('revenueGrowthChartExplanation',
+              'Projected revenue increase of 5.8% next quarter, driven by seasonal uptick in advisory services and increased cross-border transaction volumes.');
+      }
+
+      function initEngagementIndexChart() {
+          const canvas = document.getElementById('engagementIndexChart');
+          const ctx = canvas.getContext('2d');
+          const monthsBack = 9;
+          const monthsForward = 3;
+          const labels = generateDateLabels(monthsBack, monthsForward);
+          const historicalDataPoints = monthsBack + 1; 
+          const dataPoints = labels.length;
+          const historicalData = [];
+          const forecastData = [];
+
+          // Simulate a realistic engagement index scenario
+          const baseScore = 72;
+          const improvementRates = [0.006, 0.004, 0.007, 0.005, 0.003, 0.008, 0.002, 0.006, 0.004, 0.007, 0.005, 0.003];
+          const seasonalityFactor = [1, 0.98, 1.01, 1.03, 1.04, 1.05, 1.02, 1, 0.99, 1.01, 1.02, 1.03];
+
+          for (let i = 0; i < dataPoints; i++) {
+              const monthIndex = i % 12;
+              const score = baseScore * (1 + improvementRates[monthIndex]) * seasonalityFactor[monthIndex];
+              
+              if (i < historicalDataPoints) {
+                  historicalData.push(Math.round(score * 10) / 10);
+                  forecastData.push(null);
+              } else {
+                  historicalData.push(null);
+                  forecastData.push(Math.round((score + (Math.random() - 0.5) * 0.5) * 10) / 10);
+              }
+          }
+
+          new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      label: 'Engagement Score',
+                      data: historicalData.map((v, idx) => v !== null ? v : forecastData[idx]),
+                      fill: false,
+                      borderColor: 'rgba(255, 159, 64, 1)',
+                      tension: 0.1,
+                      segment: {
+                          borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints - 1 ? [6, 6] : undefined
+                      }
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                      legend: {
+                          display: false
+                      }
+                  },
+                  scales: {
+                      x: {
+                          title: {
+                              display: true,
+                              text: 'Month'
+                          }
+                      },
+                      y: {
+                          beginAtZero: false,
+                          title: {
+                              display: true,
+                              text: 'Engagement Score'
+                          }
+                      }
+                  }
+              }
+          });
+
+          setPredictionExplanation('engagementIndexChartExplanation',
+              'Client engagement projected to rise by 1.3% due to the launch of an enhanced digital platform and personalized advisory services.');
+      }
+
+      function initServicesAdoptionChart() {
+          const canvas = document.getElementById('servicesAdoptionChart');
+          const ctx = canvas.getContext('2d');
+          const services = ['Cash Management', 'Trade Finance', 'Securities Services', 'Risk Management', 'Advisory Services'];
+          const currentUsage = [83, 67, 54, 41, 32];
+          const predictedUsage = [85, 70, 57, 46, 38];
+
+          new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: services,
+                  datasets: [{
+                      label: 'Current',
+                      data: currentUsage,
+                      backgroundColor: 'rgba(153, 102, 255, 0.6)'
+                  }, {
+                      label: 'Predicted',
+                      data: predictedUsage,
+                      backgroundColor: 'rgba(255, 206, 86, 0.6)'
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                      legend: {
+                          position: 'bottom'
+                      }
+                  },
+                  scales: {
+                      x: {
+                          title: {
+                              display: false
+                          }
+                      },
+                      y: {
+                          beginAtZero: true,
+                          title: {
+                              display: true,
+                              text: 'Percentage of Clients Using Service'
+                          }
+                      }
+                  }
+              }
+          });
+
+          setPredictionExplanation('servicesAdoptionChartExplanation',
+              'Significant increase expected in Risk Management (12.2%) and Advisory Services (18.8%) adoption due to market volatility and complex regulatory environment.');
+      }
+
+      function initProfitMarginChart() {
+          const canvas = document.getElementById('profitMarginChart');
+          const ctx = canvas.getContext('2d');
+          const monthsBack = 9;
+          const monthsForward = 3;
+          const labels = generateDateLabels(monthsBack, monthsForward);
+          const historicalDataPoints = monthsBack + 1;
+          const dataPoints = labels.length;
+          const historicalData = [];
+          const forecastData = [];
+
+          // Simulate a realistic profit margin scenario
+          const baseMargin = 32;
+          const improvementRates = [0.003, 0.002, 0.004, 0.001, 0.003, 0.005, 0.002, 0.001, 0.003, 0.004, 0.002, 0.003];
+          const seasonalityFactor = [1, 0.99, 1.01, 1.02, 1.03, 1.04, 1.02, 1, 0.98, 0.99, 1.01, 1.02];
+
+          for (let i = 0; i < dataPoints; i++) {
+              const monthIndex = i % 12;
+              const margin = baseMargin * (1 + improvementRates[monthIndex]) * seasonalityFactor[monthIndex];
+              
+              if (i < historicalDataPoints) {
+                  historicalData.push(Math.round(margin * 10) / 10);
+                  forecastData.push(null);
+              } else {
+                  historicalData.push(null);
+                  forecastData.push(Math.round((margin + (Math.random() - 0.5) * 0.3) * 10) / 10);
+              }
+          }
+
+          new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      label: 'Profit Margin (%)',
+                      data: historicalData.map((v, idx) => v !== null ? v : forecastData[idx]),
+                      fill: false,
+                      borderColor: 'rgba(255, 99, 132, 1)',
+                      tension: 0.1,
+                      segment: {
+                          borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints - 1 ? [6, 6] : undefined
+                      }
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                      legend: {
+                          display: false
+                      }
+                  },
+                  scales: {
+                      x: {
+                          title: {
+                              display: true,
+                              text: 'Month'
+                          }
+                      },
+                      y: {
+                          beginAtZero: true,
+                          title: {
+                              display: true,
+                              text: 'Profit Margin (%)'
+                          }
+                      }
+                  }
+              }
+          });
+
+          setPredictionExplanation('profitMarginChartExplanation',
+              'Profit margins projected to improve by 1.5% due to cost optimization initiatives and increased high-margin service uptake.');
+      }
+
+      function initWalletShareChart() {
+          const canvas = document.getElementById('walletShareChart');
+          const ctx = canvas.getContext('2d');
+          const monthsBack = 9;
+          const monthsForward = 3;
+          const labels = generateDateLabels(monthsBack, monthsForward);
+          const historicalDataPoints = monthsBack + 1;
+          const dataPoints = labels.length;
+          const historicalData = [];
+          const forecastData = [];
+
+          for (let i = 0; i < dataPoints; i++) {
+              if (i < historicalDataPoints) {
+                  const share = 30 + i * 0.3 + Math.random() * 0.5;
+                  historicalData.push(share);
+                  forecastData.push(null);
+              } else {
+                  const share = historicalData[historicalDataPoints - 1] + (i - historicalDataPoints + 1) * 0.4 + Math.random() * 0.5;
+                  historicalData.push(null);
+                  forecastData.push(share);
+              }
+          }
+
+          new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      label: 'Wallet Share (%)',
+                      data: historicalData.map((v, idx) => v !== null ? v : forecastData[idx]),
+                      fill: false,
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      tension: 0.1,
+                      segment: {
+                          borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints - 1 ? [6, 6] : undefined
+                      }
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                      legend: {
+                          display: false
+                      }
+                  },
+                  scales: {
+                      x: {
+                          title: {
+                              display: true,
+                              text: 'Month'
+                          }
+                      },
+                      y: {
+                          beginAtZero: true,
+                          title: {
+                              display: true,
+                              text: 'Wallet Share (%)'
+                          }
+                      }
+                  }
+              }
+          });
+
+          setPredictionExplanation('walletShareChartExplanation',
+              'Wallet share expected to grow by 3% as clients consolidate services for efficiency and better integration.');
+      }
+
+      function initClientRetentionChart() {
+          const canvas = document.getElementById('clientRetentionChart');
+          const ctx = canvas.getContext('2d');
+          const monthsBack = 9;
+          const monthsForward = 3;
+          const labels = generateDateLabels(monthsBack, monthsForward);
+          const historicalDataPoints = monthsBack + 1;
+          const dataPoints = labels.length;
+          const historicalData = [];
+          const forecastData = [];
+
+          for (let i = 0; i < dataPoints; i++) {
+              if (i < historicalDataPoints) {
+                  const retention = 90 + i * 0.2 + Math.random() * 0.3;
+                  historicalData.push(retention);
+                  forecastData.push(null);
+              } else {
+                  const retention = historicalData[historicalDataPoints - 1] + (i - historicalDataPoints + 1) * 0.1 + Math.random() * 0.2;
+                  historicalData.push(null);
+                  forecastData.push(retention);
+              }
+          }
+
+          new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      label: 'Client Retention Rate (%)',
+                      data: historicalData.map((v, idx) => v !== null ? v : forecastData[idx]),
+                      fill: false,
+                      borderColor: 'rgba(54, 162, 235, 1)',
+                      tension: 0.1,
+                      segment: {
+                          borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints - 1 ? [6, 6] : undefined
+                      }
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                      legend: {
+                          display: false
+                      }
+                  },
+                  scales: {
+                      x: {
+                          title: {
+                              display: true,
+                              text: 'Month'
+                          }
+                      },
+                      y: {
+                          beginAtZero: true,
+                          title: {
+                              display: true,
+                              text: 'Retention Rate (%)'
+                          }
+                      }
+                  }
+              }
+          });
+
+          setPredictionExplanation('clientRetentionChartExplanation',
+              'Retention rates projected to remain stable with slight improvement due to enhanced client support and loyalty programs.');
+      }
+
+      function initCausalNetworkGraph() {
+          const container = document.getElementById('causalNetworkGraph');
+          const nodes = new vis.DataSet([
+              { id: 1, label: 'Client Profitability' },
+              { id: 2, label: 'Service Adoption' },
+              { id: 3, label: 'Engagement Level' },
+              { id: 4, label: 'Digital Platforms' },
+              { id: 5, label: 'Cross-Selling Efforts' },
+              { id: 6, label: 'Market Volatility' }
+          ]);
+
+          const edges = new vis.DataSet([
+              { from: 2, to: 1, label: 'Positive Influence' },
+              { from: 3, to: 1, label: 'Positive Influence' },
+              { from: 4, to: 3, label: 'Drives' },
+              { from: 5, to: 2, label: 'Enhances' },
+              { from: 6, to: 3, label: 'Negative Influence' }
+          ]);
+
+          const data = { nodes: nodes, edges: edges };
+          const options = {
+              nodes: {
+                  shape: 'dot',
+                  size: 30,
+                  font: { size: 14 }
+              },
+              edges: {
+                  font: { size: 14, align: 'middle' },
+                  color: { color: '#666', highlight: '#000' },
+                  width: 2,
+                  arrows: {
+                      to: { enabled: true, scaleFactor: 1 }
+                  }
+              },
+              physics: {
+                  stabilization: false
+              },
+              height: '100%',
+              width: '100%'
+          };
+
+          new vis.Network(container, data, options);
+      }
+
+      function initDashboard() {
+          console.log('Initializing dashboard');
+
+          initRevenueGrowthChart();
+          initEngagementIndexChart();
+          initServicesAdoptionChart();
+          initProfitMarginChart();
+          initWalletShareChart();
+          initClientRetentionChart();
+          initCausalNetworkGraph();
+
+          console.log('Dashboard initialization complete');
+      }
+
+      document.addEventListener('DOMContentLoaded', initDashboard);
+
+      const today = new Date();
+
+   </script>
+
+
+
+</body>
+</html>

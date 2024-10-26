@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Debt Capital Markets (DCM)</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Debt Capital Markets (DCM)</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Bond Issuance Volume</h3>
+                               <p class="text-sm text-gray-500">(88% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$500M</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> $550M next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Syndicated Loans Volume</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$300M</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> $320M next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">DCM Underwriting Revenue</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$40M</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> $45M next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Interest Rate Trends</h3>
+                               <p class="text-sm text-gray-500">(80% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">2%</div>
+                                   <div class="text-sm text-gray-600"><i class="fas fa-equals"></i> Stable next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Bond issuance growth projected to accelerate by 15% in the real estate and infrastructure sectors, driven by favorable market conditions and increased investor appetite.</li>
+                           <li>Syndicated loans expected to grow by 8% next quarter, primarily fueled by large-cap companies seeking capital for expansion and refinancing activities.</li>
+                           <li>DCM underwriting revenue forecast to increase by 12% due to higher bond and loan volumes, with a potential upside if market volatility remains low.</li>
+                           <li>Counterfactual: If interest rates were to unexpectedly rise by 50 basis points, bond issuance volume could decrease by 20%, significantly impacting our revenue projections.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: DCM Performance Drivers <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Bond Issuance Volume Growth <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="bondIssuanceChart"></canvas>
+                               </div>
+                               <p id="bondIssuanceExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Syndicated Loan Volume Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="syndicatedLoanChart"></canvas>
+                               </div>
+                               <p id="syndicatedLoanExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">DCM Underwriting Revenue Trends <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="underwritingRevenueChart"></canvas>
+                               </div>
+                               <p id="underwritingRevenueExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Interest Rate Impact on Issuance <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="interestRateImpactChart"></canvas>
+                               </div>
+                               <p id="interestRateImpactExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Sector-wise Bond Issuance <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="sectorIssuanceChart"></canvas>
+                               </div>
+                               <p id="sectorIssuanceExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">DCM Market Share Forecast <span class="text-sm font-normal text-gray-500">(83% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="marketShareChart"></canvas>
+                               </div>
+                               <p id="marketShareExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function generateTimeSeriesData(monthsBack, monthsForward, startValue, growth) {
+           const data = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const value = startValue * Math.pow(1 + growth, i);
+               data.push(parseFloat(value.toFixed(2)));
+           }
+           return data;
+       }
+
+       function createChart(canvasId, labels, datasets, yAxisTitle, explanationId, explanation) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           const chart = new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: datasets
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: yAxisTitle
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           document.getElementById(explanationId).textContent = explanation;
+       }
+
+       function initBondIssuanceChart() {
+           const labels = generateDateLabels(9, 3);
+           const historicalData = generateTimeSeriesData(9, 0, 450, 0.02);
+           const forecastData = generateTimeSeriesData(0, 3, historicalData[historicalData.length - 1], 0.03);
+
+           createChart(
+               'bondIssuanceChart',
+               labels,
+               [{
+                   label: 'Historical',
+                   data: historicalData,
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   fill: false
+               }, {
+                   label: 'Forecast',
+                   data: Array(historicalData.length - 1).fill(null).concat(forecastData),
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }],
+               'Bond Issuance Volume ($B)',
+               'bondIssuanceExplanation',
+               'Forecast: 15% increase in bond issuance volume over the next quarter, driven by favorable market conditions and increased investor appetite in real estate and infrastructure sectors.'
+           );
+       }
+
+       function initSyndicatedLoanChart() {
+           const labels = generateDateLabels(9, 3);
+           const historicalData = generateTimeSeriesData(9, 0, 280, 0.015);
+           const forecastData = generateTimeSeriesData(0, 3, historicalData[historicalData.length - 1], 0.02);
+
+           createChart(
+               'syndicatedLoanChart',
+               labels,
+               [{
+                   label: 'Historical',
+                   data: historicalData,
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   fill: false
+               }, {
+                   label: 'Forecast',
+                   data: Array(historicalData.length - 1).fill(null).concat(forecastData),
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }],
+               'Syndicated Loan Volume ($B)',
+               'syndicatedLoanExplanation',
+               'Forecast: 8% growth in syndicated loans next quarter, primarily fueled by large-cap companies seeking capital for expansion and refinancing activities.'
+           );
+       }
+
+       function initUnderwritingRevenueChart() {
+           const labels = generateDateLabels(9, 3);
+           const historicalData = generateTimeSeriesData(9, 0, 35, 0.025);
+           const forecastData = generateTimeSeriesData(0, 3, historicalData[historicalData.length - 1], 0.03);
+
+           createChart(
+               'underwritingRevenueChart',
+               labels,
+               [{
+                   label: 'Historical',
+                   data: historicalData,
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   fill: false
+               }, {
+                   label: 'Forecast',
+                   data: Array(historicalData.length - 1).fill(null).concat(forecastData),
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }],
+               'DCM Underwriting Revenue ($M)',
+               'underwritingRevenueExplanation',
+               'Forecast: 12% increase in DCM underwriting revenue due to higher bond and loan volumes, with potential upside if market volatility remains low.'
+           );
+       }
+
+       function initInterestRateImpactChart() {
+           const labels = generateDateLabels(9, 3);
+           const baselineData = generateTimeSeriesData(9, 3, 500, 0.02);
+           const highRateScenario = generateTimeSeriesData(9, 3, 500, -0.01);
+
+           createChart(
+               'interestRateImpactChart',
+               labels,
+               [{
+                   label: 'Baseline Forecast',
+                   data: baselineData,
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   fill: false
+               }, {
+                   label: 'High Interest Rate Scenario',
+                   data: highRateScenario,
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }],
+               'Bond Issuance Volume ($B)',
+               'interestRateImpactExplanation',
+               'Counterfactual: If interest rates unexpectedly rise by 50 basis points, bond issuance volume could decrease by 20%, significantly impacting our revenue projections.'
+           );
+       }
+
+       function initSectorIssuanceChart() {
+           const ctx = document.getElementById('sectorIssuanceChart').getContext('2d');
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: ['Real Estate', 'Infrastructure', 'Technology', 'Healthcare', 'Energy'],
+                   datasets: [{
+                       label: 'Current Quarter',
+                       data: [120, 100, 80, 60, 40],
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                   }, {
+                       label: 'Next Quarter (Forecast)',
+                       data: [150, 120, 85, 65, 45],
+                       backgroundColor: 'rgba(255, 99, 132, 0.6)'
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Bond Issuance Volume ($B)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('sectorIssuanceExplanation').textContent = 'Real estate and infrastructure sectors are projected to lead bond issuance growth next quarter, with 25% and 20% increases respectively.';
+       }
+
+       function initMarketShareChart() {
+           const labels = generateDateLabels(9, 3);
+           const historicalData = generateTimeSeriesData(9, 0, 8, 0.01);
+           const forecastData = generateTimeSeriesData(0, 3, historicalData[historicalData.length - 1], 0.015);
+
+           createChart(
+               'marketShareChart',
+               labels,
+               [{
+                   label: 'Historical',
+                   data: historicalData,
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   fill: false
+               }, {
+                   label: 'Forecast',
+                   data: Array(historicalData.length - 1).fill(null).concat(forecastData),
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }],
+               'DCM Market Share (%)',
+               'marketShareExplanation',
+               'Our DCM market share is projected to increase from 9.2% to 9.7% next quarter, driven by our strong performance in high-growth sectors and improved client relationships.'
+           );
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Interest Rates', shape: 'circle' },
+               { id: 2, label: 'Economic Growth', shape: 'circle' },
+               { id: 3, label: 'Regulatory Environment', shape: 'circle' },
+               { id: 4, label: 'Bond Issuance Volume', shape: 'circle' },
+               { id: 5, label: 'Syndicated Loans Volume', shape: 'circle' },
+               { id: 6, label: 'DCM Underwriting Revenue', shape: 'circle' },
+               { id: 7, label: 'Market Share', shape: 'circle' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 4, label: '-0.6', arrows: 'to' },
+               { from: 1, to: 5, label: '-0.4', arrows: 'to' },
+               { from: 2, to: 4, label: '0.8', arrows: 'to' },
+               { from: 2, to: 5, label: '0.7', arrows: 'to' },
+               { from: 3, to: 4, label: '0.3', arrows: 'to' },
+               { from: 3, to: 5, label: '0.2', arrows: 'to' },
+               { from: 4, to: 6, label: '0.7', arrows: 'to' },
+               { from: 5, to: 6, label: '0.5', arrows: 'to' },
+               { from: 6, to: 7, label: '0.6', arrows: 'to' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: false
+           };
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initBondIssuanceChart();
+           initSyndicatedLoanChart();
+           initUnderwritingRevenueChart();
+           initInterestRateImpactChart();
+           initSectorIssuanceChart();
+           initMarketShareChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

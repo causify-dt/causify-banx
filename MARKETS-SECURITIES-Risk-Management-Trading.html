@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Risk Management in Trading</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Risk Management in Trading</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">VaR (Value at Risk)</h3>
+                               <p class="text-sm text-gray-500">91% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$12.7M</div>
+                                   <div class="text-sm text-red-500">
+                                       <i class="fas fa-arrow-up"></i> 5.2%
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Sharpe Ratio</h3>
+                               <p class="text-sm text-gray-500">88% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">1.82</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> 0.15
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Liquidity Coverage Ratio</h3>
+                               <p class="text-sm text-gray-500">93% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">128%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> 3%
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Net Stable Funding Ratio</h3>
+                               <p class="text-sm text-gray-500">90% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">112%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> 2%
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>VaR projected to increase by 8% in Q4 due to heightened market volatility (Confidence: 91%). Primary driver: Geopolitical tensions. Secondary factors: Central bank policy shifts (30% impact) and commodity price fluctuations (25% impact).</li>
+                           <li>Sharpe ratio expected to improve to 1.95 by year-end (Confidence: 88%). Key drivers: Enhanced risk management strategies and portfolio optimization techniques.</li>
+                           <li>Liquidity Coverage Ratio forecast to reach 135% in 6 months (Confidence: 93%). Main contributor: Increased high-quality liquid assets holdings. Counterfactual: Without recent regulatory changes, LCR would only reach 130%.</li>
+                           <li>Net Stable Funding Ratio predicted to stabilize at 115% over next quarter (Confidence: 90%). Primary factor: Improved long-term funding structure. Secondary impact: Reduced reliance on short-term wholesale funding (15% contribution).</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Risk Factors <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Value at Risk (VaR) Trend <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="varTrendChart"></canvas>
+                               </div>
+                               <p id="varTrendChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Sharpe Ratio Analysis <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="sharpeRatioChart"></canvas>
+                               </div>
+                               <p id="sharpeRatioChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Liquidity Coverage Ratio (LCR) <span class="text-sm font-normal text-gray-500">(93% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="lcrChart"></canvas>
+                               </div>
+                               <p id="lcrChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Net Stable Funding Ratio (NSFR) <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="nsfrChart"></canvas>
+                               </div>
+                               <p id="nsfrChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Risk-Weighted Assets (RWA) <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="rwaChart"></canvas>
+                               </div>
+                               <p id="rwaChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Stress Test Results <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="stressTestChart"></canvas>
+                               </div>
+                               <p id="stressTestChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initVaRTrendChart() {
+           const ctx = document.getElementById('varTrendChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical VaR',
+                   data: [10.2, 10.5, 10.8, 11.1, 11.4, 11.7, 12.0, 12.3, 12.6, 12.7, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   fill: false
+               }, {
+                   label: 'Predicted VaR',
+                   data: [null, null, null, null, null, null, null, null, null, 12.7, 13.0, 13.3, 13.6],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Value at Risk ($ Millions)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('varTrendChartExplanation', 'VaR projected to increase by 8% in Q4 due to heightened market volatility. Key drivers: geopolitical tensions and central bank policy shifts.');
+       }
+
+       function initSharpeRatioChart() {
+           const ctx = document.getElementById('sharpeRatioChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical Sharpe Ratio',
+                   data: [1.62, 1.65, 1.68, 1.71, 1.74, 1.77, 1.79, 1.81, 1.82, 1.82, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   fill: false
+               }, {
+                   label: 'Predicted Sharpe Ratio',
+                   data: [null, null, null, null, null, null, null, null, null, 1.82, 1.86, 1.90, 1.95],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Sharpe Ratio'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('sharpeRatioChartExplanation', 'Sharpe ratio expected to improve to 1.95 by year-end. Key drivers: Enhanced risk management strategies and portfolio optimization techniques.');
+       }
+
+       function initLCRChart() {
+           const ctx = document.getElementById('lcrChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical LCR',
+                   data: [118, 120, 122, 123, 124, 125, 126, 127, 128, 128, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   fill: false
+               }, {
+                   label: 'Predicted LCR',
+                   data: [null, null, null, null, null, null, null, null, null, 128, 130, 132, 135],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Liquidity Coverage Ratio (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('lcrChartExplanation', 'LCR forecast to reach 135% in 6 months. Main contributor: Increased high-quality liquid assets holdings.');
+       }
+
+       function initNSFRChart() {
+           const ctx = document.getElementById('nsfrChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical NSFR',
+                   data: [106, 107, 108, 109, 110, 111, 112, 112, 112, 112, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   fill: false
+               }, {
+                   label: 'Predicted NSFR',
+                   data: [null, null, null, null, null, null, null, null, null, 112, 113, 114, 115],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Net Stable Funding Ratio (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('nsfrChartExplanation', 'NSFR predicted to stabilize at 115% over next quarter. Primary factor: Improved long-term funding structure.');
+       }
+
+       function initRWAChart() {
+           const ctx = document.getElementById('rwaChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical RWA',
+                   data: [280, 285, 290, 295, 300, 305, 310, 315, 320, 320, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   fill: false
+               }, {
+                   label: 'Predicted RWA',
+                   data: [null, null, null, null, null, null, null, null, null, 320, 325, 330, 335],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Risk-Weighted Assets ($ Billions)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom',
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('rwaChartExplanation', 'RWA projected to increase by 4.7% over the next quarter. Key drivers: Expansion in corporate lending and increased market risk.');
+       }
+
+       function initStressTestChart() {
+           const ctx = document.getElementById('stressTestChart').getContext('2d');
+           const data = {
+               labels: ['Baseline', 'Adverse', 'Severely Adverse'],
+               datasets: [{
+                   label: 'Capital Ratio',
+                   data: [12.5, 10.2, 8.7],
+                   backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(255, 99, 132, 0.6)'],
+                   borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 206, 86, 1)', 'rgba(255, 99, 132, 1)'],
+                   borderWidth: 1
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Capital Ratio (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('stressTestChartExplanation', 'Stress test results show resilience in baseline and adverse scenarios. Action needed to improve capital buffer for severely adverse scenario.');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Market Volatility', color: '#FFD700' },
+               { id: 2, label: 'Interest Rates', color: '#FF6347' },
+               { id: 3, label: 'Credit Risk', color: '#4682B4' },
+               { id: 4, label: 'Liquidity Risk', color: '#32CD32' },
+               { id: 5, label: 'Operational Risk', color: '#BA55D3' },
+               { id: 6, label: 'Regulatory Changes', color: '#FF8C00' },
+               { id: 7, label: 'Economic Indicators', color: '#20B2AA' },
+               { id: 8, label: 'Geopolitical Events', color: '#CD5C5C' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 2, arrows: 'to', label: '0.6' },
+               { from: 1, to: 3, arrows: 'to', label: '0.4' },
+               { from: 2, to: 4, arrows: 'to', label: '0.5' },
+               { from: 3, to: 4, arrows: 'to', label: '0.3' },
+               { from: 5, to: 3, arrows: 'to', label: '0.2' },
+               { from: 6, to: 4, arrows: 'to', label: '0.7' },
+               { from: 6, to: 5, arrows: 'to', label: '0.4' },
+               { from: 7, to: 1, arrows: 'to', label: '0.8' },
+               { from: 7, to: 2, arrows: 'to', label: '0.6' },
+               { from: 8, to: 1, arrows: 'to', label: '0.7' },
+               { from: 8, to: 7, arrows: 'to', label: '0.5' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = {
+               nodes: nodes,
+               edges: edges
+           };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: {
+                       size: 12,
+                       color: '#000000'
+                   },
+                   borderWidth: 2
+               },
+               edges: {
+                   width: 2,
+                   color: { color: '#666666', highlight: '#000000' },
+                   font: {
+                       size: 12,
+                       align: 'middle'
+                   },
+                   arrows: {
+                       to: { enabled: true, scaleFactor: 0.5 }
+                   }
+               },
+               physics: {
+                   enabled: true,
+                   barnesHut: {
+                       gravitationalConstant: -2000,
+                       centralGravity: 0.3,
+                       springLength: 95,
+                       springConstant: 0.04,
+                       damping: 0.09,
+                       avoidOverlap: 0.1
+                   },
+               }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initVaRTrendChart();
+           initSharpeRatioChart();
+           initLCRChart();
+           initNSFRChart();
+           initRWAChart();
+           initStressTestChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

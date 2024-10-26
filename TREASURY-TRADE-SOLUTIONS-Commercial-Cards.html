@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>TREASURY AND TRADE SOLUTIONS - Commercial Cards</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Commercial Cards</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Total Card Spend</h3>
+                               <p class="text-sm text-gray-500">(92% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$2.87B</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 5.2%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Active Cards</h3>
+                               <p class="text-sm text-gray-500">(89% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">183,542</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 3.8%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Avg. Transaction Value</h3>
+                               <p class="text-sm text-gray-500">(87% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$742</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 2.1%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Fraud Prevention Rate</h3>
+                               <p class="text-sm text-gray-500">(95% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">99.7%</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 0.3%</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Total card spend projected to increase by 7.5% in Q4, driven by holiday season and increased business travel (Confidence: 92%).</li>
+                           <li>Implementation of AI-powered fraud detection system expected to improve fraud prevention rate by 0.5% in the next 6 months (Confidence: 95%).</li>
+                           <li>Counterfactual: If new expense management integrations are delayed, active card growth could slow to 1.2% instead of the projected 3.8% (Confidence: 89%).</li>
+                           <li>Corporate travel rebound forecasted to drive 15% increase in airline and hotel transaction volumes by Q2 2024 (Confidence: 87%).</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Commercial Card Performance Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Total Card Spend Forecast <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="cardSpendChart"></canvas>
+                               </div>
+                               <p id="cardSpendChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Active Cards Growth <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="activeCardsChart"></canvas>
+                               </div>
+                               <p id="activeCardsChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Transaction Volume by Industry <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="industryTransactionChart"></canvas>
+                               </div>
+                               <p id="industryTransactionChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Fraud Prevention Rate Trend <span class="text-sm font-normal text-gray-500">(95% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="fraudPreventionChart"></canvas>
+                               </div>
+                               <p id="fraudPreventionChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Transaction Value Forecast <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="avgTransactionValueChart"></canvas>
+                               </div>
+                               <p id="avgTransactionValueChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Card Adoption Rate by Company Size <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="cardAdoptionRateChart"></canvas>
+                               </div>
+                               <p id="cardAdoptionRateChartExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initCardSpendChart() {
+           const ctx = document.getElementById('cardSpendChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [2.50, 2.55, 2.62, 2.68, 2.73, 2.79, 2.82, 2.85, 2.87, 2.87];
+           const forecastData = [2.87, 2.91, 2.95, 2.99];
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       fill: false
+                   }, {
+                       label: 'Forecast',
+                       data: Array(historicalData.length - 1).fill(null).concat(forecastData),
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Total Card Spend (Billion $)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('cardSpendChartExplanation', 'Total card spend projected to reach $2.99B by Q1 2024, driven by increased business travel and holiday season spending.');
+       }
+
+       function initActiveCardsChart() {
+           const ctx = document.getElementById('activeCardsChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [165000, 168000, 171000, 174000, 177000, 179500, 181000, 182500, 183542, 183542];
+           const forecastData = [183542, 185500, 187500, 190000];
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       fill: false
+                   }, {
+                       label: 'Forecast',
+                       data: Array(historicalData.length - 1).fill(null).concat(forecastData),
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Number of Active Cards'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('activeCardsChartExplanation', 'Active cards expected to grow to 190,000 by Q1 2024, boosted by new client acquisitions and improved retention strategies.');
+       }
+
+       function initIndustryTransactionChart() {
+           const ctx = document.getElementById('industryTransactionChart').getContext('2d');
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: ['Travel', 'IT Services', 'Manufacturing', 'Retail', 'Healthcare', 'Others'],
+                   datasets: [{
+                       label: 'Current Quarter',
+                       data: [720, 530, 480, 390, 350, 400],
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                   }, {
+                       label: 'Next Quarter (Forecast)',
+                       data: [828, 556, 504, 409, 367, 420],
+                       backgroundColor: 'rgba(255, 99, 132, 0.6)'
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Transaction Volume (Million $)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('industryTransactionChartExplanation', 'Travel sector expected to see 15% growth in transaction volume, while IT services and manufacturing show moderate increases of 5% and 5% respectively.');
+       }
+
+       function initFraudPreventionChart() {
+           const ctx = document.getElementById('fraudPreventionChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [99.2, 99.3, 99.4, 99.45, 99.5, 99.55, 99.6, 99.65, 99.7, 99.7];
+           const forecastData = [99.7, 99.75, 99.8, 99.85];
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       fill: false
+                   }, {
+                       label: 'Forecast',
+                       data: Array(historicalData.length - 1).fill(null).concat(forecastData),
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           min: 99,
+                           max: 100,
+                           title: {
+                               display: true,
+                               text: 'Fraud Prevention Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('fraudPreventionChartExplanation', 'Fraud prevention rate projected to improve to 99.85% by Q1 2024, driven by AI-powered detection systems and enhanced security protocols.');
+       }
+
+       function initAvgTransactionValueChart() {
+           const ctx = document.getElementById('avgTransactionValueChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [710, 715, 720, 725, 730, 735, 738, 740, 742, 742];
+           const forecastData = [742, 745, 748, 752];
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       fill: false
+                   }, {
+                       label: 'Forecast',
+                       data: Array(historicalData.length - 1).fill(null).concat(forecastData),
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Average Transaction Value ($)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('avgTransactionValueChartExplanation', 'Average transaction value expected to reach $752 by Q1 2024, influenced by increased high-value purchases in travel and IT services sectors.');
+       }
+
+       function initCardAdoptionRateChart() {
+           const ctx = document.getElementById('cardAdoptionRateChart').getContext('2d');
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: ['Small', 'Medium', 'Large', 'Enterprise'],
+                   datasets: [{
+                       label: 'Current Quarter',
+                       data: [35, 52, 68, 82],
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                   }, {
+                       label: 'Next Quarter (Forecast)',
+                       data: [38, 55, 70, 84],
+                       backgroundColor: 'rgba(255, 99, 132, 0.6)'
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           max: 100,
+                           title: {
+                               display: true,
+                               text: 'Adoption Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('cardAdoptionRateChartExplanation', 'Small businesses expected to show highest growth in card adoption, increasing from 35% to 38%, driven by new tailored product offerings and improved onboarding processes.');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Total Card Spend', color: '#97c2fc' },
+               { id: 2, label: 'Business Travel', color: '#ffb3ba' },
+               { id: 3, label: 'Economic Conditions', color: '#baffc9' },
+               { id: 4, label: 'Expense Policies', color: '#bae1ff' },
+               { id: 5, label: 'Digital Adoption', color: '#ffffba' },
+               { id: 6, label: 'Fraud Prevention', color: '#ffdfba' },
+               { id: 7, label: 'Regulatory Changes', color: '#dba1cd' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 2, to: 1, label: '0.6', arrows: 'to' },
+               { from: 3, to: 1, label: '0.4', arrows: 'to' },
+               { from: 4, to: 1, label: '0.3', arrows: 'to' },
+               { from: 5, to: 1, label: '0.5', arrows: 'to' },
+               { from: 6, to: 1, label: '0.2', arrows: 'to' },
+               { from: 7, to: 4, label: '0.4', arrows: 'to' },
+               { from: 3, to: 2, label: '0.5', arrows: 'to' },
+               { from: 5, to: 6, label: '0.6', arrows: 'to' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: { enabled: false },
+               layout: { randomSeed: 2 }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initCardSpendChart();
+           initActiveCardsChart();
+           initIndustryTransactionChart();
+           initFraudPreventionChart();
+           initAvgTransactionValueChart();
+           initCardAdoptionRateChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

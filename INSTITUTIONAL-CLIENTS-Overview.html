@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>INSTITUTIONAL CLIENTS GROUP (ICG) Overview</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Overview</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2" id="kpiCards">
+                       <!-- KPI cards will be dynamically inserted here -->
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2" id="insightsList">
+                           <!-- Insights will be dynamically inserted here -->
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: ICG Performance Drivers <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2" id="chartContainer">
+                       <!-- Charts will be dynamically inserted here -->
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       const microCardsData = [
+           {
+               name: "Total Revenue",
+               current_value: "$8.72B",
+               predicted_value: "$8.91B",
+               trend: "increase",
+               confidence: 92
+           },
+           {
+               name: "Client Assets",
+               current_value: "$1.89T",
+               predicted_value: "$1.94T",
+               trend: "increase",
+               confidence: 88
+           },
+           {
+               name: "Net Interest Margin",
+               current_value: "2.37%",
+               predicted_value: "2.39%",
+               trend: "increase",
+               confidence: 85
+           },
+           {
+               name: "Cost-to-Income Ratio",
+               current_value: "58.3%",
+               predicted_value: "57.8%",
+               trend: "decrease",
+               confidence: 90
+           }
+       ];
+
+       const keyInsights = [
+           "ICG revenue projected to grow by 2.2% in the next quarter, driven by increased trading activity and advisory services.",
+           "Client assets expected to reach $1.94T, reflecting moderate market performance and new client acquisitions.",
+           "Net interest margin improvement of 2 basis points anticipated due to strategic balance sheet management and slight interest rate changes.",
+           "Cost-to-income ratio set to improve by 50 basis points, benefiting from ongoing operational efficiencies and digital transformation initiatives.",
+           "Counterfactual: Without the implementation of AI-driven risk assessment tools, the cost-to-income ratio would likely decrease by only 20 basis points to 58.1%, missing out on the additional 30 basis points improvement."
+       ];
+
+       const chartData = [
+           {
+               id: "revenueChart",
+               title: "ICG Revenue Breakdown",
+               type: "Bar",
+               confidence: 92,
+               prediction: "Investment banking revenue expected to grow by 3.5% due to increased M&A activity and equity underwriting.",
+               data: {
+                   labels: ['Investment Banking', 'Markets and Securities Services', 'Treasury and Trade Solutions', 'Securities Services', 'Private Bank'],
+                   datasets: [
+                       {
+                           label: 'Current Quarter',
+                           data: [2.1, 3.8, 1.5, 0.7, 0.62],
+                           backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                       },
+                       {
+                           label: 'Next Quarter (Predicted)',
+                           data: [2.17, 3.89, 1.53, 0.71, 0.63],
+                           backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                       }
+                   ]
+               }
+           },
+           {
+               id: "clientAssetsChart",
+               title: "Client Assets Under Management",
+               type: "Line",
+               confidence: 88,
+               prediction: "Client assets projected to grow steadily, reaching $1.94T by next quarter due to new client acquisitions and moderate market appreciation.",
+               data: generateTimeSeriesData(9, 3, 1820, 1940, 15)
+           },
+           {
+               id: "netInterestMarginChart",
+               title: "Net Interest Margin Trend",
+               type: "Line",
+               confidence: 85,
+               prediction: "Net interest margin expected to improve slightly to 2.39% driven by modest interest rate changes and optimized asset-liability management.",
+               data: generateTimeSeriesData(9, 3, 2.33, 2.39, 0.01)
+           },
+           {
+               id: "costIncomeRatioChart",
+               title: "Cost-to-Income Ratio",
+               type: "Line",
+               confidence: 90,
+               prediction: "Cost-to-income ratio projected to decrease to 57.8% due to ongoing operational efficiencies and digital transformation initiatives.",
+               data: generateTimeSeriesData(9, 3, 58.9, 57.8, -0.15)
+           },
+           {
+               id: "tradingVolumeChart",
+               title: "Trading Volume by Asset Class",
+               type: "Bar",
+               confidence: 87,
+               prediction: "Equity trading volume expected to increase by 6% due to market volatility and increased client activity.",
+               data: {
+                   labels: ['Equities', 'Fixed Income', 'Currencies', 'Commodities'],
+                   datasets: [
+                       {
+                           label: 'Current Quarter',
+                           data: [450, 620, 380, 180],
+                           backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                       },
+                       {
+                           label: 'Next Quarter (Predicted)',
+                           data: [477, 632, 388, 183],
+                           backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                       }
+                   ]
+               }
+           },
+           {
+               id: "crossSellRatioChart",
+               title: "Cross-Sell Ratio",
+               type: "Line",
+               confidence: 86,
+               prediction: "Cross-sell ratio expected to improve to 3.6 products per client, driven by enhanced product offerings and targeted marketing.",
+               data: generateTimeSeriesData(9, 3, 3.4, 3.6, 0.03)
+           }
+       ];
+
+       function generateTimeSeriesData(monthsBack, monthsForward, startValue, endValue, monthlyChange) {
+           const labels = [];
+           const historical = [];
+           const forecast = [];
+           
+           const totalMonths = monthsBack + monthsForward + 1;
+           const valueChange = (endValue - startValue) / totalMonths;
+
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+               
+               const randomFactor = (Math.random() - 0.5) * monthlyChange * 0.5;
+               const value = startValue + (i + monthsBack) * valueChange + randomFactor;
+               
+               if (i < 0) {
+                   historical.push(Number(value.toFixed(2)));
+                   forecast.push(null);
+               } else if (i === 0) {
+                   historical.push(Number(value.toFixed(2)));
+                   forecast.push(Number(value.toFixed(2)));
+               } else {
+                   historical.push(null);
+                   forecast.push(Number(value.toFixed(2)));
+               }
+           }
+           
+           return { labels, historical, forecast };
+       }
+
+       function initMicroCards() {
+           const container = document.getElementById('kpiCards');
+           microCardsData.forEach(card => {
+               const cardElement = document.createElement('div');
+               cardElement.className = 'w-full sm:w-1/2 lg:w-1/4 px-2 mb-4';
+               cardElement.innerHTML = `
+                   <div class="bg-white rounded-lg shadow p-4">
+                       <h3 class="text-sm font-semibold">${card.name}</h3>
+                       <p class="text-sm text-gray-500">${card.confidence}% Confidence</p>
+                       <div class="mt-2">
+                           <div class="text-2xl font-bold">${card.current_value}</div>
+                           <div class="text-sm ${card.trend === 'increase' ? 'text-green-500' : 'text-red-500'}">
+                               ${card.trend === 'increase' ? '▲' : '▼'} ${card.predicted_value}
+                           </div>
+                       </div>
+                   </div>
+               `;
+               container.appendChild(cardElement);
+           });
+       }
+
+       function initKeyInsights() {
+           const container = document.getElementById('insightsList');
+           keyInsights.forEach(insight => {
+               const li = document.createElement('li');
+               li.textContent = insight;
+               container.appendChild(li);
+           });
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: "ICG Performance", color: "#4CAF50" },
+               { id: 2, label: "Market Volatility", color: "#2196F3" },
+               { id: 3, label: "Interest Rates", color: "#FFC107" },
+               { id: 4, label: "Regulatory Environment", color: "#FF5722" },
+               { id: 5, label: "Digital Transformation", color: "#9C27B0" },
+               { id: 6, label: "Client Relationships", color: "#00BCD4" }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 2, to: 1, label: "High Impact", arrows: "to" },
+               { from: 3, to: 1, label: "Moderate Impact", arrows: "to" },
+               { from: 4, to: 1, label: "Low Impact", arrows: "to" },
+               { from: 5, to: 1, label: "High Impact", arrows: "to" },
+               { from: 6, to: 1, label: "High Impact", arrows: "to" },
+               { from: 5, to: 6, label: "Enhances", arrows: "to" }
+           ]);
+
+           const container = document.getElementById("causalNetworkGraph");
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: "dot",
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: "middle" },
+                   color: { color: "#666", highlight: "#000" },
+                   width: 2
+               },
+               physics: false
+           };
+           new vis.Network(container, data, options);
+       }
+
+       function initCharts() {
+           const container = document.getElementById('chartContainer');
+           chartData.forEach(chart => {
+               const chartElement = document.createElement('div');
+               chartElement.className = 'w-full lg:w-1/2 px-2 mb-4';
+               chartElement.innerHTML = `
+                   <div class="bg-white rounded-lg shadow p-4">
+                       <h3 class="text-sm font-semibold">${chart.title} <span class="text-sm font-normal text-gray-500">(${chart.confidence}% Confidence)</span></h3>
+                       <div class="chart-container mt-4">
+                           <canvas id="${chart.id}"></canvas>
+                       </div>
+                       <p id="${chart.id}Explanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200">${chart.prediction}</p>
+                   </div>
+               `;
+               container.appendChild(chartElement);
+
+               const ctx = document.getElementById(chart.id).getContext('2d');
+               let chartConfig;
+
+               if (chart.type === 'Bar') {
+                   chartConfig = {
+                       type: 'bar',
+                       data: chart.data,
+                       options: {
+                           responsive: true,
+                           maintainAspectRatio: false,
+                           scales: {
+                               y: {
+                                   beginAtZero: true
+                               }
+                           },
+                           plugins: {
+                               legend: {
+                                   position: 'bottom'
+                               }
+                           }
+                       }
+                   };
+               } else if (chart.type === 'Line') {
+                   chartConfig = {
+                       type: 'line',
+                       data: {
+                           labels: chart.data.labels,
+                           datasets: [
+                               {
+                                   label: 'Historical',
+                                   data: chart.data.historical,
+                                   borderColor: 'rgba(75, 192, 192, 1)',
+                                   fill: false
+                               },
+                               {
+                                   label: 'Forecast',
+                                   data: chart.data.forecast,
+                                   borderColor: 'rgba(255, 99, 132, 1)',
+                                   borderDash: [5, 5],
+                                   fill: false
+                               }
+                           ]
+                       },
+                       options: {
+                           responsive: true,
+                           maintainAspectRatio: false,
+                           scales: {
+                               y: {
+                                   beginAtZero: false
+                               }
+                           },
+                           plugins: {
+                               legend: {
+                                   position: 'bottom'
+                               }
+                           }
+                       }
+                   };
+               }
+
+               new Chart(ctx, chartConfig);
+           });
+       }
+
+       function initDashboard() {
+           initMicroCards();
+           initKeyInsights();
+           initCausalNetworkGraph();
+           initCharts();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

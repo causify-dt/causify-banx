@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>MARKETS AND SECURITIES SERVICES: Customer Satisfaction and Feedback</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Customer Satisfaction and Feedback</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Satisfaction Score</h3>
+                               <p class="text-sm text-gray-500">(92% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">8.7</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 0.3</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Net Promoter Score</h3>
+                               <p class="text-sm text-gray-500">(89% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">62</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 5</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Retention Rate</h3>
+                               <p class="text-sm text-gray-500">(94% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">95.3%</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 1.2%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Resolution Time</h3>
+                               <p class="text-sm text-gray-500">(91% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">4.2 hrs</div>
+                                   <div class="text-sm text-red-600"><i class="fas fa-arrow-down"></i> 0.5 hrs</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Customer satisfaction projected to increase by 5% in the next quarter (Confidence: 92%). Primary driver: Implementation of AI-powered chatbots. Secondary factors: Enhanced mobile app features (30% impact) and personalized investment recommendations (25% impact).</li>
+                           <li>Net Promoter Score expected to reach 65 by year-end (Confidence: 89%), driven by improved trade execution speed and expanded research offerings.</li>
+                           <li>Customer retention rate forecast to hit 96% within six months (Confidence: 94%). Key factors: New loyalty program and enhanced risk management tools for institutional clients.</li>
+                           <li>Average resolution time predicted to decrease to 3.8 hours by next quarter (Confidence: 91%). Main contributors: AI-assisted issue categorization and streamlined escalation processes.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Customer Satisfaction Drivers <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Satisfaction Trends <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="satisfactionTrendsChart"></canvas>
+                               </div>
+                               <p id="satisfactionTrendsExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Net Promoter Score by Service <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="npsServiceChart"></canvas>
+                               </div>
+                               <p id="npsServiceExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Retention Rate <span class="text-sm font-normal text-gray-500">(94% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="retentionRateChart"></canvas>
+                               </div>
+                               <p id="retentionRateExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Resolution Time <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="resolutionTimeChart"></canvas>
+                               </div>
+                               <p id="resolutionTimeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Feedback Sentiment Analysis <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="sentimentAnalysisChart"></canvas>
+                               </div>
+                               <p id="sentimentAnalysisExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Support Channel Usage <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="supportChannelChart"></canvas>
+                               </div>
+                               <p id="supportChannelExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           const today = new Date();
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initSatisfactionTrendsChart() {
+           const ctx = document.getElementById('satisfactionTrendsChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+           
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Customer Satisfaction Score',
+                       data: [8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.7, 8.7, 8.8, 8.9, 9.0],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true,
+                       tension: 0.4,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints - 1 ? [6, 6] : undefined,
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           min: 7.5,
+                           max: 9.5,
+                           title: {
+                               display: true,
+                               text: 'Satisfaction Score'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       },
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('satisfactionTrendsExplanation',
+               'Customer satisfaction score projected to reach 9.0 by Q3 2024, driven by enhanced digital services and personalized investment recommendations.');
+       }
+
+       function initNPSServiceChart() {
+           const ctx = document.getElementById('npsServiceChart').getContext('2d');
+           
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: ['Trading Platform', 'Research Services', 'Advisory', 'Asset Management', 'Risk Management'],
+                   datasets: [{
+                       label: 'Current NPS',
+                       data: [58, 62, 55, 60, 57],
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                   }, {
+                       label: 'Predicted NPS (Next Quarter)',
+                       data: [62, 65, 59, 63, 61],
+                       backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           max: 70,
+                           title: {
+                               display: true,
+                               text: 'Net Promoter Score'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'top',
+                       },
+                       title: {
+                           display: false
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('npsServiceExplanation',
+               'Research Services NPS projected to increase by 3 points, driven by AI-powered market insights. Trading Platform NPS expected to rise 4 points due to improved execution speed.');
+       }
+
+       function initRetentionRateChart() {
+           const ctx = document.getElementById('retentionRateChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+           
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Retention Rate',
+                       data: [93.2, 93.5, 93.8, 94.1, 94.3, 94.6, 94.8, 95.1, 95.3, 95.3, 95.6, 95.8, 96.0],
+                       borderColor: 'rgba(255, 159, 64, 1)',
+                       backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                       fill: true,
+                       tension: 0.4,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints - 1 ? [6, 6] : undefined,
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           min: 92,
+                           max: 97,
+                           title: {
+                               display: true,
+                               text: 'Retention Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       },
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('retentionRateExplanation',
+               'Customer retention rate expected to reach 96% by Q3 2024, boosted by new loyalty program and improved risk management tools for institutional clients.');
+       }
+
+       function initResolutionTimeChart() {
+           const ctx = document.getElementById('resolutionTimeChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+           
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Average Resolution Time',
+                       data: [5.3, 5.1, 4.9, 4.7, 4.6, 4.4, 4.3, 4.2, 4.2, 4.2, 4.0, 3.9, 3.8],
+                       borderColor: 'rgba(153, 102, 255, 1)',
+                       backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                       fill: true,
+                       tension: 0.4,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints - 1 ? [6, 6] : undefined,
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           min: 3,
+                           max: 6,
+                           title: {
+                               display: true,
+                               text: 'Resolution Time (hours)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       },
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('resolutionTimeExplanation',
+               'Average resolution time projected to decrease to 3.8 hours by Q3 2024, driven by AI-assisted issue categorization and streamlined escalation processes.');
+       }
+
+       function initSentimentAnalysisChart() {
+           const ctx = document.getElementById('sentimentAnalysisChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+           
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Positive',
+                       data: [65, 67, 69, 71, 72, 74, 75, 77, 78, 78, 80, 81, 82],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true,
+                       tension: 0.4,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints - 1 ? [6, 6] : undefined,
+                       }
+                   }, {
+                       label: 'Neutral',
+                       data: [25, 24, 23, 22, 21, 20, 19, 18, 17, 17, 16, 15, 14],
+                       borderColor: 'rgba(255, 206, 86, 1)',
+                       backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                       fill: true,
+                       tension: 0.4,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints - 1 ? [6, 6] : undefined,
+                       }
+                   }, {
+                       label: 'Negative',
+                       data: [10, 9, 8, 7, 7, 6, 6, 5, 5, 5, 4, 4, 4],
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                       fill: true,
+                       tension: 0.4,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints - 1 ? [6, 6] : undefined,
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           max: 100,
+                           title: {
+                               display: true,
+                               text: 'Sentiment (%)'
+                           },
+                           stacked: true
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('sentimentAnalysisExplanation',
+               'Positive sentiment expected to increase to 82% by Q3 2024, driven by improved customer service and enhanced product offerings. Negative sentiment projected to decrease to 4%.');
+       }
+
+       function initSupportChannelChart() {
+           const ctx = document.getElementById('supportChannelChart').getContext('2d');
+           
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: ['Phone', 'Email', 'Live Chat', 'AI Chatbot', 'Social Media'],
+                   datasets: [{
+                       label: 'Current Usage',
+                       data: [35, 25, 20, 15, 5],
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                   }, {
+                       label: 'Predicted Usage (Next Quarter)',
+                       data: [30, 22, 23, 20, 5],
+                       backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           max: 40,
+                           title: {
+                               display: true,
+                               text: 'Usage (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'top',
+                       },
+                       title: {
+                           display: false
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('supportChannelExplanation',
+               'AI Chatbot usage projected to increase by 5% due to improved natural language processing. Live Chat expected to grow 3% as customers prefer instant digital communication.');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Customer Satisfaction', shape: 'circle', color: '#FFA500' },
+               { id: 2, label: 'Service Quality', shape: 'circle' },
+               { id: 3, label: 'Product Range', shape: 'circle' },
+               { id: 4, label: 'Digital Experience', shape: 'circle' },
+               { id: 5, label: 'Pricing', shape: 'circle' },
+               { id: 6, label: 'Customer Support', shape: 'circle' },
+               { id: 7, label: 'Market Insights', shape: 'circle' },
+               { id: 8, label: 'Trade Execution', shape: 'circle' },
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 2, to: 1, label: '0.35', arrows: 'to' },
+               { from: 3, to: 1, label: '0.20', arrows: 'to' },
+               { from: 4, to: 1, label: '0.25', arrows: 'to' },
+               { from: 5, to: 1, label: '0.15', arrows: 'to' },
+               { from: 6, to: 2, label: '0.40', arrows: 'to' },
+               { from: 7, to: 2, label: '0.30', arrows: 'to' },
+               { from: 8, to: 2, label: '0.30', arrows: 'to' },
+               { from: 4, to: 6, label: '0.25', arrows: 'to' },
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: {
+                   stabilization: false,
+                   barnesHut: {
+                       gravitationalConstant: -2000,
+                       centralGravity: 0.3,
+                       springLength: 95,
+                       springConstant: 0.04,
+                       damping: 0.09,
+                       avoidOverlap: 0.1
+                   }
+               },
+               layout: {
+                   randomSeed: 2
+               }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           console.log('Initializing dashboard');
+           
+           initSatisfactionTrendsChart();
+           initNPSServiceChart();
+           initRetentionRateChart();
+           initResolutionTimeChart();
+           initSentimentAnalysisChart();
+           initSupportChannelChart();
+           initCausalNetworkGraph();
+           
+           console.log('Dashboard initialization complete');
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

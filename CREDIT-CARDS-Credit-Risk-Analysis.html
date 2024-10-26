@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Credit Risk Analysis</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Credit Risk Analysis</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Delinquency Rate</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">4%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-down"></i> 3.5% next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">High-Risk Customer Segment</h3>
+                               <p class="text-sm text-gray-500">(80% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">10,000</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-down"></i> 5% reduction expected</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Losses Due to Defaults</h3>
+                               <p class="text-sm text-gray-500">(90% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$20M</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-down"></i> $18M predicted</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Loan-to-Credit Ratio</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">50%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-down"></i> 48% predicted</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Enhanced credit risk analysis is helping predict and reduce delinquencies, with a projected 12.5% decrease in the next quarter.</li>
+                           <li>Targeted interventions are effectively reducing high-risk customer segments, with a 5% reduction expected in the coming months.</li>
+                           <li>Optimized lending practices and improved scoring models are projected to mitigate default losses by 10% in the next quarter.</li>
+                           <li>Counterfactual: If the new AI-driven credit scoring model had not been implemented, losses due to defaults would have increased by 15% instead of decreasing.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Credit Risk Factors <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Delinquency Rate Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="delinquencyRateChart"></canvas>
+                               </div>
+                               <p id="delinquencyRateExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Credit Risk by Segment <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="creditRiskSegmentChart"></canvas>
+                               </div>
+                               <p id="creditRiskSegmentExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Default Losses Projection <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="defaultLossesChart"></canvas>
+                               </div>
+                               <p id="defaultLossesExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Loan-to-Credit Ratio Trend <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="loanToCreditRatioChart"></canvas>
+                               </div>
+                               <p id="loanToCreditRatioExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Risk-Adjusted Return on Capital (RAROC) <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="rarocChart"></canvas>
+                               </div>
+                               <p id="rarocExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Credit Score Distribution <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="creditScoreDistributionChart"></canvas>
+                               </div>
+                               <p id="creditScoreDistributionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initDelinquencyRateChart() {
+           const ctx = document.getElementById('delinquencyRateChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [4.2, 4.1, 4.0, 4.1, 4.2, 4.1, 4.0, 3.9, 4.0, 4.0];
+           const forecastData = [null, null, null, null, null, null, null, null, null, 4.0, 3.8, 3.6, 3.5];
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Forecast',
+                       data: forecastData,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Delinquency Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('delinquencyRateExplanation',
+               'Delinquency rate projected to decrease from 4% to 3.5% over the next quarter, driven by improved credit scoring models and proactive risk management strategies.');
+       }
+
+       function initCreditRiskSegmentChart() {
+           const ctx = document.getElementById('creditRiskSegmentChart').getContext('2d');
+           const data = {
+               labels: ['Low Risk', 'Medium Risk', 'High Risk', 'Very High Risk'],
+               datasets: [{
+                   label: 'Current',
+                   data: [45, 35, 15, 5],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)',
+               }, {
+                   label: 'Projected (Next Quarter)',
+                   data: [48, 34, 13, 5],
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)',
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Percentage of Portfolio'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('creditRiskSegmentExplanation',
+               'Projected 3% increase in low-risk segment and 2% decrease in high-risk segment due to improved customer screening and risk assessment processes.');
+       }
+
+       function initDefaultLossesChart() {
+           const ctx = document.getElementById('defaultLossesChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [22, 21, 20.5, 20.8, 20.2, 19.8, 20.1, 20.3, 20, 20];
+           const forecastData = [null, null, null, null, null, null, null, null, null, 20, 19.5, 18.8, 18];
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Forecast',
+                       data: forecastData,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Default Losses ($ millions)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('defaultLossesExplanation',
+               'Default losses projected to decrease from $20 million to $18 million, attributed to enhanced credit scoring models and proactive risk management strategies.');
+       }
+
+       function initLoanToCreditRatioChart() {
+           const ctx = document.getElementById('loanToCreditRatioChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [52, 51.5, 51, 50.8, 50.5, 50.2, 50.4, 50.1, 50, 50];
+           const forecastData = [null, null, null, null, null, null, null, null, null, 50, 49.5, 48.8, 48];
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Forecast',
+                       data: forecastData,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Loan-to-Credit Ratio (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('loanToCreditRatioExplanation',
+               'Loan-to-Credit ratio projected to improve from 50% to 48%, indicating better credit utilization and reduced risk exposure.');
+       }
+
+       function initRarocChart() {
+           const ctx = document.getElementById('rarocChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [12.5, 12.8, 13.1, 13.3, 13.5, 13.7, 13.9, 14.1, 14.3, 14.5];
+           const forecastData = [null, null, null, null, null, null, null, null, null, 14.5, 14.8, 15.1, 15.4];
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Forecast',
+                       data: forecastData,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'RAROC (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('rarocExplanation',
+               'RAROC projected to increase from 14.5% to 15.4%, indicating improved risk-adjusted profitability due to better risk management and pricing strategies.');
+       }
+
+       function initCreditScoreDistributionChart() {
+           const ctx = document.getElementById('creditScoreDistributionChart').getContext('2d');
+           const data = {
+               labels: ['300-549', '550-649', '650-699', '700-749', '750-850'],
+               datasets: [{
+                   label: 'Current',
+                   data: [5, 15, 25, 30, 25],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)',
+               }, {
+                   label: 'Projected (Next Quarter)',
+                   data: [4, 13, 26, 31, 26],
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)',
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Percentage of Customers'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('creditScoreDistributionExplanation',
+               'Credit score distribution projected to improve, with a 3% decrease in subprime (300-649) and 2% increase in prime (700+) segments, driven by targeted financial education programs and stricter lending criteria.');
+       }
+
+       function initCausalNetworkGraph() {
+           const container = document.getElementById('causalNetworkGraph');
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Credit Score', color: '#97C2FC' },
+               { id: 2, label: 'Income', color: '#97C2FC' },
+               { id: 3, label: 'Employment Status', color: '#97C2FC' },
+               { id: 4, label: 'Debt-to-Income Ratio', color: '#FFFF00' },
+               { id: 5, label: 'Payment History', color: '#FFFF00' },
+               { id: 6, label: 'Credit Utilization', color: '#FFFF00' },
+               { id: 7, label: 'Delinquency Rate', color: '#FF9999' },
+               { id: 8, label: 'Default Risk', color: '#FF9999' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 7, label: '-0.6', arrows: 'to' },
+               { from: 2, to: 4, label: '-0.4', arrows: 'to' },
+               { from: 3, to: 2, label: '0.5', arrows: 'to' },
+               { from: 4, to: 8, label: '0.7', arrows: 'to' },
+               { from: 5, to: 1, label: '0.8', arrows: 'to' },
+               { from: 6, to: 1, label: '-0.5', arrows: 'to' },
+               { from: 7, to: 8, label: '0.8', arrows: 'to' }
+           ]);
+
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: false,
+               height: '100%',
+               width: '100%'
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initDelinquencyRateChart();
+           initCreditRiskSegmentChart();
+           initDefaultLossesChart();
+           initLoanToCreditRatioChart();
+           initRarocChart();
+           initCreditScoreDistributionChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

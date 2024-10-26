@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Private Banking and Wealth Management</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Overview</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2" id="kpiCards">
+                       <!-- KPI cards will be dynamically inserted here -->
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2" id="insightsList">
+                           <!-- Insights will be dynamically inserted here -->
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Wealth Management Drivers <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Assets Under Management <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="assetsUnderManagementChart"></canvas>
+                               </div>
+                               <p id="assetsUnderManagementExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Acquisition Rate <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientAcquisitionChart"></canvas>
+                               </div>
+                               <p id="clientAcquisitionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Investment Performance <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="investmentPerformanceChart"></canvas>
+                               </div>
+                               <p id="investmentPerformanceExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Satisfaction Score <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientSatisfactionChart"></canvas>
+                               </div>
+                               <p id="clientSatisfactionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue per Client <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="revenuePerClientChart"></canvas>
+                               </div>
+                               <p id="revenuePerClientExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Product Adoption Rate <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="productAdoptionChart"></canvas>
+                               </div>
+                               <p id="productAdoptionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initKPICards() {
+           const kpiCardsData = [
+               {
+                   name: "Assets Under Management",
+                   current_value: "$12.7B",
+                   predicted_value: "$13.2B",
+                   trend: "increase",
+                   confidence: 92
+               },
+               {
+                   name: "Client Acquisition Rate",
+                   current_value: "4.8%",
+                   predicted_value: "5.2%",
+                   trend: "increase",
+                   confidence: 89
+               },
+               {
+                   name: "Average Client Portfolio Value",
+                   current_value: "$2.3M",
+                   predicted_value: "$2.4M",
+                   trend: "increase",
+                   confidence: 87
+               },
+               {
+                   name: "Client Retention Rate",
+                   current_value: "95.2%",
+                   predicted_value: "95.8%",
+                   trend: "increase",
+                   confidence: 91
+               }
+           ];
+
+           const kpiCardsContainer = document.getElementById('kpiCards');
+           kpiCardsData.forEach(kpi => {
+               const card = document.createElement('div');
+               card.className = 'w-full sm:w-1/2 lg:w-1/4 px-2 mb-4';
+               card.innerHTML = `
+                   <div class="bg-white rounded-lg shadow p-4">
+                       <h3 class="text-sm font-semibold">${kpi.name}</h3>
+                       <p class="text-sm text-gray-500">(${kpi.confidence}% Confidence)</p>
+                       <div class="mt-2">
+                           <div class="text-2xl font-bold">${kpi.current_value}</div>
+                           <div class="text-sm ${kpi.trend === 'increase' ? 'text-green-600' : 'text-red-600'}">
+                               ${kpi.trend === 'increase' ? '↑' : '↓'} ${kpi.predicted_value}
+                           </div>
+                       </div>
+                   </div>
+               `;
+               kpiCardsContainer.appendChild(card);
+           });
+       }
+
+       function initInsights() {
+           const insights = [
+               "AI-driven portfolio optimization projected to increase client returns by 2.3% in the next quarter (Confidence: 92%).",
+               "Personalized financial planning services expected to boost client acquisition rate by 8% (Confidence: 89%).",
+               "New sustainable investment options forecasted to attract $450M in assets within 6 months (Confidence: 87%).",
+               "Counterfactual: Without the implementation of AI-driven risk assessment, potential losses could increase by 15% in volatile market conditions."
+           ];
+
+           const insightsList = document.getElementById('insightsList');
+           insights.forEach(insight => {
+               const li = document.createElement('li');
+               li.textContent = insight;
+               insightsList.appendChild(li);
+           });
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: "Market Conditions", color: "#FFA500" },
+               { id: 2, label: "Client Relationships", color: "#4CAF50" },
+               { id: 3, label: "Investment Performance", color: "#2196F3" },
+               { id: 4, label: "Technology Adoption", color: "#9C27B0" },
+               { id: 5, label: "Regulatory Environment", color: "#F44336" },
+               { id: 6, label: "Wealth Management Growth", color: "#795548" }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 3, label: "High Impact" },
+               { from: 2, to: 6, label: "Strong Positive" },
+               { from: 3, to: 6, label: "Strong Positive" },
+               { from: 4, to: 3, label: "Moderate Positive" },
+               { from: 4, to: 2, label: "Moderate Positive" },
+               { from: 5, to: 6, label: "Moderate Negative" }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   arrows: { to: { enabled: true, scaleFactor: 0.5 } }
+               },
+               physics: { enabled: false },
+               layout: { randomSeed: 2 }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initTimeSeriesChart(canvasId, label, historicalData, forecastData, explanation) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const transitionIndex = 9; // Index where forecast starts
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true,
+                       pointRadius: 0
+                   }, {
+                       label: 'Forecast',
+                       data: forecastData,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       pointRadius: 0
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: { title: { display: true, text: 'Month' } },
+                       y: {
+                           beginAtZero: false,
+                           title: { display: true, text: label }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               title: (context) => context[0].parsed.x >= transitionIndex ? 'Forecast' : 'Historical'
+                           }
+                       },
+                       annotation: {
+                           annotations: {
+                               line1: {
+                                   type: 'line',
+                                   xMin: transitionIndex - 0.5,
+                                   xMax: transitionIndex - 0.5,
+                                   borderColor: 'rgb(169, 169, 169)',
+                                   borderWidth: 2,
+                                   label: {
+                                       content: 'Now',
+                                       enabled: true,
+                                       position: 'top'
+                                   }
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation(`${canvasId}Explanation`, explanation);
+       }
+
+       function initDashboard() {
+           initKPICards();
+           initInsights();
+           initCausalNetworkGraph();
+
+           // Assets Under Management Chart
+           initTimeSeriesChart(
+               'assetsUnderManagementChart',
+               'Assets Under Management ($B)',
+               [11.2, 11.5, 11.8, 12.0, 12.2, 12.4, 12.5, 12.6, 12.7, null, null, null],
+               [null, null, null, null, null, null, null, null, 12.7, 12.9, 13.1, 13.2],
+               "Projected 3.9% growth in AUM over the next quarter, driven by new client acquisition and improved investment performance."
+           );
+
+           // Client Acquisition Rate Chart
+           initTimeSeriesChart(
+               'clientAcquisitionChart',
+               'Client Acquisition Rate (%)',
+               [4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.7, 4.8, null, null, null],
+               [null, null, null, null, null, null, null, null, 4.8, 5.0, 5.1, 5.2],
+               "Client acquisition rate expected to rise to 5.2% due to enhanced digital onboarding and targeted marketing campaigns."
+           );
+
+           // Investment Performance Chart
+           initTimeSeriesChart(
+               'investmentPerformanceChart',
+               'Investment Performance (%)',
+               [5.8, 6.0, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, null, null, null],
+               [null, null, null, null, null, null, null, null, 6.8, 6.9, 7.0, 7.1],
+               "Investment performance projected to improve to 7.1% with the integration of AI-driven portfolio optimization strategies."
+           );
+
+           // Client Satisfaction Score Chart
+           initTimeSeriesChart(
+               'clientSatisfactionChart',
+               'Client Satisfaction Score',
+               [8.5, 8.6, 8.6, 8.7, 8.7, 8.8, 8.8, 8.9, 8.9, null, null, null],
+               [null, null, null, null, null, null, null, null, 8.9, 9.0, 9.1, 9.2],
+               "Client satisfaction score expected to reach 9.2 due to improved personalized service and expanded digital offerings."
+           );
+
+           // Revenue per Client Chart
+           initTimeSeriesChart(
+               'revenuePerClientChart',
+               'Revenue per Client ($K)',
+               [42, 43, 44, 45, 46, 47, 48, 49, 50, null, null, null],
+               [null, null, null, null, null, null, null, null, 50, 51, 52, 53],
+               "Revenue per client forecasted to increase to $53K, driven by cross-selling of new investment products and advisory services."
+           );
+
+           // Product Adoption Rate Chart
+           initTimeSeriesChart(
+               'productAdoptionChart',
+               'Product Adoption Rate (%)',
+               [65, 66, 67, 68, 69, 70, 71, 72, 73, null, null, null],
+               [null, null, null, null, null, null, null, null, 73, 74, 75, 76],
+               "Product adoption rate projected to reach 76% with the introduction of new sustainable investment options and robo-advisory services."
+           );
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

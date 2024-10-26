@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Mergers and Acquisitions (M&A)</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Mergers and Acquisitions (M&A)</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">M&A Deal Success Rate</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">75%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> Increase to 78%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Deal Volume by Sector</h3>
+                               <p class="text-sm text-gray-500">90% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$500M</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> Increase to $600M</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">M&A Fees Collected</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$100M</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> Increase to $120M</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Deal Size</h3>
+                               <p class="text-sm text-gray-500">80% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$50M</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> Increase to $55M</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Technology and Healthcare sectors are driving the majority of M&A deal activity, with a projected 20% increase in deal volume over the next quarter.</li>
+                           <li>Higher deal volumes and larger deals are boosting fee revenues, expected to grow by 15% in the coming period.</li>
+                           <li>Improved deal strategy and synergies are leading to a higher success rate for M&A transactions, with a projected 3% increase in success rate.</li>
+                           <li>Cross-border M&A activity is forecasted to increase by 25% due to favorable exchange rates and easing of international trade tensions.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">M&A Deal Process Flow Map <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">M&A Deal Volume by Sector <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="dealVolumeChart"></canvas>
+                               </div>
+                               <p id="dealVolumeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">M&A Deal Success Rate Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="dealSuccessChart"></canvas>
+                               </div>
+                               <p id="dealSuccessExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">M&A Fees Collected Trend <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="feesCollectedChart"></canvas>
+                               </div>
+                               <p id="feesCollectedExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Deal Size Trend <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="dealSizeChart"></canvas>
+                               </div>
+                               <p id="dealSizeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cross-Border M&A Activity <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="crossBorderChart"></canvas>
+                               </div>
+                               <p id="crossBorderExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">M&A Deal Pipeline <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="dealPipelineChart"></canvas>
+                               </div>
+                               <p id="dealPipelineExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function generateDataset(historical, forecast) {
+           return historical.concat(forecast.slice(1));
+       }
+
+       function initDealVolumeChart() {
+           const ctx = document.getElementById('dealVolumeChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [450, 470, 490, 510, 530, 550, 570, 590, 610, 630];
+           const forecastData = [630, 650, 670, 690];
+           const dataset = generateDataset(historicalData, forecastData);
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Deal Volume',
+                       data: dataset,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       tension: 0.1,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalData.length - 1 ? [6, 6] : undefined,
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           display: false
+                       }
+                   },
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Deal Volume ($ Million)'
+                           }
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('dealVolumeExplanation').textContent = 
+               "Forecast: Deal volume in the technology sector is expected to increase by 20% over the next quarter, driven by emerging tech trends and increased corporate cash reserves.";
+       }
+
+       function initDealSuccessChart() {
+           const ctx = document.getElementById('dealSuccessChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [72, 73, 74, 73.5, 74.5, 75, 75.5, 76, 76.5, 77];
+           const forecastData = [77, 77.5, 78, 78.5];
+           const dataset = generateDataset(historicalData, forecastData);
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Success Rate',
+                       data: dataset,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       tension: 0.1,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalData.length - 1 ? [6, 6] : undefined,
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           display: false
+                       }
+                   },
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Success Rate (%)'
+                           }
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('dealSuccessExplanation').textContent = 
+               "Prediction: Deal success rate is projected to increase to 78% due to improved due diligence processes and more strategic partner selection.";
+       }
+
+       function initFeesCollectedChart() {
+           const ctx = document.getElementById('feesCollectedChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [85, 88, 92, 95, 98, 100, 103, 106, 109, 112];
+           const forecastData = [112, 115, 118, 120];
+           const dataset = generateDataset(historicalData, forecastData);
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Fees Collected',
+                       data: dataset,
+                       borderColor: 'rgba(54, 162, 235, 1)',
+                       tension: 0.1,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalData.length - 1 ? [6, 6] : undefined,
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           display: false
+                       }
+                   },
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Fees Collected ($ Million)'
+                           }
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('feesCollectedExplanation').textContent = 
+               "Forecast: M&A fees are expected to increase by 15% in the next quarter, driven by larger deal sizes and increased transaction volumes.";
+       }
+
+       function initDealSizeChart() {
+           const ctx = document.getElementById('dealSizeChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [45, 46, 47, 48, 49, 50, 51, 52, 53, 54];
+           const forecastData = [54, 54.5, 55, 55.5];
+           const dataset = generateDataset(historicalData, forecastData);
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Average Deal Size',
+                       data: dataset,
+                       borderColor: 'rgba(255, 206, 86, 1)',
+                       tension: 0.1,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalData.length - 1 ? [6, 6] : undefined,
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           display: false
+                       }
+                   },
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Average Deal Size ($ Million)'
+                           }
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('dealSizeExplanation').textContent = 
+               "Prediction: Average deal size is expected to increase to $55 million, primarily due to larger transactions in the technology and healthcare sectors.";
+       }
+
+       function initCrossBorderChart() {
+           const ctx = document.getElementById('crossBorderChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalData = [20, 22, 24, 26, 28, 30, 32, 34, 36, 38];
+           const forecastData = [38, 40, 42, 44];
+           const dataset = generateDataset(historicalData, forecastData);
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Cross-Border Activity',
+                       data: dataset,
+                       borderColor: 'rgba(153, 102, 255, 1)',
+                       tension: 0.1,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalData.length - 1 ? [6, 6] : undefined,
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           display: false
+                       }
+                   },
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Cross-Border Deals (%)'
+                           }
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('crossBorderExplanation').textContent = 
+               "Forecast: Cross-border M&A activity is projected to increase by 25% due to favorable exchange rates and easing of international trade tensions.";
+       }
+
+       function initDealPipelineChart() {
+           const ctx = document.getElementById('dealPipelineChart').getContext('2d');
+           const labels = ['Prospecting', 'Due Diligence', 'Negotiation', 'Closing'];
+           const data = [30, 25, 20, 15];
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Number of Deals',
+                       data: data,
+                       backgroundColor: [
+                           'rgba(75, 192, 192, 0.6)',
+                           'rgba(255, 99, 132, 0.6)',
+                           'rgba(255, 206, 86, 0.6)',
+                           'rgba(54, 162, 235, 0.6)'
+                       ],
+                       borderColor: [
+                           'rgba(75, 192, 192, 1)',
+                           'rgba(255, 99, 132, 1)',
+                           'rgba(255, 206, 86, 1)',
+                           'rgba(54, 162, 235, 1)'
+                       ],
+                       borderWidth: 1
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           display: false
+                       }
+                   },
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Number of Deals'
+                           }
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('dealPipelineExplanation').textContent = 
+               "Analysis: The deal pipeline shows a healthy distribution across stages, with a strong prospecting phase indicating potential for future growth.";
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Deal Initiation', shape: 'box' },
+               { id: 2, label: 'Due Diligence', shape: 'box' },
+               { id: 3, label: 'Valuation', shape: 'box' },
+               { id: 4, label: 'Negotiation', shape: 'box' },
+               { id: 5, label: 'Regulatory Approval', shape: 'box' },
+               { id: 6, label: 'Closing', shape: 'box' },
+               { id: 7, label: 'Post-Merger Integration', shape: 'box' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 2, label: '2-4 weeks' },
+               { from: 2, to: 3, label: '4-8 weeks' },
+               { from: 3, to: 4, label: '2-4 weeks' },
+               { from: 4, to: 5, label: '4-12 weeks' },
+               { from: 5, to: 6, label: '2-4 weeks' },
+               { from: 6, to: 7, label: '6-12 months' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = {
+               nodes: nodes,
+               edges: edges
+           };
+           const options = {
+               nodes: {
+                   shape: 'box',
+                   margin: 10,
+                   widthConstraint: {
+                       maximum: 200
+                   }
+               },
+               edges: {
+                   arrows: {
+                       to: { enabled: true, scaleFactor: 1, type: 'arrow' }
+                   },
+                   font: {
+                       size: 12,
+                       align: 'middle'
+                   }
+               },
+               layout: {
+                   hierarchical: {
+                       direction: 'LR',
+                       sortMethod: 'directed'
+                   }
+               },
+               physics: false
+           };
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initDealVolumeChart();
+           initDealSuccessChart();
+           initFeesCollectedChart();
+           initDealSizeChart();
+           initCrossBorderChart();
+           initDealPipelineChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

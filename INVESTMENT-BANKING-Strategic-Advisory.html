@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Strategic Advisory</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Strategic Advisory</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Advisory Deal Volume</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$200M</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up mr-1"></i>
+                                       Predicted $220M next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue from Advisory Services</h3>
+                               <p class="text-sm text-gray-500">88% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$50M</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up mr-1"></i>
+                                       Predicted $55M next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Corporate Restructuring Deals</h3>
+                               <p class="text-sm text-gray-500">80% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">10</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up mr-1"></i>
+                                       Predicted 12 next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">M&A Advisory Success Rate</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">75%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up mr-1"></i>
+                                       Predicted 78% with enhanced strategies
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Advisory services growth is primarily driven by M&A and corporate restructuring, with a projected 10% increase in deal volume next quarter.</li>
+                           <li>Corporate restructuring deals are expected to rise by 20% due to companies optimizing operations in challenging market environments.</li>
+                           <li>M&A advisory success rates are forecasted to improve by 3 percentage points, particularly in the technology and energy sectors, due to enhanced deal strategies.</li>
+                           <li>Counterfactual: If global economic conditions worsen, we predict a 15% decrease in M&A activity, potentially offset by a 25% increase in restructuring advisory services.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Advisory Service Drivers <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Advisory Deal Volume Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="advisoryDealVolumeChart"></canvas>
+                               </div>
+                               <p id="advisoryDealVolumeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue from Advisory Services <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="revenueAdvisoryServicesChart"></canvas>
+                               </div>
+                               <p id="revenueAdvisoryServicesExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Corporate Restructuring Deals <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="corporateRestructuringChart"></canvas>
+                               </div>
+                               <p id="corporateRestructuringExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">M&A Advisory Success Rate <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="maAdvisorySuccessChart"></canvas>
+                               </div>
+                               <p id="maAdvisorySuccessExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Advisory Services by Industry <span class="text-sm font-normal text-gray-500">(83% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="advisoryServicesByIndustryChart"></canvas>
+                               </div>
+                               <p id="advisoryServicesByIndustryExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cross-Border vs. Domestic Deals <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="crossBorderVsDomesticChart"></canvas>
+                               </div>
+                               <p id="crossBorderVsDomesticExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initAdvisoryDealVolumeChart() {
+           const ctx = document.getElementById('advisoryDealVolumeChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [180, 185, 190, 192, 195, 198, 200, 203, 205, 200, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 200, 208, 215, 220],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Deal Volume ($ millions)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('advisoryDealVolumeExplanation', 'Advisory deal volume is projected to increase by 10% in the next quarter, primarily driven by a surge in tech sector M&A activity and increased demand for restructuring services in the retail industry.');
+       }
+
+       function initRevenueAdvisoryServicesChart() {
+           const ctx = document.getElementById('revenueAdvisoryServicesChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [42, 44, 45, 47, 48, 49, 50, 51, 52, 50, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 50, 52, 54, 55],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Revenue ($ millions)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('revenueAdvisoryServicesExplanation', 'Revenue from advisory services is expected to grow by 10% in the next quarter, with the largest contributions coming from M&A advisory in the technology sector and restructuring services in retail.');
+       }
+
+       function initCorporateRestructuringChart() {
+           const ctx = document.getElementById('corporateRestructuringChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [7, 8, 8, 9, 9, 10, 10, 11, 11, 10, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 10, 11, 11, 12],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Number of Deals'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('corporateRestructuringExplanation', 'Corporate restructuring deals are projected to increase by 20% in the next quarter, with a significant portion coming from the retail and energy sectors due to ongoing market challenges.');
+       }
+
+       function initMaAdvisorySuccessChart() {
+           const ctx = document.getElementById('maAdvisorySuccessChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [70, 71, 72, 73, 74, 74, 75, 75, 76, 75, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 75, 76, 77, 78],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Success Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('maAdvisorySuccessExplanation', 'M&A advisory success rate is expected to improve by 3 percentage points in the next quarter, driven by enhanced deal strategies and a focus on high-potential sectors such as technology and healthcare.');
+       }
+
+       function initAdvisoryServicesByIndustryChart() {
+           const ctx = document.getElementById('advisoryServicesByIndustryChart').getContext('2d');
+           const data = {
+               labels: ['Technology', 'Healthcare', 'Financial Services', 'Energy', 'Retail', 'Others'],
+               datasets: [{
+                   label: 'Current Quarter',
+                   data: [30, 25, 20, 15, 5, 5],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)',
+               }, {
+                   label: 'Next Quarter (Forecast)',
+                   data: [35, 27, 18, 12, 6, 2],
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)',
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Percentage of Total Advisory Services'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('advisoryServicesByIndustryExplanation', 'Technology sector is expected to drive advisory services growth, increasing from 30% to 35% of total volume. Healthcare shows moderate growth, while Financial Services and Energy sectors are projected to decline slightly.');
+       }
+
+       function initCrossBorderVsDomesticChart() {
+           const ctx = document.getElementById('crossBorderVsDomesticChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Cross-Border',
+                   data: [40, 42, 45, 47, 50, 52, 55, 57, 60, 60, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Domestic',
+                   data: [60, 58, 55, 53, 50, 48, 45, 43, 40, 40, null, null, null],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Cross-Border Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 60, 62, 64, 65],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }, {
+                   label: 'Domestic Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 40, 38, 36, 35],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Percentage of Total Deals'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('crossBorderVsDomesticExplanation', 'Cross-border deals are projected to increase from 60% to 65% of total deal volume in the next quarter, driven by growing interest in international expansion and diversification strategies.');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Economic\nConditions', shape: 'circle' },
+               { id: 2, label: 'Regulatory\nEnvironment', shape: 'circle' },
+               { id: 3, label: 'Technology\nAdvancement', shape: 'circle' },
+               { id: 4, label: 'M&A Activity', shape: 'circle' },
+               { id: 5, label: 'Corporate\nRestructuring', shape: 'circle' },
+               { id: 6, label: 'Advisory\nDeal Volume', shape: 'circle' },
+               { id: 7, label: 'Revenue', shape: 'circle' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 4, label: '0.7' },
+               { from: 1, to: 5, label: '0.6' },
+               { from: 2, to: 4, label: '0.5' },
+               { from: 2, to: 5, label: '0.4' },
+               { from: 3, to: 4, label: '0.8' },
+               { from: 4, to: 6, label: '0.9' },
+               { from: 5, to: 6, label: '0.7' },
+               { from: 6, to: 7, label: '0.95' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'circle',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   arrows: { to: { enabled: true, scaleFactor: 0.5 } }
+               },
+               physics: { enabled: false },
+               layout: { randomSeed: 2 }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initAdvisoryDealVolumeChart();
+           initRevenueAdvisoryServicesChart();
+           initCorporateRestructuringChart();
+           initMaAdvisorySuccessChart();
+           initAdvisoryServicesByIndustryChart();
+           initCrossBorderVsDomesticChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

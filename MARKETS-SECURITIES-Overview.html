@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Markets and Securities Services</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Overview</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2" id="kpiCards">
+                       <!-- KPI cards will be dynamically inserted here -->
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2" id="insightsList">
+                           <!-- Insights will be dynamically inserted here -->
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Trading Dynamics <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2" id="chartContainer">
+                       <!-- Charts will be dynamically inserted here -->
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       const microCards = [
+           {
+               name: "Trading Volume",
+               current_value: "$8.2B",
+               predicted_value: "$8.7B",
+               trend: "increase",
+               confidence: 91
+           },
+           {
+               name: "Market Share",
+               current_value: "23.5%",
+               predicted_value: "24.8%",
+               trend: "increase",
+               confidence: 87
+           },
+           {
+               name: "Revenue",
+               current_value: "$412M",
+               predicted_value: "$438M",
+               trend: "increase",
+               confidence: 89
+           },
+           {
+               name: "Client Satisfaction",
+               current_value: "4.2/5",
+               predicted_value: "4.4/5",
+               trend: "increase",
+               confidence: 85
+           }
+       ];
+
+       const keyInsights = [
+           "Trading volumes projected to increase by 6.1% in the next quarter (Confidence: 91%). Primary driver: Increased market volatility. Secondary factors: New product offerings (30% impact) and improved trading platform (25% impact).",
+           "Market share expected to grow by 1.3 percentage points, reaching 24.8% (Confidence: 87%). Key factors: Enhanced algorithmic trading capabilities and expansion in emerging markets.",
+           "Revenue forecast to rise by 6.3% to $438M (Confidence: 89%). Main contributors: Higher trading volumes and increased fees from advisory services.",
+           "Counterfactual: If global economic growth slows by 1%, trading volumes could decrease by 4.2%, potentially reducing revenue by $18M in the next quarter."
+       ];
+
+       const chartData = [
+           {
+               id: "tradingVolumeChart",
+               title: "Trading Volume Forecast",
+               type: "Line",
+               confidence: 91,
+               prediction: "Trading volumes projected to increase by 6.1% in the next quarter, driven by increased market volatility and new product offerings."
+           },
+           {
+               id: "marketShareChart",
+               title: "Market Share Trends",
+               type: "Line",
+               confidence: 87,
+               prediction: "Market share expected to grow by 1.3 percentage points, reaching 24.8%, due to enhanced algorithmic trading capabilities and expansion in emerging markets."
+           },
+           {
+               id: "revenueChart",
+               title: "Revenue Projection",
+               type: "Line",
+               confidence: 89,
+               prediction: "Revenue forecast to rise by 6.3% to $438M, primarily due to higher trading volumes and increased fees from advisory services."
+           },
+           {
+               id: "assetClassPerformanceChart",
+               title: "Asset Class Performance",
+               type: "Bar",
+               confidence: 86,
+               prediction: "Equities and fixed income expected to outperform other asset classes, with projected growth of 7.2% and 5.8% respectively."
+           },
+           {
+               id: "clientSatisfactionChart",
+               title: "Client Satisfaction Trends",
+               type: "Line",
+               confidence: 85,
+               prediction: "Client satisfaction scores projected to improve from 4.2 to 4.4 out of 5, driven by enhanced digital platforms and personalized services."
+           },
+           {
+               id: "operationalEfficiencyChart",
+               title: "Operational Efficiency Metrics",
+               type: "Bar",
+               confidence: 88,
+               prediction: "Operational efficiency expected to improve by 5.3%, resulting in cost savings of approximately $12M in the next quarter."
+           }
+       ];
+
+       function populateKPICards() {
+           const kpiCardsContainer = document.getElementById('kpiCards');
+           microCards.forEach(card => {
+               const cardElement = document.createElement('div');
+               cardElement.className = 'w-full sm:w-1/2 lg:w-1/4 px-2 mb-4';
+               cardElement.innerHTML = `
+                   <div class="bg-white rounded-lg shadow p-4">
+                       <h3 class="text-sm font-semibold">${card.name}</h3>
+                       <p class="text-sm text-gray-500">(${card.confidence}% Confidence)</p>
+                       <div class="mt-2">
+                           <div class="text-2xl font-bold">${card.current_value}</div>
+                           <div class="text-sm ${card.trend === 'increase' ? 'text-green-500' : 'text-red-500'}">
+                               ${card.trend === 'increase' ? '↑' : '↓'} ${card.predicted_value}
+                           </div>
+                       </div>
+                   </div>
+               `;
+               kpiCardsContainer.appendChild(cardElement);
+           });
+       }
+
+       function populateInsights() {
+           const insightsList = document.getElementById('insightsList');
+           keyInsights.forEach(insight => {
+               const li = document.createElement('li');
+               li.textContent = insight;
+               insightsList.appendChild(li);
+           });
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: "Market Volatility", color: "#E0F7FA" },
+               { id: 2, label: "Trading Volume", color: "#B2EBF2" },
+               { id: 3, label: "New Products", color: "#80DEEA" },
+               { id: 4, label: "Algorithmic Trading", color: "#4DD0E1" },
+               { id: 5, label: "Market Share", color: "#26C6DA" },
+               { id: 6, label: "Revenue", color: "#00BCD4" },
+               { id: 7, label: "Client Satisfaction", color: "#00ACC1" },
+               { id: 8, label: "Operational Efficiency", color: "#0097A7" }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 2, label: "Increases", arrows: "to" },
+               { from: 3, to: 2, label: "Boosts", arrows: "to" },
+               { from: 4, to: 5, label: "Improves", arrows: "to" },
+               { from: 2, to: 6, label: "Drives", arrows: "to" },
+               { from: 5, to: 6, label: "Contributes to", arrows: "to" },
+               { from: 7, to: 5, label: "Enhances", arrows: "to" },
+               { from: 8, to: 6, label: "Increases", arrows: "to" }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'box',
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: false,
+               layout: {
+                   hierarchical: {
+                       direction: 'UD',
+                       sortMethod: 'directed'
+                   }
+               }
+           };
+           new vis.Network(container, data, options);
+       }
+
+       function generateTimeSeriesData(monthsBack, monthsForward, baseValue, growthRate) {
+           const data = [];
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+               const value = baseValue * Math.pow(1 + growthRate, i);
+               data.push(i < 0 ? value : null);
+           }
+           const forecast = data.map((value, index) => index >= monthsBack ? baseValue * Math.pow(1 + growthRate, index - monthsBack) : null);
+           return { labels, historical: data, forecast };
+       }
+
+       function createChart(chartData, dataGenerator) {
+           const canvas = document.createElement('canvas');
+           canvas.id = chartData.id;
+           const chartContainer = document.createElement('div');
+           chartContainer.className = 'w-full lg:w-1/2 px-2 mb-4';
+           chartContainer.innerHTML = `
+               <div class="bg-white rounded-lg shadow p-4">
+                   <h3 class="text-sm font-semibold">${chartData.title} <span class="text-sm font-normal text-gray-500">(${chartData.confidence}% Confidence)</span></h3>
+                   <div class="chart-container mt-4">
+                       ${canvas.outerHTML}
+                   </div>
+                   <p id="${chartData.id}Explanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200">${chartData.prediction}</p>
+               </div>
+           `;
+           document.getElementById('chartContainer').appendChild(chartContainer);
+
+           const ctx = document.getElementById(chartData.id).getContext('2d');
+           const { labels, historical, forecast } = dataGenerator();
+
+           new Chart(ctx, {
+               type: chartData.type.toLowerCase(),
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historical,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Forecast',
+                       data: forecast,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                       borderDash: [5, 5],
+                       fill: true
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: { title: { display: true, text: 'Month' } },
+                       y: { beginAtZero: false, title: { display: true, text: 'Value' } }
+                   },
+                   plugins: {
+                       legend: { position: 'bottom' },
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].dataset.label === 'Forecast' ? 'Forecast' : 'Historical';
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+       }
+
+       function initCharts() {
+           chartData.forEach(chart => {
+               let dataGenerator;
+               switch (chart.id) {
+                   case 'tradingVolumeChart':
+                       dataGenerator = () => generateTimeSeriesData(9, 3, 8.2, 0.02);
+                       break;
+                   case 'marketShareChart':
+                       dataGenerator = () => generateTimeSeriesData(9, 3, 23.5, 0.005);
+                       break;
+                   case 'revenueChart':
+                       dataGenerator = () => generateTimeSeriesData(9, 3, 412, 0.02);
+                       break;
+                   case 'assetClassPerformanceChart':
+                       dataGenerator = () => ({
+                           labels: ['Equities', 'Fixed Income', 'Commodities', 'FX', 'Derivatives'],
+                           historical: [30, 25, 15, 20, 10],
+                           forecast: [32, 26, 14, 19, 9]
+                       });
+                       break;
+                   case 'clientSatisfactionChart':
+                       dataGenerator = () => generateTimeSeriesData(9, 3, 4.2, 0.005);
+                       break;
+                   case 'operationalEfficiencyChart':
+                       dataGenerator = () => ({
+                           labels: ['Trading', 'Settlement', 'Risk Management', 'Compliance', 'IT Infrastructure'],
+                           historical: [85, 80, 75, 70, 65],
+                           forecast: [90, 84, 79, 73, 68]
+                       });
+                       break;
+               }
+               createChart(chart, dataGenerator);
+           });
+       }
+
+       function initDashboard() {
+           populateKPICards();
+           populateInsights();
+           initCausalNetworkGraph();
+           initCharts();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

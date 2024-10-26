@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Retail Banking Customer Acquisition</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Account Opening Forecast</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">New Account Openings</h3>
+                               <p class="text-sm text-gray-500">92% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">15,723</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 17,295</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Conversion Rate</h3>
+                               <p class="text-sm text-gray-500">89% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">3.8%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 4.2%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Time to Open</h3>
+                               <p class="text-sm text-gray-500">87% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">18.5 min</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-down"></i> 16.2 min</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Acquisition Cost</h3>
+                               <p class="text-sm text-gray-500">90% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$142</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-down"></i> $128</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>New account openings projected to increase by 15% in the next quarter (Confidence: 93%). Primary driver: Targeted digital marketing campaigns. Secondary factors: Competitive interest rates (25% impact) and streamlined online application process (20% impact).</li>
+                           <li>Conversion rate expected to improve from 3.8% to 4.2% due to AI-powered personalized product recommendations and improved user experience on the mobile app.</li>
+                           <li>Average time to open an account forecasted to decrease by 12.4% (from 18.5 to 16.2 minutes) following the implementation of digital identity verification and automated document processing.</li>
+                           <li>Customer Acquisition Cost predicted to decrease by 9.9% (from $142 to $128) as a result of improved targeting efficiency and increased organic growth through referral programs.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Acquisition Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Acquisition Funnel <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="acquisitionFunnelChart"></canvas>
+                               </div>
+                               <p id="acquisitionFunnelExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Channel Performance <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="channelPerformanceChart"></canvas>
+                               </div>
+                               <p id="channelPerformanceExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Segmentation <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="customerSegmentationChart"></canvas>
+                               </div>
+                               <p id="customerSegmentationExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Product Adoption <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="productAdoptionChart"></canvas>
+                               </div>
+                               <p id="productAdoptionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">CLV Prediction <span class="text-sm font-normal text-gray-500">(86% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clvPredictionChart"></canvas>
+                               </div>
+                               <p id="clvPredictionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Campaign ROI <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="campaignROIChart"></canvas>
+                               </div>
+                               <p id="campaignROIExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           const today = new Date();
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initAcquisitionFunnelChart(canvas, data) {
+           const ctx = canvas.getContext('2d');
+           const labels = generateDateLabels(data.monthsBack, data.monthsForward);
+           const historicalDataPoints = data.monthsBack + 1; // Including current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: data.historical,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Predicted',
+                       data: data.predicted,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: {
+                           title: {
+                               display: true,
+                               text: 'Month'
+                           }
+                       },
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Number of New Accounts'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].datasetIndex === 0 ? 'Historical' : 'Prediction';
+                               }
+                           }
+                       },
+                       annotation: {
+                           annotations: {
+                               line1: {
+                                   type: 'line',
+                                   xMin: historicalDataPoints - 0.5,
+                                   xMax: historicalDataPoints - 0.5,
+                                   borderColor: 'rgb(169, 169, 169)',
+                                   borderWidth: 2,
+                                   label: {
+                                       content: 'Now',
+                                       enabled: true,
+                                       position: 'top'
+                                   }
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('acquisitionFunnelExplanation', data.explanation);
+       }
+
+       function initChannelPerformanceChart(canvas) {
+           const ctx = canvas.getContext('2d');
+           const labels = ['Branch', 'Online', 'Mobile App', 'Referral', 'Social Media', 'Direct Mail'];
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Current',
+                       data: [300, 450, 200, 150, 100, 50],
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                   }, {
+                       label: 'Predicted (Next Quarter)',
+                       data: [280, 500, 250, 180, 130, 40],
+                       backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Number of New Accounts'
+                           }
+                       }
+                   },
+                   plugins: {
+                       title: {
+                           display: false
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('channelPerformanceExplanation',
+               'Online and mobile channels projected to grow 30% and 45% respectively, driven by AI chatbots and new mobile app features. Branch performance expected to decline 5% as customers shift to digital.');
+       }
+
+       function initCustomerSegmentationChart(canvas) {
+           const ctx = canvas.getContext('2d');
+           new Chart(ctx, {
+               type: 'doughnut',
+               data: {
+                   labels: ['Young Professionals', 'Families', 'Retirees', 'Students', 'Small Business'],
+                   datasets: [{
+                       data: [30, 25, 20, 15, 10],
+                       backgroundColor: [
+                           'rgba(255, 99, 132, 0.6)',
+                           'rgba(54, 162, 235, 0.6)',
+                           'rgba(255, 206, 86, 0.6)',
+                           'rgba(75, 192, 192, 0.6)',
+                           'rgba(153, 102, 255, 0.6)'
+                       ]
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       title: {
+                           display: false
+                       },
+                       legend: {
+                           position: 'right'
+                       }
+                   },
+                   cutout: '50%',
+                   layout: {
+                       padding: {
+                           left: '7.5%',
+                           right: '7.5%',
+                           top: '7.5%',
+                           bottom: '7.5%'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('customerSegmentationExplanation',
+               'Expecting 10% increase in young professionals and 7% in families, due to new "First Home Saver" account and partnerships with tech companies for specialized banking services.');
+       }
+
+       function initProductAdoptionChart(canvas) {
+           const ctx = canvas.getContext('2d');
+           const labels = generateDateLabels(5, 2);
+           const historicalDataPoints = 6; // 5 months back + current month
+          
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Checking Accounts',
+                       data: [500, 550, 600, 650, 700, 750, 800, 850],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }, {
+                       label: 'Savings Accounts',
+                       data: [300, 320, 340, 360, 380, 400, 420, 440],
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }, {
+                       label: 'Credit Cards',
+                       data: [200, 210, 220, 230, 240, 250, 260, 270],
+                       borderColor: 'rgba(255, 206, 86, 1)',
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Number of New Products'
+                           }
+                       }
+                   },
+                   plugins: {
+                       title: {
+                           display: false
+                       },
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('productAdoptionExplanation',
+               'Checking accounts forecast 20% growth due to "Zero-Fee" account and integrated budgeting tools. Credit card adoptions expected to rise 15% following new cashback rewards program.');
+       }
+
+       function initCLVPredictionChart(canvas) {
+           const ctx = canvas.getContext('2d');
+           const labels = generateDateLabels(5, 2);
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Actual CLV',
+                       data: [5000, 5200, 5400, 5600, 5800, 6000, null, null],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Predicted CLV',
+                       data: [null, null, null, null, null, 6000, 6200, 6400],
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Customer Lifetime Value ($)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       title: {
+                           display: false
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('clvPredictionExplanation',
+               'CLV projected to increase 12% driven by AI-powered product recommendations, new loyalty program improving retention by 10%, and expansion of wealth management services.');
+       }
+
+       function initCampaignROIChart(canvas) {
+           const ctx = canvas.getContext('2d');
+           const labels = generateDateLabels(5, 2);
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Actual ROI',
+                       data: [1.2, 1.3, 1.4, 1.5, 1.6, 1.7, null, null],
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                   }, {
+                       label: 'Predicted ROI',
+                       data: [null, null, null, null, null, 1.7, 1.8, 1.9],
+                       backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'ROI'
+                           }
+                       }
+                   },
+                   plugins: {
+                       title: {
+                           display: false
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('campaignROIExplanation',
+               'Campaign ROI forecast to improve 20% due to ML-driven customer segmentation, shift to high-performing digital channels, and new referral program with 40% higher conversion rate.');
+       }
+
+       function initCausalNetworkGraph() {
+           const container = document.getElementById('causalNetworkGraph');
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Digital Marketing', color: '#E6F3FF' },
+               { id: 2, label: 'Interest Rates', color: '#FFE6E6' },
+               { id: 3, label: 'Online Application', color: '#E6FFE6' },
+               { id: 4, label: 'Customer Service', color: '#FFE6FF' },
+               { id: 5, label: 'Product Features', color: '#FFFFE6' },
+               { id: 6, label: 'New Account Openings', color: '#E6FFFF' }
+           ]);
+           const edges = new vis.DataSet([
+               { from: 1, to: 6, label: '35%', arrows: 'to' },
+               { from: 2, to: 6, label: '25%', arrows: 'to' },
+               { from: 3, to: 6, label: '20%', arrows: 'to' },
+               { from: 4, to: 6, label: '10%', arrows: 'to' },
+               { from: 5, to: 6, label: '10%', arrows: 'to' }
+           ]);
+
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'box',
+                   margin: 10,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: false,
+               layout: {
+                   hierarchical: {
+                       direction: 'LR',
+                       sortMethod: 'directed'
+                   }
+               },
+               height: '100%',
+               width: '100%'
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           console.log('Initializing dashboard');
+          
+           const acquisitionFunnelData = {
+               monthsBack: 9,
+               monthsForward: 3,
+               historical: [12500, 13000, 13500, 14000, 14500, 15000, 15500, 16000, 16500, null, null, null, null],
+               predicted: [null, null, null, null, null, null, null, null, 16500, 17000, 17500, 18000, 18500],
+               explanation: "Forecast: 15% increase in new account openings over the next quarter, driven by enhanced digital onboarding process and targeted marketing campaigns."
+           };
+           initAcquisitionFunnelChart(document.getElementById('acquisitionFunnelChart'), acquisitionFunnelData);
+
+           initChannelPerformanceChart(document.getElementById('channelPerformanceChart'));
+           initCustomerSegmentationChart(document.getElementById('customerSegmentationChart'));
+           initProductAdoptionChart(document.getElementById('productAdoptionChart'));
+           initCLVPredictionChart(document.getElementById('clvPredictionChart'));
+           initCampaignROIChart(document.getElementById('campaignROIChart'));
+           initCausalNetworkGraph();
+           console.log('Dashboard initialization complete');
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+
+   </script>
+</body>
+</html>

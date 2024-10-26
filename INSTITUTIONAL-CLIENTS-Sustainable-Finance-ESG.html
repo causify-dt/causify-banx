@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Sustainable Finance and ESG</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Sustainable Finance and ESG</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2" id="kpiCards">
+                       <!-- Dynamic KPI cards will be inserted here -->
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul id="insightsList" class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <!-- Dynamic insights will be inserted here -->
+                       </ul>
+                   </div>
+
+                   <!-- Interactive Visualization -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold" id="visualizationTitle"></h3>
+                       <div id="interactiveVisualization" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2" id="chartsContainer">
+                       <!-- Dynamic charts will be inserted here -->
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       // Data for the dashboard
+       const today = new Date();
+       const screenTitle = 'Sustainable Finance and ESG';
+
+       const microCards = [
+           {
+               name: 'Green Bonds Issued',
+               confidence: 92,
+               current_value: '$4.75B',
+               predicted_value: '$4.89B',
+               trend: 'increase'
+           },
+           {
+               name: 'ESG Loans Portfolio',
+               confidence: 89,
+               current_value: '$12.3B',
+               predicted_value: '$12.5B',
+               trend: 'increase'
+           },
+           {
+               name: 'Carbon Footprint Reduction',
+               confidence: 94,
+               current_value: '27%',
+               predicted_value: '28%',
+               trend: 'increase'
+           },
+           {
+               name: 'Renewable Energy Investments',
+               confidence: 90,
+               current_value: '$8.6B',
+               predicted_value: '$8.7B',
+               trend: 'increase'
+           }
+       ];
+
+       const keyInsights = [
+           'Projected 2.9% increase in green bond issuance next quarter (Confidence: 92%). Primary driver: Steady growth in investor demand for sustainable assets.',
+           'ESG loan portfolio expected to grow by 1.6% (Confidence: 89%) due to gradual corporate shifts towards sustainable practices.',
+           'Counterfactual: Without current ESG initiatives, renewable energy investments would stagnate, potentially slowing progress towards sustainability goals.',
+           'Carbon footprint reduction continues to improve incrementally (Confidence: 94%), driven by ongoing operational efficiencies and renewable energy adoption.'
+       ];
+
+       const interactiveVisualization = {
+           type: 'Interactive Location Map',
+           title: 'Renewable Energy Project Investments Worldwide',
+           description: 'Global distribution of renewable energy investments.',
+           locations: [
+               {
+                   name: 'Wind Farm - Texas, USA',
+                   coordinates: [31.9686, -99.9018],
+                   metrics: { investment: '$1.35B' }
+               },
+               {
+                   name: 'Solar Plant - Rajasthan, India',
+                   coordinates: [27.0238, 74.2179],
+                   metrics: { investment: '$920M' }
+               },
+               {
+                   name: 'Hydro Plant - São Paulo, Brazil',
+                   coordinates: [-23.5505, -46.6333],
+                   metrics: { investment: '$780M' }
+               },
+               {
+                   name: 'Geothermal - Reykjavik, Iceland',
+                   coordinates: [64.1265, -21.8174],
+                   metrics: { investment: '$510M' }
+               },
+               {
+                   name: 'Biomass - Berlin, Germany',
+                   coordinates: [52.5200, 13.4050],
+                   metrics: { investment: '$630M' }
+               }
+           ],
+           zoom_level: 2,
+           center: [20, 0]
+       };
+
+       const chartsData = [
+           {
+               id: 'greenBondIssuanceChart',
+               title: 'Green Bond Issuance Over Time',
+               type: 'Time Series',
+               confidence: 92,
+               prediction: 'Green bond issuance is expected to continue its gradual upward trend due to increasing investor demand.',
+               data: generateChartData(9, 3, 4500, [120, -50, 210, 80, 150, -30, 180, 90, 140], [110, 40, 140]),
+               config: {}
+           },
+           {
+               id: 'esgLoanGrowthChart',
+               title: 'ESG Loans Portfolio Growth',
+               type: 'Time Series',
+               confidence: 89,
+               prediction: 'Steady but modest growth in ESG loans driven by corporate sustainability initiatives.',
+               data: generateChartData(9, 3, 12000, [80, 140, -30, 170, 50, 190, 30, 180, 120], [160, 110, 200]),
+               config: {}
+           },
+           {
+               id: 'carbonReductionChart',
+               title: 'Carbon Footprint Reduction',
+               type: 'Line',
+               confidence: 94,
+               prediction: 'Gradual improvement in carbon footprint reduction due to ongoing operational efficiencies.',
+               data: generatePercentageData(9, 3, 25, [0.3, 0.2, 0.4, 0.1, 0.3, 0.2, 0.3, 0.1, 0.4], [0.3, 0.2, 0.5]),
+               config: {}
+           },
+           {
+               id: 'renewableInvestmentsChart',
+               title: 'Renewable Energy Investments',
+               type: 'Time Series',
+               confidence: 90,
+               prediction: 'Investments in renewable energy are projected to grow steadily, with some fluctuations due to market conditions.',
+               data: generateChartData(9, 3, 8500, [50, 120, -30, 170, 10, 140, 90, 30, 180], [80, 50, 120]),
+               config: {}
+           },
+           {
+               id: 'esgRatingsChart',
+               title: 'Average ESG Ratings Improvement',
+               type: 'Bar',
+               confidence: 88,
+               prediction: 'ESG ratings expected to improve across the portfolio.',
+               data: generateRatingsData(),
+               config: {}
+           },
+           {
+               id: 'industryImpactChart',
+               title: 'Industry Impact on ESG Metrics',
+               type: 'Pie',
+               confidence: 85,
+               prediction: 'Diversification across industries affects overall ESG performance.',
+               data: generateIndustryImpactData(),
+               config: {}
+           },
+           {
+               id: 'counterfactualChart',
+               title: 'Counterfactual: Impact Without ESG Initiatives',
+               type: 'Line',
+               confidence: 80,
+               prediction: 'Without ESG initiatives, carbon reduction would stagnate.',
+               data: generateCounterfactualData(),
+               config: {}
+           }
+       ];
+
+       // Functions to generate data
+       function generateChartData(monthsBack, monthsForward, baseValue, histIncrements, forecastIncrements) {
+           const labels = [];
+           const historical = [];
+           const forecast = [];
+           let value = baseValue;
+
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+
+               if (i < 0) {
+                   value += histIncrements[i + monthsBack];
+                   historical.push(value);
+                   forecast.push(null);
+               } else if (i === 0) {
+                   historical.push(value);
+                   forecast.push(value);
+               } else {
+                   value += forecastIncrements[i - 1];
+                   historical.push(null);
+                   forecast.push(value);
+               }
+           }
+
+           return { labels, historical, forecast };
+       }
+
+       function generatePercentageData(monthsBack, monthsForward, baseValue, histIncrements, forecastIncrements) {
+           const labels = [];
+           const historical = [];
+           const forecast = [];
+           let value = baseValue;
+
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+
+               if (i < 0) {
+                   value += histIncrements[i + monthsBack];
+                   historical.push(parseFloat(value.toFixed(1)));
+                   forecast.push(null);
+               } else if (i === 0) {
+                   historical.push(parseFloat(value.toFixed(1)));
+                   forecast.push(parseFloat(value.toFixed(1)));
+               } else {
+                   value += forecastIncrements[i - 1];
+                   historical.push(null);
+                   forecast.push(parseFloat(value.toFixed(1)));
+               }
+           }
+
+           return { labels, historical, forecast };
+       }
+
+       function generateRatingsData() {
+           const labels = ['Q1 23', 'Q2 23', 'Q3 23', 'Q4 23', 'Q1 24'];
+           const data = [6.5, 6.8, 7.1, 7.4, 7.8];
+           return { labels, data };
+       }
+
+       function generateIndustryImpactData() {
+           const labels = ['Energy', 'Manufacturing', 'Technology', 'Healthcare', 'Finance'];
+           const data = [25, 20, 30, 15, 10];
+           return { labels, data };
+       }
+
+       function generateCounterfactualData() {
+           const labels = [];
+           const actual = [];
+           const counterfactual = [];
+           const monthsBack = 9;
+           const monthsForward = 3;
+           const totalMonths = monthsBack + monthsForward + 1;
+           let valueActual = 25;
+           let valueCounter = 25;
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+               if (i < 0) {
+                   actual.push(valueActual);
+                   counterfactual.push(valueCounter);
+                   valueActual += 0.5;
+                   valueCounter += 0.3;
+               } else if (i === 0) {
+                   actual.push(valueActual);
+                   counterfactual.push(valueCounter);
+               } else {
+                   actual.push(valueActual);
+                   counterfactual.push(valueCounter);
+                   valueActual += 0.7;
+                   valueCounter += 0.3;
+               }
+           }
+           return { labels, actual, counterfactual };
+       }
+
+       // Functions to initialize the dashboard
+       function initDashboard() {
+           // Set the screen title
+           document.querySelector('h2').textContent = screenTitle;
+
+           // Initialize KPI Cards
+           const kpiContainer = document.getElementById('kpiCards');
+           microCards.forEach(card => {
+               const trendIcon = card.trend === 'increase' ? '<i class="fas fa-arrow-up text-green-500"></i>' : '<i class="fas fa-arrow-down text-red-500"></i>';
+               const cardDiv = document.createElement('div');
+               cardDiv.className = 'w-full sm:w-1/2 lg:w-1/4 px-2 mb-4';
+               cardDiv.innerHTML = `
+                   <div class="bg-white rounded-lg shadow p-4">
+                       <h3 class="text-sm font-semibold">${card.name}</h3>
+                       <p class="text-xs text-gray-500 mt-1">Confidence: ${card.confidence}%</p>
+                       <div class="mt-2">
+                           <div class="text-2xl font-bold">${card.predicted_value}</div>
+                           <div class="flex items-center text-sm">
+                               ${trendIcon}
+                               <span class="ml-1">${card.current_value}</span>
+                           </div>
+                       </div>
+                   </div>
+               `;
+               kpiContainer.appendChild(cardDiv);
+           });
+
+           // Initialize Insights
+           const insightsList = document.getElementById('insightsList');
+           keyInsights.forEach(insight => {
+               const li = document.createElement('li');
+               li.textContent = insight;
+               insightsList.appendChild(li);
+           });
+
+           // Initialize Interactive Visualization
+           document.getElementById('visualizationTitle').textContent = `${interactiveVisualization.title}`;
+           initInteractiveMap();
+
+           // Initialize Charts
+           const chartsContainer = document.getElementById('chartsContainer');
+           chartsData.forEach(chartData => {
+               const chartDiv = document.createElement('div');
+               chartDiv.className = 'w-full lg:w-1/2 px-2 mb-4';
+               chartDiv.innerHTML = `
+                   <div class="bg-white rounded-lg shadow p-4">
+                       <h3 class="text-sm font-semibold">${chartData.title} <span class="text-sm font-normal text-gray-500">(${chartData.confidence}% Confidence)</span></h3>
+                       <div class="chart-container mt-4">
+                           <canvas id="${chartData.id}"></canvas>
+                       </div>
+                       <p id="${chartData.id}Explanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200">${chartData.prediction}</p>
+                   </div>
+               `;
+               chartsContainer.appendChild(chartDiv);
+
+               // Initialize the chart
+               if (chartData.id === 'esgRatingsChart') {
+                   initBarChart(chartData);
+               } else if (chartData.id === 'industryImpactChart') {
+                   initPieChart(chartData);
+               } else if (chartData.id === 'counterfactualChart') {
+                   initCounterfactualChart(chartData);
+               } else {
+                   initTimeSeriesChart(chartData);
+               }
+           });
+       }
+
+       function initInteractiveMap() {
+           const map = L.map('interactiveVisualization').setView(interactiveVisualization.center, interactiveVisualization.zoom_level);
+
+           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+               attribution: '&copy; OpenStreetMap contributors'
+           }).addTo(map);
+
+           interactiveVisualization.locations.forEach(location => {
+               const marker = L.marker(location.coordinates).addTo(map);
+               marker.bindPopup(`<strong>${location.name}</strong><br>Investment: ${location.metrics.investment}`);
+           });
+       }
+
+       function initTimeSeriesChart(chartData) {
+           const ctx = document.getElementById(chartData.id).getContext('2d');
+           const labels = chartData.data.labels;
+           const historicalData = chartData.data.historical;
+           const forecastData = chartData.data.forecast;
+           const historicalDataPoints = historicalData.filter(val => val !== null).length;
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: historicalData,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true,
+                       pointRadius: 3,
+                       pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                       pointBorderColor: '#fff'
+                   }, {
+                       label: 'Forecast',
+                       data: forecastData,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false,
+                       pointRadius: 3,
+                       pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                       pointBorderColor: '#fff'
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: {
+                           title: {
+                               display: false
+                           }
+                       },
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: false
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       },
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   const index = context[0].dataIndex;
+                                   return index < historicalDataPoints ? 'Historical' : 'Forecast';
+                               }
+                           }
+                       }
+                   },
+                   elements: {
+                       line: {
+                           tension: 0.4
+                       }
+                   }
+               }
+           });
+       }
+
+       function initBarChart(chartData) {
+           const ctx = document.getElementById(chartData.id).getContext('2d');
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: chartData.data.labels,
+                   datasets: [{
+                       data: chartData.data.data,
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: false
+                       }
+                   }
+               }
+           });
+       }
+
+       function initPieChart(chartData) {
+           const ctx = document.getElementById(chartData.id).getContext('2d');
+           new Chart(ctx, {
+               type: 'doughnut',
+               data: {
+                   labels: chartData.data.labels,
+                   datasets: [{
+                       data: chartData.data.data,
+                       backgroundColor: [
+                           'rgba(75, 192, 192, 0.6)',
+                           'rgba(255, 99, 132, 0.6)',
+                           'rgba(255, 206, 86, 0.6)',
+                           'rgba(54, 162, 235, 0.6)',
+                           'rgba(153, 102, 255, 0.6)'
+                       ]
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           position: 'right'
+                       }
+                   },
+                   cutout: '50%'
+               }
+           });
+       }
+
+       function initCounterfactualChart(chartData) {
+           const ctx = document.getElementById(chartData.id).getContext('2d');
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: chartData.data.labels,
+                   datasets: [{
+                       label: 'Actual',
+                       data: chartData.data.actual,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       fill: false
+                   }, {
+                       label: 'Counterfactual',
+                       data: chartData.data.counterfactual,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           position: 'top'
+                       }
+                   }
+               }
+           });
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+
+
+
+</body>
+</html>

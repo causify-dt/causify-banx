@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Treasury and Trade Solutions - Trade Services</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Trade Services</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Trade Volume</h3>
+                               <p class="text-sm text-gray-500">(92% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$8.7B</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 5.2%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Letters of Credit</h3>
+                               <p class="text-sm text-gray-500">(89% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">1,243</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 3.8%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Supply Chain Finance</h3>
+                               <p class="text-sm text-gray-500">(87% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$2.3B</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 7.1%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Trade Loan Utilization</h3>
+                               <p class="text-sm text-gray-500">(91% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">76.4%</div>
+                                   <div class="text-sm text-red-600"><i class="fas fa-arrow-down"></i> 1.2%</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Supply chain finance solutions projected to grow by 15% in the next quarter, driven by increased adoption among mid-market clients (Confidence: 87%).</li>
+                           <li>Digital trade finance platforms expected to reduce processing times by 30%, leading to a 10% increase in client satisfaction scores (Confidence: 92%).</li>
+                           <li>Counterfactual: If global trade tensions escalate, trade volume could decrease by 12% instead of the projected 5.2% increase (Confidence: 85%).</li>
+                           <li>Sustainability-linked trade finance products forecast to account for 20% of new trade finance deals in the coming year (Confidence: 83%).</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Trade Finance Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Trade Volume Forecast <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="tradeVolumeChart"></canvas>
+                               </div>
+                               <p id="tradeVolumeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Letters of Credit Issuance <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="lettersOfCreditChart"></canvas>
+                               </div>
+                               <p id="lettersOfCreditExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Supply Chain Finance Growth <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="supplyChainFinanceChart"></canvas>
+                               </div>
+                               <p id="supplyChainFinanceExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Trade Loan Utilization Trend <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="tradeLoanUtilizationChart"></canvas>
+                               </div>
+                               <p id="tradeLoanUtilizationExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Digital Platform Adoption <span class="text-sm font-normal text-gray-500">(93% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="digitalPlatformAdoptionChart"></canvas>
+                               </div>
+                               <p id="digitalPlatformAdoptionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Sustainable Trade Finance Products <span class="text-sm font-normal text-gray-500">(83% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="sustainableTradeFinanceChart"></canvas>
+                               </div>
+                               <p id="sustainableTradeFinanceExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initTimeSeriesChart(canvasId, data, options) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: data.historical,
+                       borderColor: options.color,
+                       backgroundColor: options.fillColor,
+                       fill: true
+                   }, {
+                       label: 'Forecast',
+                       data: data.forecast,
+                       borderColor: options.color,
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: {
+                           title: {
+                               display: true,
+                               text: 'Month'
+                           }
+                       },
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: options.yAxisLabel
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= historicalDataPoints ? 'Forecast' : 'Historical';
+                               }
+                           }
+                       },
+                       annotation: {
+                           annotations: {
+                               line1: {
+                                   type: 'line',
+                                   xMin: historicalDataPoints - 0.5,
+                                   xMax: historicalDataPoints - 0.5,
+                                   borderColor: 'rgb(169, 169, 169)',
+                                   borderWidth: 2,
+                                   label: {
+                                       content: 'Today',
+                                       enabled: true,
+                                       position: 'top'
+                                   }
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation(options.explanationId, options.explanation);
+       }
+
+       function initCausalNetworkGraph() {
+           const container = document.getElementById('causalNetworkGraph');
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Global Trade Volume', color: '#FFA500' },
+               { id: 2, label: 'Economic Policies', color: '#4CAF50' },
+               { id: 3, label: 'Technology Adoption', color: '#2196F3' },
+               { id: 4, label: 'Regulatory Environment', color: '#9C27B0' },
+               { id: 5, label: 'Trade Finance Demand', color: '#F44336' },
+               { id: 6, label: 'Supply Chain Disruptions', color: '#795548' },
+               { id: 7, label: 'Sustainability Trends', color: '#8BC34A' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 5, label: '+0.7', arrows: 'to' },
+               { from: 2, to: 1, label: '+0.5', arrows: 'to' },
+               { from: 3, to: 5, label: '+0.6', arrows: 'to' },
+               { from: 4, to: 5, label: '-0.3', arrows: 'to' },
+               { from: 6, to: 1, label: '-0.4', arrows: 'to' },
+               { from: 7, to: 5, label: '+0.4', arrows: 'to' },
+               { from: 3, to: 6, label: '-0.3', arrows: 'to' },
+               { from: 2, to: 4, label: '+0.2', arrows: 'to' }
+           ]);
+
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: false,
+               height: '100%',
+               width: '100%'
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initCausalNetworkGraph();
+
+           initTimeSeriesChart('tradeVolumeChart', {
+               historical: [7.2, 7.5, 7.8, 8.1, 8.3, 8.5, 8.7, 8.9, 9.1, 9.3],
+               forecast: [null, null, null, null, null, null, null, null, null, 9.3, 9.5, 9.7, 9.9]
+           }, {
+               color: 'rgba(75, 192, 192, 1)',
+               fillColor: 'rgba(75, 192, 192, 0.2)',
+               yAxisLabel: 'Trade Volume ($ Billion)',
+               explanationId: 'tradeVolumeExplanation',
+               explanation: 'Trade volume projected to grow by 6.5% over the next quarter, driven by economic recovery and increased global demand for goods and services.'
+           });
+
+           initTimeSeriesChart('lettersOfCreditChart', {
+               historical: [980, 1020, 1060, 1100, 1140, 1180, 1220, 1260, 1300, 1340],
+               forecast: [null, null, null, null, null, null, null, null, null, 1340, 1380, 1420, 1460]
+           }, {
+               color: 'rgba(255, 99, 132, 1)',
+               fillColor: 'rgba(255, 99, 132, 0.2)',
+               yAxisLabel: 'Number of Letters of Credit',
+               explanationId: 'lettersOfCreditExplanation',
+               explanation: 'Letters of Credit issuance expected to increase by 9% in the coming quarter, reflecting growing confidence in international trade and improved risk management practices.'
+           });
+
+           initTimeSeriesChart('supplyChainFinanceChart', {
+               historical: [1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5],
+               forecast: [null, null, null, null, null, null, null, null, null, 2.5, 2.6, 2.7, 2.8]
+           }, {
+               color: 'rgba(255, 206, 86, 1)',
+               fillColor: 'rgba(255, 206, 86, 0.2)',
+               yAxisLabel: 'Supply Chain Finance ($ Billion)',
+               explanationId: 'supplyChainFinanceExplanation',
+               explanation: 'Supply Chain Finance solutions projected to grow by 12% over the next quarter, fueled by increased adoption among mid-market clients and the expansion of digital supply chain platforms.'
+           });
+
+           initTimeSeriesChart('tradeLoanUtilizationChart', {
+               historical: [78.5, 78.0, 77.5, 77.0, 76.5, 76.0, 75.5, 75.0, 74.5, 74.0],
+               forecast: [null, null, null, null, null, null, null, null, null, 74.0, 73.5, 73.0, 72.5]
+           }, {
+               color: 'rgba(153, 102, 255, 1)',
+               fillColor: 'rgba(153, 102, 255, 0.2)',
+               yAxisLabel: 'Trade Loan Utilization (%)',
+               explanationId: 'tradeLoanUtilizationExplanation',
+               explanation: 'Trade Loan Utilization expected to decrease by 2% in the coming quarter due to improved liquidity positions of clients and the adoption of alternative financing solutions.'
+           });
+
+           initTimeSeriesChart('digitalPlatformAdoptionChart', {
+               historical: [40, 45, 50, 55, 60, 65, 70, 75, 80, 85],
+               forecast: [null, null, null, null, null, null, null, null, null, 85, 90, 95, 100]
+           }, {
+               color: 'rgba(75, 192, 192, 1)',
+               fillColor: 'rgba(75, 192, 192, 0.2)',
+               yAxisLabel: 'Digital Platform Adoption (%)',
+               explanationId: 'digitalPlatformAdoptionExplanation',
+               explanation: 'Digital platform adoption rate projected to reach 100% by the end of the next quarter, driven by enhanced user experience and integration of AI-powered risk assessment tools.'
+           });
+
+           initTimeSeriesChart('sustainableTradeFinanceChart', {
+               historical: [5, 7, 9, 11, 13, 15, 17, 19, 21, 23],
+               forecast: [null, null, null, null, null, null, null, null, null, 23, 25, 27, 29]
+           }, {
+               color: 'rgba(255, 159, 64, 1)',
+               fillColor: 'rgba(255, 159, 64, 0.2)',
+               yAxisLabel: 'Sustainable Trade Finance (%)',
+               explanationId: 'sustainableTradeFinanceExplanation',
+               explanation: 'Sustainable trade finance products expected to account for 29% of new trade finance deals by the end of the next quarter, reflecting growing demand for ESG-linked financial solutions.'
+           });
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

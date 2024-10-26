@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Credit Cards: Fraud Prevention and Detection</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Fraud Prevention and Detection</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Fraud Alerts Issued</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">5,000</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-down"></i> Predicted 4,500 next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Fraud Losses</h3>
+                               <p class="text-sm text-gray-500">80% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$10 million</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-down"></i> Predicted $9 million next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Fraud Detection Time</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">2 hours</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-down"></i> Predicted 1.5 hours next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Adoption of Fraud Protection</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">75%</div>
+                                   <div class="text-sm text-green-500">
+                                       <i class="fas fa-arrow-up"></i> Predicted 80% next quarter
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Improved fraud detection systems are reducing the number of alerts and losses.</li>
+                           <li>Increased adoption of fraud protection services is boosting customer confidence.</li>
+                           <li>Faster detection and response times are minimizing fraud impact.</li>
+                           <li>AI-powered anomaly detection could further reduce fraud losses by 15% in the next 6 months (92% confidence).</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Fraud Detection and Prevention Flow Map <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Fraud Alerts Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="fraudAlertsChart"></canvas>
+                               </div>
+                               <p id="fraudAlertsExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Fraud Losses Forecast <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="fraudLossesChart"></canvas>
+                               </div>
+                               <p id="fraudLossesExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Fraud Detection Time Trend <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="detectionTimeChart"></canvas>
+                               </div>
+                               <p id="detectionTimeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Fraud Protection Adoption Rate <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="adoptionRateChart"></canvas>
+                               </div>
+                               <p id="adoptionRateExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Fraud Type Distribution <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="fraudTypeChart"></canvas>
+                               </div>
+                               <p id="fraudTypeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Satisfaction vs Fraud Protection <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="satisfactionChart"></canvas>
+                               </div>
+                               <p id="satisfactionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           const today = new Date();
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initFraudAlertsChart() {
+           const ctx = document.getElementById('fraudAlertsChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [5800, 5600, 5400, 5200, 5000, 4800, 4600, 4400, 4200, 5000, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   fill: false
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 5000, 4800, 4600, 4500],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Number of Alerts'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('fraudAlertsExplanation', 'Fraud alerts are predicted to decrease by 10% over the next quarter due to improved AI-driven detection systems and enhanced customer education programs.');
+       }
+
+       function initFraudLossesChart() {
+           const ctx = document.getElementById('fraudLossesChart').getContext('2d');
+           const labels = generateDateLabels(5, 6);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical Losses',
+                   data: [12, 11.5, 11, 10.5, 10, 10, null, null, null, null, null, null],
+                   backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   borderWidth: 1
+               }, {
+                   label: 'Forecast Losses',
+                   data: [null, null, null, null, null, 10, 9.8, 9.6, 9.4, 9.2, 9.0, 9.0],
+                   backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderWidth: 1
+               }]
+           };
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Fraud Losses ($ millions)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('fraudLossesExplanation', 'Fraud losses are expected to decrease by 10% over the next six months, primarily due to the implementation of advanced machine learning algorithms for real-time transaction monitoring.');
+       }
+
+       function initDetectionTimeChart() {
+           const ctx = document.getElementById('detectionTimeChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [3.2, 3.0, 2.8, 2.6, 2.4, 2.2, 2.0, 1.8, 1.6, 2.0, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   fill: false
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 2.0, 1.8, 1.6, 1.5],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Detection Time (hours)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('detectionTimeExplanation', 'Fraud detection time is projected to decrease to 1.5 hours by implementing AI-powered real-time monitoring and automated alert systems.');
+       }
+
+       function initAdoptionRateChart() {
+           const ctx = document.getElementById('adoptionRateChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical',
+                   data: [65, 67, 69, 71, 73, 74, 75, 76, 77, 75, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   fill: false
+               }, {
+                   label: 'Forecast',
+                   data: [null, null, null, null, null, null, null, null, null, 75, 77, 79, 80],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Adoption Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('adoptionRateExplanation', 'Fraud protection adoption rate is expected to increase to 80% due to enhanced customer education programs and improved user experience in fraud protection features.');
+       }
+
+       function initFraudTypeChart() {
+           const ctx = document.getElementById('fraudTypeChart').getContext('2d');
+           const data = {
+               labels: ['Card-Not-Present', 'Counterfeit Card', 'Lost/Stolen Card', 'Card-Not-Received', 'Account Takeover'],
+               datasets: [{
+                   data: [40, 25, 15, 12, 8],
+                   backgroundColor: [
+                       'rgba(255, 99, 132, 0.8)',
+                       'rgba(54, 162, 235, 0.8)',
+                       'rgba(255, 206, 86, 0.8)',
+                       'rgba(75, 192, 192, 0.8)',
+                       'rgba(153, 102, 255, 0.8)'
+                   ]
+               }]
+           };
+           new Chart(ctx, {
+               type: 'doughnut',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           position: 'right'
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('fraudTypeExplanation', 'Card-Not-Present fraud remains the most prevalent type at 40%. Enhanced 3D Secure protocols and AI-driven transaction risk scoring are expected to reduce this by 15% in the next quarter.');
+       }
+
+       function initSatisfactionChart() {
+           const ctx = document.getElementById('satisfactionChart').getContext('2d');
+           const labels = generateDateLabels(5, 6);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Customer Satisfaction',
+                   data: [78, 80, 82, 83, 85, 87, 88, 89, 90, 91, 92],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   fill: false,
+                   yAxisID: 'y'
+               }, {
+                   label: 'Fraud Protection Coverage',
+                   data: [70, 72, 75, 77, 80, 82, 84, 85, 86, 87, 88],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   fill: false,
+                   yAxisID: 'y1'
+               }]
+           };
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           type: 'linear',
+                           display: true,
+                           position: 'left',
+                           title: {
+                               display: true,
+                               text: 'Customer Satisfaction (%)'
+                           }
+                       },
+                       y1: {
+                           type: 'linear',
+                           display: true,
+                           position: 'right',
+                           title: {
+                               display: true,
+                               text: 'Fraud Protection Coverage (%)'
+                           },
+                           grid: {
+                               drawOnChartArea: false
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+           setPredictionExplanation('satisfactionExplanation', 'Customer satisfaction is projected to increase to 92% as fraud protection coverage expands to 88%. This correlation suggests that enhanced fraud protection significantly boosts customer confidence and satisfaction.');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Fraud Alerts', shape: 'circle' },
+               { id: 2, label: 'AI Detection', shape: 'circle' },
+               { id: 3, label: 'Customer Education', shape: 'circle' },
+               { id: 4, label: 'Real-time Monitoring', shape: 'circle' },
+               { id: 5, label: 'Fraud Losses', shape: 'circle' },
+               { id: 6, label: 'Detection Time', shape: 'circle' },
+               { id: 7, label: 'Customer Satisfaction', shape: 'circle' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 2, to: 1, arrows: 'to', label: 'Reduces' },
+               { from: 3, to: 1, arrows: 'to', label: 'Reduces' },
+               { from: 4, to: 6, arrows: 'to', label: 'Reduces' },
+               { from: 2, to: 5, arrows: 'to', label: 'Reduces' },
+               { from: 4, to: 5, arrows: 'to', label: 'Reduces' },
+               { from: 6, to: 5, arrows: 'to', label: 'Affects' },
+               { from: 5, to: 7, arrows: 'to', label: 'Affects' },
+               { from: 1, to: 7, arrows: 'to', label: 'Affects' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   arrows: { to: { enabled: true, scaleFactor: 0.5 } }
+               },
+               physics: { enabled: false },
+               layout: { randomSeed: 2 }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initFraudAlertsChart();
+           initFraudLossesChart();
+           initDetectionTimeChart();
+           initAdoptionRateChart();
+           initFraudTypeChart();
+           initSatisfactionChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Family Office Services</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Family Office Services</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Assets Under Management</h3>
+                               <p class="text-sm text-gray-500">(92% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$4.73B</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 5.2%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Number of Family Offices</h3>
+                               <p class="text-sm text-gray-500">(88% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">127</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 3.8%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Client Satisfaction</h3>
+                               <p class="text-sm text-gray-500">(95% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">4.7/5</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 0.2</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue per Client</h3>
+                               <p class="text-sm text-gray-500">(90% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$1.82M</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 6.4%</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Assets Under Management projected to grow by 8.5% in the next quarter, driven by new client acquisitions and market performance. (Confidence: 92%)</li>
+                           <li>Client retention rate expected to improve by 3% due to the introduction of personalized ESG investment options. (Confidence: 89%)</li>
+                           <li>Counterfactual: If global market volatility increases by 20%, AUM growth could be limited to 3.2%, highlighting the need for diversified investment strategies. (Confidence: 85%)</li>
+                           <li>Next-gen engagement programs forecasted to increase family office longevity by 15%, with a 25% rise in multi-generational wealth transfer success. (Confidence: 87%)</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Family Office Service Drivers <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Assets Under Management Trend <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="aumTrendChart"></canvas>
+                               </div>
+                               <p id="aumTrendExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Satisfaction Scores <span class="text-sm font-normal text-gray-500">(95% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientSatisfactionChart"></canvas>
+                               </div>
+                               <p id="clientSatisfactionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Service Adoption Rates <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="serviceAdoptionChart"></canvas>
+                               </div>
+                               <p id="serviceAdoptionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Next-Gen Engagement Impact <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="nextGenEngagementChart"></canvas>
+                               </div>
+                               <p id="nextGenEngagementExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Investment Performance by Strategy <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="investmentPerformanceChart"></canvas>
+                               </div>
+                               <p id="investmentPerformanceExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Risk-Adjusted Returns <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="riskAdjustedReturnsChart"></canvas>
+                               </div>
+                               <p id="riskAdjustedReturnsExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           const today = new Date();
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initAumTrendChart() {
+           const ctx = document.getElementById('aumTrendChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical AUM',
+                   data: [4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5.0, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast AUM',
+                   data: [null, null, null, null, null, null, null, null, null, 5.0, 5.1, 5.2, 5.3],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Assets Under Management (Billion $)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('aumTrendExplanation', 'AUM projected to reach $5.3B by Q3 2024, driven by new client acquisitions and improved market performance. Key factors: Personalized ESG offerings and AI-driven investment strategies.');
+       }
+
+       function initClientSatisfactionChart() {
+           const ctx = document.getElementById('clientSatisfactionChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical Satisfaction',
+                   data: [4.3, 4.4, 4.5, 4.5, 4.6, 4.6, 4.7, 4.7, 4.7, 4.8, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast Satisfaction',
+                   data: [null, null, null, null, null, null, null, null, null, 4.8, 4.9, 4.9, 5.0],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           max: 5,
+                           title: {
+                               display: true,
+                               text: 'Satisfaction Score (out of 5)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('clientSatisfactionExplanation', 'Client satisfaction expected to reach 5.0/5 by Q3 2024. Key drivers: Enhanced digital reporting tools, personalized wealth planning services, and improved response times.');
+       }
+
+       function initServiceAdoptionChart() {
+           const ctx = document.getElementById('serviceAdoptionChart').getContext('2d');
+           const data = {
+               labels: ['Wealth Planning', 'Investment Management', 'Tax Advisory', 'Philanthropy', 'Risk Management'],
+               datasets: [{
+                   label: 'Current Adoption',
+                   data: [85, 92, 78, 65, 70],
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)',
+               }, {
+                   label: 'Projected Adoption (Next Year)',
+                   data: [90, 95, 85, 75, 80],
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)',
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           max: 100,
+                           title: {
+                               display: true,
+                               text: 'Adoption Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('serviceAdoptionExplanation', 'Service adoption rates projected to increase across all categories. Philanthropy and Risk Management services show the highest growth potential, driven by increased focus on ESG and market volatility concerns.');
+       }
+
+       function initNextGenEngagementChart() {
+           const ctx = document.getElementById('nextGenEngagementChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical Engagement',
+                   data: [20, 22, 25, 28, 30, 33, 35, 38, 40, 43, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast Engagement',
+                   data: [null, null, null, null, null, null, null, null, null, 43, 46, 49, 52],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Engagement Score'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('nextGenEngagementExplanation', 'Next-gen engagement score projected to reach 52 by Q3 2024, a 21% increase. Key drivers: Tailored education programs, sustainable investing options, and digital-first communication strategies.');
+       }
+
+       function initInvestmentPerformanceChart() {
+           const ctx = document.getElementById('investmentPerformanceChart').getContext('2d');
+           const data = {
+               labels: generateDateLabels(5, 2),
+               datasets: [{
+                   label: 'Equities',
+                   data: [8.2, 8.5, 8.7, 9.0, 9.3, 9.5, 9.8, 10.1],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   fill: false
+               }, {
+                   label: 'Fixed Income',
+                   data: [3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   fill: false
+               }, {
+                   label: 'Alternatives',
+                   data: [6.8, 7.0, 7.2, 7.4, 7.6, 7.8, 8.0, 8.2],
+                   borderColor: 'rgba(255, 206, 86, 1)',
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Return (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('investmentPerformanceExplanation', 'Equities projected to outperform with 10.1% return by Q3 2024. Alternatives show strong growth potential. Fixed income remains stable, providing portfolio balance.');
+       }
+
+       function initRiskAdjustedReturnsChart() {
+           const ctx = document.getElementById('riskAdjustedReturnsChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Historical Sharpe Ratio',
+                   data: [1.2, 1.25, 1.3, 1.35, 1.4, 1.45, 1.5, 1.55, 1.6, 1.65, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Forecast Sharpe Ratio',
+                   data: [null, null, null, null, null, null, null, null, null, 1.65, 1.7, 1.75, 1.8],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Sharpe Ratio'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('riskAdjustedReturnsExplanation', 'Risk-adjusted returns (Sharpe Ratio) projected to improve to 1.8 by Q3 2024. Key drivers: Advanced risk modeling, AI-driven portfolio optimization, and increased allocation to alternative investments.');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'AUM Growth', shape: 'circle', color: '#4CAF50' },
+               { id: 2, label: 'Client Satisfaction', shape: 'circle', color: '#2196F3' },
+               { id: 3, label: 'Investment Performance', shape: 'circle', color: '#FFC107' },
+               { id: 4, label: 'Next-Gen Engagement', shape: 'circle', color: '#9C27B0' },
+               { id: 5, label: 'Service Adoption', shape: 'circle', color: '#F44336' },
+               { id: 6, label: 'Risk Management', shape: 'circle', color: '#795548' },
+               { id: 7, label: 'ESG Integration', shape: 'circle', color: '#009688' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 3, to: 1, label: '0.7', arrows: 'to' },
+               { from: 2, to: 1, label: '0.6', arrows: 'to' },
+               { from: 5, to: 2, label: '0.5', arrows: 'to' },
+               { from: 4, to: 1, label: '0.4', arrows: 'to' },
+               { from: 6, to: 3, label: '0.5', arrows: 'to' },
+               { from: 7, to: 2, label: '0.4', arrows: 'to' },
+               { from: 7, to: 4, label: '0.6', arrows: 'to' },
+               { from: 3, to: 2, label: '0.5', arrows: 'to' },
+               { from: 5, to: 3, label: '0.3', arrows: 'to' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: false
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initAumTrendChart();
+           initClientSatisfactionChart();
+           initServiceAdoptionChart();
+           initNextGenEngagementChart();
+           initInvestmentPerformanceChart();
+           initRiskAdjustedReturnsChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

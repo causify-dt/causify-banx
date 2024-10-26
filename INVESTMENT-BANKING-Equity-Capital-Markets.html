@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Equity Capital Markets (ECM)</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Overview</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">IPO Activity</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$300M</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> $350M next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Follow-On Offerings</h3>
+                               <p class="text-sm text-gray-500">(88% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$200M</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> $220M next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Underwriting Fees from ECM</h3>
+                               <p class="text-sm text-gray-500">(85% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$50M</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> $55M next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Equity Market Growth</h3>
+                               <p class="text-sm text-gray-500">(80% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">5%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 6% next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Strong demand for IPOs, particularly in the technology and healthcare sectors, driving a projected 16.7% increase in IPO activity next quarter.</li>
+                           <li>Existing companies are raising more capital through follow-on offerings, with a 10% increase expected in the coming quarter.</li>
+                           <li>ECM underwriting fees are increasing, driven by high deal flow, with a projected 10% growth in the next quarter.</li>
+                           <li>Counterfactual: If the Federal Reserve were to unexpectedly raise interest rates by 50 basis points, IPO activity could decrease by 20% due to increased borrowing costs and market volatility.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: ECM Performance Drivers <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">IPO and Follow-On Activity Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="ipoFollowOnChart"></canvas>
+                               </div>
+                               <p id="ipoFollowOnExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Equity Market Growth Forecast <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="equityMarketGrowthChart"></canvas>
+                               </div>
+                               <p id="equityMarketGrowthExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Underwriting Fees Projection <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="underwritingFeesChart"></canvas>
+                               </div>
+                               <p id="underwritingFeesExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Sector-wise IPO Distribution <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="sectorIPOChart"></canvas>
+                               </div>
+                               <p id="sectorIPOExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Deal Size Distribution <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="dealSizeChart"></canvas>
+                               </div>
+                               <p id="dealSizeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Market Volatility Impact <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="marketVolatilityChart"></canvas>
+                               </div>
+                               <p id="marketVolatilityExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function generateTimeSeriesData(startValue, growthRate, volatility, monthsBack, monthsForward) {
+           const data = [];
+           let currentValue = startValue;
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               currentValue *= (1 + growthRate + (Math.random() - 0.5) * volatility);
+               data.push(Math.round(currentValue * 100) / 100);
+           }
+           return data;
+       }
+
+       function initIPOFollowOnChart() {
+           const ctx = document.getElementById('ipoFollowOnChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const ipoData = generateTimeSeriesData(300, 0.02, 0.05, 9, 3);
+           const followOnData = generateTimeSeriesData(200, 0.015, 0.03, 9, 3);
+           const historicalDataPoints = 10;
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [
+                       {
+                           label: 'IPO Activity',
+                           data: ipoData,
+                           borderColor: 'rgba(75, 192, 192, 1)',
+                           tension: 0.1,
+                           segment: {
+                               borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined,
+                           }
+                       },
+                       {
+                           label: 'Follow-On Offerings',
+                           data: followOnData,
+                           borderColor: 'rgba(255, 99, 132, 1)',
+                           tension: 0.1,
+                           segment: {
+                               borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined,
+                           }
+                       }
+                   ]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Value ($ millions)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('ipoFollowOnExplanation').textContent = 
+               "IPO activity is projected to grow by 16.7% in the next quarter, driven by strong demand in tech and healthcare sectors. Follow-on offerings are expected to increase by 10% as existing companies seek additional capital.";
+       }
+
+       function initEquityMarketGrowthChart() {
+           const ctx = document.getElementById('equityMarketGrowthChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const growthData = generateTimeSeriesData(5, 0.01, 0.02, 9, 3);
+           const historicalDataPoints = 10;
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Equity Market Growth',
+                       data: growthData,
+                       borderColor: 'rgba(153, 102, 255, 1)',
+                       tension: 0.1,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined,
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Growth Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('equityMarketGrowthExplanation').textContent = 
+               "Equity market growth is forecast to increase from 5% to 6% in the next quarter, supported by positive economic indicators and strong corporate earnings.";
+       }
+
+       function initUnderwritingFeesChart() {
+           const ctx = document.getElementById('underwritingFeesChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const feesData = generateTimeSeriesData(50, 0.02, 0.03, 9, 3);
+           const historicalDataPoints = 10;
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Underwriting Fees',
+                       data: feesData,
+                       borderColor: 'rgba(255, 159, 64, 1)',
+                       tension: 0.1,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined,
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Fees ($ millions)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('underwritingFeesExplanation').textContent = 
+               "Underwriting fees are projected to increase by 10% in the next quarter, driven by the high volume of IPOs and follow-on offerings. This growth outpaces the overall market, indicating strong demand for ECM services.";
+       }
+
+       function initSectorIPOChart() {
+           const ctx = document.getElementById('sectorIPOChart').getContext('2d');
+
+           new Chart(ctx, {
+               type: 'pie',
+               data: {
+                   labels: ['Technology', 'Healthcare', 'Financial Services', 'Consumer Goods', 'Energy', 'Others'],
+                   datasets: [{
+                       data: [35, 25, 15, 10, 8, 7],
+                       backgroundColor: [
+                           'rgba(75, 192, 192, 0.8)',
+                           'rgba(255, 99, 132, 0.8)',
+                           'rgba(255, 205, 86, 0.8)',
+                           'rgba(54, 162, 235, 0.8)',
+                           'rgba(153, 102, 255, 0.8)',
+                           'rgba(201, 203, 207, 0.8)'
+                       ]
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           position: 'right'
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('sectorIPOExplanation').textContent = 
+               "Technology and healthcare sectors are expected to dominate IPO activity, accounting for 60% of total offerings. This trend is driven by continued innovation and increased investor appetite for high-growth potential companies.";
+       }
+
+       function initDealSizeChart() {
+           const ctx = document.getElementById('dealSizeChart').getContext('2d');
+
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: ['<$50M', '$50M-$100M', '$100M-$500M', '$500M-$1B', '>$1B'],
+                   datasets: [{
+                       label: 'Number of Deals',
+                       data: [15, 25, 40, 12, 8],
+                       backgroundColor: 'rgba(75, 192, 192, 0.8)'
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Number of Deals'
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('dealSizeExplanation').textContent = 
+               "Mid-sized deals ($100M-$500M) are expected to dominate the ECM landscape, representing 40% of total deals. Large deals (>$500M) are also showing an uptick, indicating strong market confidence and appetite for major offerings.";
+       }
+
+       function initMarketVolatilityChart() {
+           const ctx = document.getElementById('marketVolatilityChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const volatilityData = generateTimeSeriesData(15, -0.01, 0.1, 9, 3);
+           const ipoVolumeData = generateTimeSeriesData(30, 0.02, 0.05, 9, 3);
+           const historicalDataPoints = 10;
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [
+                       {
+                           label: 'Market Volatility Index',
+                           data: volatilityData,
+                           borderColor: 'rgba(255, 99, 132, 1)',
+                           tension: 0.1,
+                           yAxisID: 'y',
+                           segment: {
+                               borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined,
+                           }
+                       },
+                       {
+                           label: 'IPO Volume',
+                           data: ipoVolumeData,
+                           borderColor: 'rgba(75, 192, 192, 1)',
+                           tension: 0.1,
+                           yAxisID: 'y1',
+                           segment: {
+                               borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined,
+                           }
+                       }
+                   ]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           type: 'linear',
+                           display: true,
+                           position: 'left',
+                           title: {
+                               display: true,
+                               text: 'Volatility Index'
+                           }
+                       },
+                       y1: {
+                           type: 'linear',
+                           display: true,
+                           position: 'right',
+                           title: {
+                               display: true,
+                               text: 'IPO Volume'
+                           },
+                           grid: {
+                               drawOnChartArea: false
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           document.getElementById('marketVolatilityExplanation').textContent = 
+               "Market volatility is expected to decrease slightly, creating a favorable environment for IPOs. As volatility decreases, IPO volume is projected to increase, showing an inverse relationship between these factors.";
+       }
+
+       function initCausalNetworkGraph() {
+           const container = document.getElementById('causalNetworkGraph');
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Economic Growth', shape: 'box' },
+               { id: 2, label: 'Interest Rates', shape: 'box' },
+               { id: 3, label: 'Market Sentiment', shape: 'box' },
+               { id: 4, label: 'Regulatory Environment', shape: 'box' },
+               { id: 5, label: 'IPO Activity', shape: 'circle' },
+               { id: 6, label: 'Follow-On Offerings', shape: 'circle' },
+               { id: 7, label: 'Underwriting Fees', shape: 'circle' },
+               { id: 8, label: 'Equity Market Growth', shape: 'circle' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 5, arrows: 'to', label: '+' },
+               { from: 1, to: 6, arrows: 'to', label: '+' },
+               { from: 1, to: 8, arrows: 'to', label: '+' },
+               { from: 2, to: 5, arrows: 'to', label: '-' },
+               { from: 2, to: 6, arrows: 'to', label: '-' },
+               { from: 2, to: 8, arrows: 'to', label: '-' },
+               { from: 3, to: 5, arrows: 'to', label: '+' },
+               { from: 3, to: 6, arrows: 'to', label: '+' },
+               { from: 3, to: 8, arrows: 'to', label: '+' },
+               { from: 4, to: 5, arrows: 'to', label: '+/-' },
+               { from: 4, to: 6, arrows: 'to', label: '+/-' },
+               { from: 5, to: 7, arrows: 'to', label: '+' },
+               { from: 6, to: 7, arrows: 'to', label: '+' },
+               { from: 8, to: 5, arrows: 'to', label: '+' },
+               { from: 8, to: 6, arrows: 'to', label: '+' }
+           ]);
+
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: {
+                   enabled: true,
+                   barnesHut: {
+                       gravitationalConstant: -2000,
+                       centralGravity: 0.3,
+                       springLength: 95,
+                       springConstant: 0.04,
+                       damping: 0.09,
+                       avoidOverlap: 0.1
+                   }
+               },
+               layout: {
+                   randomSeed: 2
+               }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initIPOFollowOnChart();
+           initEquityMarketGrowthChart();
+           initUnderwritingFeesChart();
+           initSectorIPOChart();
+           initDealSizeChart();
+           initMarketVolatilityChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

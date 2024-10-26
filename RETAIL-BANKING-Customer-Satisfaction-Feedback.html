@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Retail Banking Customer Satisfaction and Feedback</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Customer Satisfaction and Feedback</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Overall Satisfaction Score</h3>
+                               <p class="text-sm text-gray-500">(92% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">4.2/5</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 0.3</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Net Promoter Score</h3>
+                               <p class="text-sm text-gray-500">(89% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">42</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 5</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Retention Rate</h3>
+                               <p class="text-sm text-gray-500">(95% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">91.8%</div>
+                                   <div class="text-sm text-green-500"><i class="fas fa-arrow-up"></i> 1.2%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Resolution Time</h3>
+                               <p class="text-sm text-gray-500">(88% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">2.3 days</div>
+                                   <div class="text-sm text-red-500"><i class="fas fa-arrow-down"></i> 0.5 days</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Customer satisfaction scores are projected to increase by 8% in the next quarter, primarily driven by improvements in mobile banking user experience.</li>
+                           <li>Net Promoter Score is expected to reach 47 by year-end, with the introduction of personalized financial advice services contributing to a 20% increase in promoters.</li>
+                           <li>Retention rates could improve by 2.5% if average resolution time for customer issues is reduced to 1.8 days, based on current trend analysis.</li>
+                           <li>Counterfactual: If the bank had not implemented the new chatbot service, customer satisfaction scores would be 12% lower, and average resolution time would be 3.7 days.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Customer Satisfaction Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Satisfaction Score Trend <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="satisfactionScoreChart"></canvas>
+                               </div>
+                               <p id="satisfactionScoreExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Net Promoter Score Trend <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="npsChart"></canvas>
+                               </div>
+                               <p id="npsExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Customer Retention Rate <span class="text-sm font-normal text-gray-500">(95% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="retentionRateChart"></canvas>
+                               </div>
+                               <p id="retentionRateExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Resolution Time <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="resolutionTimeChart"></canvas>
+                               </div>
+                               <p id="resolutionTimeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Feedback Channel Distribution <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="feedbackChannelChart"></canvas>
+                               </div>
+                               <p id="feedbackChannelExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Issue Resolution Rate <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="issueResolutionChart"></canvas>
+                               </div>
+                               <p id="issueResolutionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initChart(canvasId, data, options) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           new Chart(ctx, {
+               type: data.type,
+               data: data.data,
+               options: {
+                   ...options,
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           position: 'bottom',
+                       },
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= data.transitionPoint ? 'Prediction' : 'Historical';
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+       }
+
+       function generateTimeSeriesData(monthsBack, monthsForward, baseValue, growth, volatility) {
+           const labels = generateDateLabels(monthsBack, monthsForward);
+           const historical = [];
+           const forecast = [];
+           let currentValue = baseValue;
+
+           for (let i = 0; i <= monthsBack + monthsForward; i++) {
+               const randomFactor = 1 + (Math.random() - 0.5) * volatility;
+               currentValue *= (1 + growth) * randomFactor;
+
+               if (i < monthsBack) {
+                   historical.push(currentValue);
+                   forecast.push(null);
+               } else if (i === monthsBack) {
+                   historical.push(currentValue);
+                   forecast.push(currentValue);
+               } else {
+                   historical.push(null);
+                   forecast.push(currentValue);
+               }
+           }
+
+           return { labels, historical, forecast, transitionPoint: monthsBack };
+       }
+
+       function initSatisfactionScoreChart() {
+           const data = generateTimeSeriesData(9, 3, 4.0, 0.01, 0.02);
+           initChart('satisfactionScoreChart', {
+               type: 'line',
+               data: {
+                   labels: data.labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: data.historical,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       tension: 0.1
+                   }, {
+                       label: 'Forecast',
+                       data: data.forecast,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       tension: 0.1
+                   }]
+               },
+               transitionPoint: data.transitionPoint
+           }, {
+               scales: {
+                   y: {
+                       beginAtZero: false,
+                       title: {
+                           display: true,
+                           text: 'Satisfaction Score'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('satisfactionScoreExplanation',
+               'Satisfaction scores projected to reach 4.5 by Q3 2024, driven by improved mobile app features and personalized financial advice services.');
+       }
+
+       function initNPSChart() {
+           const data = generateTimeSeriesData(9, 3, 35, 0.02, 0.05);
+           initChart('npsChart', {
+               type: 'line',
+               data: {
+                   labels: data.labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: data.historical,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       tension: 0.1
+                   }, {
+                       label: 'Forecast',
+                       data: data.forecast,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       tension: 0.1
+                   }]
+               },
+               transitionPoint: data.transitionPoint
+           }, {
+               scales: {
+                   y: {
+                       beginAtZero: false,
+                       title: {
+                           display: true,
+                           text: 'Net Promoter Score'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('npsExplanation',
+               'NPS expected to reach 47 by year-end. Key drivers: enhanced digital services and improved customer support response times.');
+       }
+
+       function initRetentionRateChart() {
+           const data = generateTimeSeriesData(9, 3, 90, 0.002, 0.01);
+           initChart('retentionRateChart', {
+               type: 'line',
+               data: {
+                   labels: data.labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: data.historical,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       tension: 0.1
+                   }, {
+                       label: 'Forecast',
+                       data: data.forecast,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       tension: 0.1
+                   }]
+               },
+               transitionPoint: data.transitionPoint
+           }, {
+               scales: {
+                   y: {
+                       beginAtZero: false,
+                       min: 85,
+                       max: 100,
+                       title: {
+                           display: true,
+                           text: 'Retention Rate (%)'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('retentionRateExplanation',
+               'Retention rate forecast to improve to 94.3% by Q2 2024. Main contributors: personalized offers and improved issue resolution processes.');
+       }
+
+       function initResolutionTimeChart() {
+           const data = generateTimeSeriesData(9, 3, 3, -0.02, 0.05);
+           initChart('resolutionTimeChart', {
+               type: 'line',
+               data: {
+                   labels: data.labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: data.historical,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       tension: 0.1
+                   }, {
+                       label: 'Forecast',
+                       data: data.forecast,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       tension: 0.1
+                   }]
+               },
+               transitionPoint: data.transitionPoint
+           }, {
+               scales: {
+                   y: {
+                       beginAtZero: false,
+                       title: {
+                           display: true,
+                           text: 'Average Resolution Time (days)'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('resolutionTimeExplanation',
+               'Average resolution time expected to decrease to 1.8 days by Q4 2023, primarily due to AI-powered customer support and streamlined internal processes.');
+       }
+
+       function initFeedbackChannelChart() {
+           const data = {
+               labels: ['Mobile App', 'Website', 'Branch', 'Phone', 'Email', 'Social Media'],
+               datasets: [{
+                   data: [35, 25, 15, 12, 8, 5],
+                   backgroundColor: [
+                       'rgba(255, 99, 132, 0.8)',
+                       'rgba(54, 162, 235, 0.8)',
+                       'rgba(255, 206, 86, 0.8)',
+                       'rgba(75, 192, 192, 0.8)',
+                       'rgba(153, 102, 255, 0.8)',
+                       'rgba(255, 159, 64, 0.8)'
+                   ]
+               }]
+           };
+
+           initChart('feedbackChannelChart', {
+               type: 'doughnut',
+               data: data
+           }, {
+               plugins: {
+                   legend: {
+                       position: 'right'
+                   }
+               }
+           });
+
+           setPredictionExplanation('feedbackChannelExplanation',
+               'Mobile app feedback expected to increase by 15% in the next quarter, reflecting growing preference for digital channels. Branch feedback projected to decrease by 5%.');
+       }
+
+       function initIssueResolutionChart() {
+           const data = generateTimeSeriesData(9, 3, 80, 0.005, 0.02);
+           initChart('issueResolutionChart', {
+               type: 'line',
+               data: {
+                   labels: data.labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: data.historical,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       tension: 0.1
+                   }, {
+                       label: 'Forecast',
+                       data: data.forecast,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       tension: 0.1
+                   }]
+               },
+               transitionPoint: data.transitionPoint
+           }, {
+               scales: {
+                   y: {
+                       beginAtZero: false,
+                       min: 70,
+                       max: 100,
+                       title: {
+                           display: true,
+                           text: 'Issue Resolution Rate (%)'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('issueResolutionExplanation',
+               'Issue resolution rate projected to reach 92% by Q1 2024. Key factors: improved staff training and implementation of AI-assisted troubleshooting.');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Customer\nSatisfaction', color: '#FFD700' },
+               { id: 2, label: 'Mobile App\nExperience', color: '#98FB98' },
+               { id: 3, label: 'Issue Resolution\nTime', color: '#87CEFA' },
+               { id: 4, label: 'Personalized\nOffers', color: '#FFA07A' },
+               { id: 5, label: 'Customer\nSupport Quality', color: '#DDA0DD' },
+               { id: 6, label: 'Product\nFeatures', color: '#F0E68C' },
+               { id: 7, label: 'Digital Banking\nAdoption', color: '#20B2AA' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 2, to: 1, label: '0.35', arrows: 'to' },
+               { from: 3, to: 1, label: '-0.25', arrows: 'to' },
+               { from: 4, to: 1, label: '0.20', arrows: 'to' },
+               { from: 5, to: 1, label: '0.30', arrows: 'to' },
+               { from: 6, to: 1, label: '0.15', arrows: 'to' },
+               { from: 7, to: 2, label: '0.40', arrows: 'to' },
+               { from: 5, to: 3, label: '-0.35', arrows: 'to' },
+               { from: 7, to: 4, label: '0.25', arrows: 'to' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'box',
+                   margin: 10,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: {
+                   enabled: true,
+                   barnesHut: {
+                       gravitationalConstant: -2000,
+                       centralGravity: 0.3,
+                       springLength: 95,
+                       springConstant: 0.04,
+                       damping: 0.09,
+                       avoidOverlap: 0.1
+                   }
+               }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initSatisfactionScoreChart();
+           initNPSChart();
+           initRetentionRateChart();
+           initResolutionTimeChart();
+           initFeedbackChannelChart();
+           initIssueResolutionChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

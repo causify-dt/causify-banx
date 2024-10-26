@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>High-Net-Worth Individual (HNWI) Services</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">High-Net-Worth Individual (HNWI) Services</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Assets Under Management (AUM)</h3>
+                               <p class="text-sm text-gray-500">95% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$8.7B</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> $9.2B</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Retention Rate</h3>
+                               <p class="text-sm text-gray-500">92% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">94.5%</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 95.2%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Portfolio Return</h3>
+                               <p class="text-sm text-gray-500">88% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">7.8%</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 8.3%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">New HNWI Clients</h3>
+                               <p class="text-sm text-gray-500">90% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">142</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 158</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>AUM projected to grow by 5.7% in the next quarter, driven by new client acquisition and increased allocation from existing clients (Confidence: 95%).</li>
+                           <li>Client retention rate expected to improve to 95.2%, attributed to enhanced personalized services and AI-driven investment recommendations (Confidence: 92%).</li>
+                           <li>Average portfolio return forecasted to reach 8.3%, outperforming the market by 1.2 percentage points, due to strategic asset allocation and alternative investment offerings (Confidence: 88%).</li>
+                           <li>Counterfactual: If global market volatility increases by 20%, projected AUM growth would decrease to 3.2%, highlighting the need for robust risk management strategies (Confidence: 85%).</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: HNWI Service Performance Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Assets Under Management Growth <span class="text-sm font-normal text-gray-500">(95% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="aumGrowthChart"></canvas>
+                               </div>
+                               <p id="aumGrowthExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Retention Rate <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientRetentionChart"></canvas>
+                               </div>
+                               <p id="clientRetentionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Portfolio Return <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="portfolioReturnChart"></canvas>
+                               </div>
+                               <p id="portfolioReturnExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">New HNWI Client Acquisition <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientAcquisitionChart"></canvas>
+                               </div>
+                               <p id="clientAcquisitionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Product Adoption Rates <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="productAdoptionChart"></canvas>
+                               </div>
+                               <p id="productAdoptionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Satisfaction Score <span class="text-sm font-normal text-gray-500">(93% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientSatisfactionChart"></canvas>
+                               </div>
+                               <p id="clientSatisfactionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       function showPage(pageId) {
+           document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+           document.getElementById(pageId + 'Page').classList.add('active');
+          
+           document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+           document.getElementById(pageId + 'Btn').classList.add('active');
+       }
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           const today = new Date();
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initTimeSeriesChart(canvasId, data, yAxisLabel) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const historicalDataPoints = 10; // 9 months back + current month
+
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Historical',
+                       data: data.historical,
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }, {
+                       label: 'Predicted',
+                       data: data.forecast,
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       borderDash: [5, 5],
+                       fill: false
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: {
+                           title: {
+                               display: true,
+                               text: 'Month'
+                           }
+                       },
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: yAxisLabel
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                               }
+                           }
+                       },
+                       annotation: {
+                           annotations: {
+                               line1: {
+                                   type: 'line',
+                                   xMin: historicalDataPoints - 0.5,
+                                   xMax: historicalDataPoints - 0.5,
+                                   borderColor: 'rgb(169, 169, 169)',
+                                   borderWidth: 2,
+                                   label: {
+                                       content: 'Now',
+                                       enabled: true,
+                                       position: 'top'
+                                   }
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+       }
+
+       function initProductAdoptionChart() {
+           const ctx = document.getElementById('productAdoptionChart').getContext('2d');
+           const labels = generateDateLabels(5, 2);
+           const historicalDataPoints = 6; // 5 months back + current month
+          
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Wealth Management',
+                       data: [65, 68, 70, 72, 75, 78, 80, 82],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }, {
+                       label: 'Private Banking',
+                       data: [45, 47, 50, 52, 55, 58, 60, 62],
+                       borderColor: 'rgba(255, 99, 132, 1)',
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }, {
+                       label: 'Investment Advisory',
+                       data: [30, 32, 35, 38, 40, 42, 45, 47],
+                       borderColor: 'rgba(255, 206, 86, 1)',
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Adoption Rate (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].parsed.x >= historicalDataPoints ? 'Prediction' : 'Historical';
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('productAdoptionExplanation',
+               'Wealth Management services projected to grow 5% in adoption, driven by new AI-powered portfolio optimization tools. Private Banking expected to see 7% increase due to personalized concierge services.');
+       }
+
+       function initClientSatisfactionChart() {
+           const ctx = document.getElementById('clientSatisfactionChart').getContext('2d');
+           const labels = generateDateLabels(5, 2);
+           new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [{
+                       label: 'Satisfaction Score',
+                       data: [8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9],
+                       borderColor: 'rgba(75, 192, 192, 1)',
+                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                       fill: true
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           max: 10,
+                           title: {
+                               display: true,
+                               text: 'Satisfaction Score (0-10)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           callbacks: {
+                               title: function(context) {
+                                   return context[0].dataIndex >= 6 ? 'Prediction' : 'Historical';
+                               }
+                           }
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('clientSatisfactionExplanation',
+               'Client satisfaction projected to reach 8.9/10, a 2.3% increase, driven by enhanced digital platforms and personalized investment strategies. Key factors: 24/7 concierge service (30% impact) and AI-driven market insights (25% impact).');
+       }
+
+       function initCausalNetworkGraph() {
+           const container = document.getElementById('causalNetworkGraph');
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'AUM Growth', shape: 'circle' },
+               { id: 2, label: 'Client Retention', shape: 'circle' },
+               { id: 3, label: 'Portfolio Return', shape: 'circle' },
+               { id: 4, label: 'New Client Acquisition', shape: 'circle' },
+               { id: 5, label: 'Market Conditions', shape: 'diamond' },
+               { id: 6, label: 'Personalized Services', shape: 'box' },
+               { id: 7, label: 'AI-Driven Recommendations', shape: 'box' },
+               { id: 8, label: 'Brand Reputation', shape: 'triangle' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 5, to: 1, label: '0.6' },
+               { from: 5, to: 3, label: '0.7' },
+               { from: 6, to: 2, label: '0.5' },
+               { from: 6, to: 4, label: '0.4' },
+               { from: 7, to: 3, label: '0.6' },
+               { from: 7, to: 2, label: '0.5' },
+               { from: 8, to: 4, label: '0.6' },
+               { from: 8, to: 2, label: '0.4' },
+               { from: 2, to: 1, label: '0.5' },
+               { from: 3, to: 1, label: '0.6' },
+               { from: 4, to: 1, label: '0.4' }
+           ]);
+
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   arrows: {
+                       to: { enabled: true, scaleFactor: 0.5 }
+                   },
+                   width: 2
+               },
+               physics: false,
+               layout: {
+                   hierarchical: {
+                       direction: 'UD',
+                       sortMethod: 'directed'
+                   }
+               },
+               height: '100%',
+               width: '100%'
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           console.log('Initializing dashboard');
+
+           const aumData = {
+               historical: [7.9, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9],
+               forecast: [null, null, null, null, null, null, null, null, null, 8.9, 9.0, 9.1, 9.2]
+           };
+           initTimeSeriesChart('aumGrowthChart', aumData, 'AUM (Billions $)');
+           setPredictionExplanation('aumGrowthExplanation', 'AUM projected to reach $9.2B, a 5.7% increase, driven by new client acquisition (40% impact) and increased allocation from existing clients (35% impact). Market performance contributes 25% to the growth.');
+
+           const clientRetentionData = {
+               historical: [93.5, 93.7, 93.9, 94.1, 94.3, 94.5, 94.7, 94.9, 95.1, 95.3],
+               forecast: [null, null, null, null, null, null, null, null, null, 95.3, 95.4, 95.5, 95.6]
+           };
+           initTimeSeriesChart('clientRetentionChart', clientRetentionData, 'Retention Rate (%)');
+           setPredictionExplanation('clientRetentionExplanation', 'Client retention rate expected to improve to 95.6%, attributed to enhanced personalized services (45% impact) and AI-driven investment recommendations (35% impact). Improved market conditions contribute 20% to the increase.');
+
+           const portfolioReturnData = {
+               historical: [7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 8.0],
+               forecast: [null, null, null, null, null, null, null, null, null, 8.0, 8.1, 8.2, 8.3]
+           };
+           initTimeSeriesChart('portfolioReturnChart', portfolioReturnData, 'Average Return (%)');
+           setPredictionExplanation('portfolioReturnExplanation', 'Average portfolio return forecasted to reach 8.3%, outperforming the market by 1.2 percentage points. Key drivers: strategic asset allocation (40% impact), alternative investment offerings (30% impact), and AI-powered risk management (20% impact).');
+
+           const clientAcquisitionData = {
+               historical: [125, 130, 134, 138, 142, 146, 150, 154, 158, 162],
+               forecast: [null, null, null, null, null, null, null, null, null, 162, 166, 170, 174]
+           };
+           initTimeSeriesChart('clientAcquisitionChart', clientAcquisitionData, 'New HNWI Clients');
+           setPredictionExplanation('clientAcquisitionExplanation', 'New HNWI client acquisition projected to reach 174, a 7.4% increase. Primary drivers: targeted digital marketing campaigns (35% impact), referral programs (30% impact), and expanded suite of exclusive services (25% impact).');
+
+           initProductAdoptionChart();
+           initClientSatisfactionChart();
+           initCausalNetworkGraph();
+
+           console.log('Dashboard initialization complete');
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

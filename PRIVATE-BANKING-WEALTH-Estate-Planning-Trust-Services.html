@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Estate Planning and Trust Services</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Estate Planning and Trust Services</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Assets Under Management</h3>
+                               <p class="text-sm text-gray-500">(92% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$2.73B</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 5.2%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Trust Accounts</h3>
+                               <p class="text-sm text-gray-500">(88% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">1,842</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 3.7%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Satisfaction</h3>
+                               <p class="text-sm text-gray-500">(90% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">94.3%</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 1.5%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue per Trust</h3>
+                               <p class="text-sm text-gray-500">(87% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$12,850</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 2.8%</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Assets Under Management projected to grow by 8.5% in the next quarter, driven by increased client acquisition and market performance (Confidence: 92%).</li>
+                           <li>Trust account growth rate expected to accelerate to 5.2% due to new digital onboarding process and targeted marketing campaigns (Confidence: 88%).</li>
+                           <li>Client satisfaction scores predicted to reach 95.5% following the implementation of AI-powered personalized service recommendations (Confidence: 90%).</li>
+                           <li>Counterfactual: If regulatory changes regarding estate tax exemptions are not implemented, we project a 12% increase in new trust formations instead of the current 7% forecast.</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Trust Service Performance Drivers <span class="text-sm font-normal text-gray-500">(78% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Assets Under Management Trend <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="aumTrendChart"></canvas>
+                               </div>
+                               <p id="aumTrendExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Trust Account Growth <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="trustAccountGrowthChart"></canvas>
+                               </div>
+                               <p id="trustAccountGrowthExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Satisfaction Scores <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientSatisfactionChart"></canvas>
+                               </div>
+                               <p id="clientSatisfactionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue per Trust <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="revenuePerTrustChart"></canvas>
+                               </div>
+                               <p id="revenuePerTrustExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Trust Types Distribution <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="trustTypesChart"></canvas>
+                               </div>
+                               <p id="trustTypesExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Client Age Distribution <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="clientAgeChart"></canvas>
+                               </div>
+                               <p id="clientAgeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateTimeSeriesData(monthsBack, monthsForward, baseValue, growth, volatility) {
+           const labels = [];
+           const historical = [];
+           const forecast = [];
+           
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+               
+               const value = baseValue * Math.pow(1 + growth, i) * (1 + (Math.random() - 0.5) * volatility);
+               
+               if (i < 0) {
+                   historical.push(value);
+                   forecast.push(null);
+               } else if (i === 0) {
+                   historical.push(value);
+                   forecast.push(value);
+               } else {
+                   historical.push(null);
+                   forecast.push(value);
+               }
+           }
+           
+           return { labels, historical, forecast };
+       }
+
+       function initChart(canvasId, data, chartType, yAxisLabel) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           const chart = new Chart(ctx, {
+               type: chartType,
+               data: {
+                   labels: data.labels,
+                   datasets: [
+                       {
+                           label: 'Historical',
+                           data: data.historical,
+                           borderColor: 'rgba(75, 192, 192, 1)',
+                           backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                           fill: true
+                       },
+                       {
+                           label: 'Forecast',
+                           data: data.forecast,
+                           borderColor: 'rgba(255, 99, 132, 1)',
+                           backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                           borderDash: [5, 5],
+                           fill: true
+                       }
+                   ]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: {
+                           title: {
+                               display: true,
+                               text: 'Month'
+                           }
+                       },
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: yAxisLabel
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           display: true,
+                           position: 'bottom'
+                       },
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       }
+                   }
+               }
+           });
+       }
+
+       function initAUMTrendChart() {
+           const data = generateTimeSeriesData(9, 3, 2.5e9, 0.007, 0.02);
+           initChart('aumTrendChart', data, 'line', 'Assets Under Management ($B)');
+           document.getElementById('aumTrendExplanation').textContent = 'AUM projected to reach $2.95B by Q3 2024, driven by new client acquisition and positive market performance.';
+       }
+
+       function initTrustAccountGrowthChart() {
+           const data = generateTimeSeriesData(9, 3, 1700, 0.004, 0.01);
+           initChart('trustAccountGrowthChart', data, 'line', 'Number of Trust Accounts');
+           document.getElementById('trustAccountGrowthExplanation').textContent = 'Trust accounts expected to grow to 1,910 by Q3 2024, with accelerated growth due to new digital onboarding process.';
+       }
+
+       function initClientSatisfactionChart() {
+           const data = generateTimeSeriesData(9, 3, 92, 0.002, 0.005);
+           initChart('clientSatisfactionChart', data, 'line', 'Satisfaction Score (%)');
+           document.getElementById('clientSatisfactionExplanation').textContent = 'Client satisfaction predicted to reach 95.5% following implementation of AI-powered personalized service recommendations.';
+       }
+
+       function initRevenuePerTrustChart() {
+           const data = generateTimeSeriesData(9, 3, 12000, 0.003, 0.015);
+           initChart('revenuePerTrustChart', data, 'line', 'Revenue per Trust ($)');
+           document.getElementById('revenuePerTrustExplanation').textContent = 'Revenue per trust projected to increase to $13,200 by Q3 2024, driven by new value-added services and fee optimization.';
+       }
+
+       function initTrustTypesChart() {
+           const ctx = document.getElementById('trustTypesChart').getContext('2d');
+           new Chart(ctx, {
+               type: 'doughnut',
+               data: {
+                   labels: ['Revocable Living Trusts', 'Irrevocable Trusts', 'Charitable Trusts', 'Special Needs Trusts', 'Other'],
+                   datasets: [{
+                       data: [45, 25, 15, 10, 5],
+                       backgroundColor: [
+                           'rgba(255, 99, 132, 0.8)',
+                           'rgba(54, 162, 235, 0.8)',
+                           'rgba(255, 206, 86, 0.8)',
+                           'rgba(75, 192, 192, 0.8)',
+                           'rgba(153, 102, 255, 0.8)'
+                       ]
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       legend: {
+                           position: 'right'
+                       }
+                   }
+               }
+           });
+           document.getElementById('trustTypesExplanation').textContent = 'Revocable Living Trusts remain the most popular, but Charitable Trusts are expected to grow by 3% in the next year due to increased focus on philanthropy.';
+       }
+
+       function initClientAgeChart() {
+           const ctx = document.getElementById('clientAgeChart').getContext('2d');
+           new Chart(ctx, {
+               type: 'bar',
+               data: {
+                   labels: ['Under 35', '35-50', '51-65', '66-80', 'Over 80'],
+                   datasets: [{
+                       label: 'Current',
+                       data: [5, 15, 35, 30, 15],
+                       backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                   }, {
+                       label: 'Projected (Next Year)',
+                       data: [7, 18, 33, 28, 14],
+                       backgroundColor: 'rgba(255, 99, 132, 0.6)'
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           title: {
+                               display: true,
+                               text: 'Percentage of Clients'
+                           }
+                   }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+           document.getElementById('clientAgeExplanation').textContent = 'Projected 2% increase in clients under 50, driven by targeted marketing campaigns and growing interest in early estate planning among millennials.';
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'AUM Growth', color: '#FF9900' },
+               { id: 2, label: 'Market Performance', color: '#CC33FF' },
+               { id: 3, label: 'Client Acquisition', color: '#33CCFF' },
+               { id: 4, label: 'Digital Onboarding', color: '#66CC00' },
+               { id: 5, label: 'AI-Powered Recommendations', color: '#FF3366' },
+               { id: 6, label: 'Regulatory Changes', color: '#999999' },
+               { id: 7, label: 'Client Satisfaction', color: '#FFCC00' },
+               { id: 8, label: 'Revenue per Trust', color: '#00CCCC' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 2, to: 1, label: '0.4', arrows: 'to' },
+               { from: 3, to: 1, label: '0.35', arrows: 'to' },
+               { from: 4, to: 3, label: '0.25', arrows: 'to' },
+               { from: 5, to: 7, label: '0.3', arrows: 'to' },
+               { from: 6, to: 3, label: '0.2', arrows: 'to' },
+               { from: 7, to: 3, label: '0.15', arrows: 'to' },
+               { from: 5, to: 8, label: '0.2', arrows: 'to' },
+               { from: 3, to: 8, label: '0.25', arrows: 'to' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 20,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 12, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: {
+                   forceAtlas2Based: {
+                       gravitationalConstant: -26,
+                       centralGravity: 0.005,
+                       springLength: 230,
+                       springConstant: 0.18
+                   },
+                   maxVelocity: 146,
+                   solver: 'forceAtlas2Based',
+                   timestep: 0.35,
+                   stabilization: { iterations: 150 }
+               }
+           };
+
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initAUMTrendChart();
+           initTrustAccountGrowthChart();
+           initClientSatisfactionChart();
+           initRevenuePerTrustChart();
+           initTrustTypesChart();
+           initClientAgeChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

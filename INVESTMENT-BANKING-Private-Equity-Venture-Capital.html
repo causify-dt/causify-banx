@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Private Equity and Venture Capital</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Private Equity and Venture Capital</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Private Equity Deal Volume</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$400M</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> Predicted $450M next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Venture Capital Investment Growth</h3>
+                               <p class="text-sm text-gray-500">90% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$200M</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> Predicted $220M next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Revenue from PE/VC</h3>
+                               <p class="text-sm text-gray-500">85% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$50M</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> Predicted $55M next quarter</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">PE/VC Deal Success Rate</h3>
+                               <p class="text-sm text-gray-500">80% Confidence</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">85%</div>
+                                   <div class="text-sm text-gray-600"><i class="fas fa-equals"></i> Predicted stability at 85%</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Strong growth in private equity and venture capital deal volumes, particularly in the technology and healthcare sectors.</li>
+                           <li>Venture capital investments are increasing as more startups raise larger rounds.</li>
+                           <li>Revenue from PE/VC deals is growing as more firms close larger rounds of investment.</li>
+                           <li>If market volatility increases by 20%, PE deal volume is projected to decrease by 15% in the next quarter. (Counterfactual)</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: PE/VC Investment Drivers <span class="text-sm font-normal text-gray-500">(82% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">PE and VC Deal Volume Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="dealVolumeChart"></canvas>
+                               </div>
+                               <p id="dealVolumeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Venture Capital Investment Growth Forecast <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="vcGrowthChart"></canvas>
+                               </div>
+                               <p id="vcGrowthExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Sector-wise PE/VC Investment <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="sectorInvestmentChart"></canvas>
+                               </div>
+                               <p id="sectorInvestmentExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">PE/VC Revenue Forecast <span class="text-sm font-normal text-gray-500">(85% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="revenueChart"></canvas>
+                               </div>
+                               <p id="revenueExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Deal Success Rate Trend <span class="text-sm font-normal text-gray-500">(80% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="successRateChart"></canvas>
+                               </div>
+                               <p id="successRateExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Average Deal Size Trend <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="dealSizeChart"></canvas>
+                               </div>
+                               <p id="dealSizeExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function generateTimeSeriesData(monthsBack, monthsForward, initialValue, growthRate) {
+           const data = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const value = initialValue * Math.pow(1 + growthRate, i);
+               data.push(Math.round(value));
+           }
+           return data;
+       }
+
+       function initChart(chartId, type, labels, datasets, yAxisLabel) {
+           const ctx = document.getElementById(chartId).getContext('2d');
+           const historicalDataPoints = Math.floor(labels.length * 0.75);
+
+           new Chart(ctx, {
+               type: type,
+               data: {
+                   labels: labels,
+                   datasets: datasets.map(dataset => ({
+                       ...dataset,
+                       borderWidth: 2,
+                       pointRadius: 0,
+                       tension: 0.4,
+                       segment: {
+                           borderDash: ctx => ctx.p0DataIndex >= historicalDataPoints ? [6, 6] : undefined
+                       }
+                   }))
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       x: {
+                           grid: {
+                               display: false
+                           }
+                       },
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: yAxisLabel
+                           }
+                       }
+                   },
+                   plugins: {
+                       legend: {
+                           position: 'bottom'
+                       },
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       }
+                   }
+               }
+           });
+       }
+
+       function initDealVolumeChart() {
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(9, 3, 400, 0.03);
+           initChart('dealVolumeChart', 'line', labels, [{
+               label: 'Deal Volume',
+               data: data,
+               borderColor: 'rgba(75, 192, 192, 1)',
+               backgroundColor: 'rgba(75, 192, 192, 0.2)',
+               fill: true
+           }], 'Deal Volume ($ Million)');
+           document.getElementById('dealVolumeExplanation').textContent = 'PE and VC deal volumes are projected to increase by 12.5% over the next quarter, driven by strong tech sector performance and increased investor confidence.';
+       }
+
+       function initVCGrowthChart() {
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(9, 3, 200, 0.025);
+           initChart('vcGrowthChart', 'bar', labels, [{
+               label: 'VC Investment',
+               data: data,
+               backgroundColor: 'rgba(255, 99, 132, 0.6)'
+           }], 'VC Investment ($ Million)');
+           document.getElementById('vcGrowthExplanation').textContent = 'Venture capital investments are expected to grow by 10% in the next quarter, with a focus on AI, biotech, and clean energy startups.';
+       }
+
+       function initSectorInvestmentChart() {
+           const labels = ['Technology', 'Healthcare', 'Finance', 'Consumer', 'Energy', 'Others'];
+           const currentData = [35, 25, 15, 10, 8, 7];
+           const forecastData = [38, 27, 14, 9, 7, 5];
+           initChart('sectorInvestmentChart', 'bar', labels, [
+               {
+                   label: 'Current',
+                   data: currentData,
+                   backgroundColor: 'rgba(75, 192, 192, 0.6)'
+               },
+               {
+                   label: 'Forecast',
+                   data: forecastData,
+                   backgroundColor: 'rgba(255, 99, 132, 0.6)'
+               }
+           ], 'Investment (%)');
+           document.getElementById('sectorInvestmentExplanation').textContent = 'Technology and healthcare sectors are expected to see increased investment, while traditional sectors may experience slight declines.';
+       }
+
+       function initRevenueChart() {
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(9, 3, 50, 0.02);
+           initChart('revenueChart', 'line', labels, [{
+               label: 'Revenue',
+               data: data,
+               borderColor: 'rgba(153, 102, 255, 1)',
+               backgroundColor: 'rgba(153, 102, 255, 0.2)',
+               fill: true
+           }], 'Revenue ($ Million)');
+           document.getElementById('revenueExplanation').textContent = 'PE/VC revenue is forecast to grow by 10% in the next quarter, driven by larger deal sizes and increased transaction volumes.';
+       }
+
+       function initSuccessRateChart() {
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(9, 3, 85, 0.001);
+           initChart('successRateChart', 'line', labels, [{
+               label: 'Success Rate',
+               data: data,
+               borderColor: 'rgba(255, 159, 64, 1)',
+               backgroundColor: 'rgba(255, 159, 64, 0.2)',
+               fill: true
+           }], 'Success Rate (%)');
+           document.getElementById('successRateExplanation').textContent = 'Deal success rates are expected to remain stable at around 85%, with improved due diligence processes offsetting increased market competition.';
+       }
+
+       function initDealSizeChart() {
+           const labels = generateDateLabels(9, 3);
+           const data = generateTimeSeriesData(9, 3, 20, 0.015);
+           initChart('dealSizeChart', 'line', labels, [{
+               label: 'Average Deal Size',
+               data: data,
+               borderColor: 'rgba(255, 206, 86, 1)',
+               backgroundColor: 'rgba(255, 206, 86, 0.2)',
+               fill: true
+           }], 'Average Deal Size ($ Million)');
+           document.getElementById('dealSizeExplanation').textContent = 'Average deal sizes are projected to increase by 5% in the next quarter, reflecting a trend towards larger, more mature companies seeking funding.';
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Economic Growth', shape: 'circle' },
+               { id: 2, label: 'Interest Rates', shape: 'circle' },
+               { id: 3, label: 'Tech Innovation', shape: 'circle' },
+               { id: 4, label: 'Regulatory Environment', shape: 'circle' },
+               { id: 5, label: 'PE/VC Investment', shape: 'circle' },
+               { id: 6, label: 'Startup Ecosystem', shape: 'circle' },
+               { id: 7, label: 'Exit Opportunities', shape: 'circle' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 5, label: '+0.6', arrows: 'to' },
+               { from: 2, to: 5, label: '-0.4', arrows: 'to' },
+               { from: 3, to: 5, label: '+0.7', arrows: 'to' },
+               { from: 4, to: 5, label: '+0.5', arrows: 'to' },
+               { from: 5, to: 6, label: '+0.8', arrows: 'to' },
+               { from: 5, to: 7, label: '+0.6', arrows: 'to' },
+               { from: 6, to: 3, label: '+0.5', arrows: 'to' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = { nodes: nodes, edges: edges };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: { size: 14 }
+               },
+               edges: {
+                   font: { size: 14, align: 'middle' },
+                   color: { color: '#666', highlight: '#000' },
+                   width: 2
+               },
+               physics: { enabled: false },
+               layout: { randomSeed: 2 }
+           };
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initDealVolumeChart();
+           initVCGrowthChart();
+           initSectorInvestmentChart();
+           initRevenueChart();
+           initSuccessRateChart();
+           initDealSizeChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>

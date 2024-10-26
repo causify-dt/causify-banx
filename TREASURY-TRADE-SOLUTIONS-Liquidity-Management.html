@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Treasury and Trade Solutions: Liquidity Management</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+   <style>
+       .main-content {
+           flex-grow: 1;
+           overflow-y: auto;
+       }
+       .page {
+           display: none;
+       }
+       .page.active {
+           display: block;
+       }
+       .chart-container {
+           height: 300px;
+           width: 100%;
+       }
+       #causalNetworkGraph {
+           border: none;
+       }
+       .confidence {
+           font-size: 0.75rem;
+           color: #6b7280;
+           margin: 0;
+           padding: 0;
+           line-height: 1.2;
+       }
+       .prediction-explanation {
+           color: #374151;
+           border-top: 1px solid #e5e7eb;
+           padding-top: 0.5rem;
+           margin-top: 0.5rem;
+           line-height: 1.4;
+       }
+       /* Custom scrollbar styles */
+       ::-webkit-scrollbar {
+           width: 10px;
+       }
+       ::-webkit-scrollbar-track {
+           background: #e5e7eb;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb {
+           background: #9ca3af;
+           border-radius: 5px;
+       }
+       ::-webkit-scrollbar-thumb:hover {
+           background: #6b7280;
+       }
+       /* For Firefox */
+       * {
+           scrollbar-width: thin;
+           scrollbar-color: #9ca3af #e5e7eb;
+       }
+   </style>
+</head>
+<body class="bg-gray-100 text-gray-900 flex flex-col h-screen overflow-hidden">
+
+   <main class="main-content">
+       <div class="px-4 sm:px-6 lg:px-8 py-8">
+           <!-- Overview header -->
+           <h2 class="text-2xl font-bold text-gray-900 px-4 mb-2">Liquidity Management</h2>
+           <div id="dashboardPage" class="page active">
+               <div class="p-4">
+                   <!-- KPI Cards -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cash Flow Ratio</h3>
+                               <p class="text-sm text-gray-500">(92% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">1.32</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 1.37</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Working Capital</h3>
+                               <p class="text-sm text-gray-500">(89% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">$245.8M</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> $258.3M</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Liquidity Coverage Ratio</h3>
+                               <p class="text-sm text-gray-500">(94% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">118%</div>
+                                   <div class="text-sm text-green-600"><i class="fas fa-arrow-up"></i> 122%</div>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cash Conversion Cycle</h3>
+                               <p class="text-sm text-gray-500">(91% Confidence)</p>
+                               <div class="mt-2">
+                                   <div class="text-2xl font-bold">42 days</div>
+                                   <div class="text-sm text-red-600"><i class="fas fa-arrow-down"></i> 39 days</div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Insights Section -->
+                   <div class="w-full mb-4 bg-blue-50 p-4 rounded-lg shadow">
+                       <h3 class="text-lg font-semibold text-blue-700 mb-2 border-l-4 border-blue-500 pl-2">Insights</h3>
+                       <ul class="list-disc pl-5 text-sm text-gray-800 space-y-2">
+                           <li>Implement AI-driven cash forecasting to improve accuracy by 15%, reducing idle cash by $12.3M (Confidence: 93%).</li>
+                           <li>Optimize working capital through supply chain finance, potentially freeing up $28.7M in the next quarter (Confidence: 89%).</li>
+                           <li>Counterfactual: If interest rates rise by 50 basis points, liquidity buffer needs would increase by 7%, requiring $15.2M additional reserves.</li>
+                           <li>Automate reconciliation processes to reduce manual errors by 30% and improve cash visibility across global operations (Confidence: 91%).</li>
+                       </ul>
+                   </div>
+
+                   <!-- Causal Network -->
+                   <div class="w-full mb-4 p-4 bg-white rounded-lg shadow">
+                       <h3 class="text-lg font-semibold">Causal Network: Liquidity Drivers <span class="text-sm font-normal text-gray-500">(87% Confidence)</span></h3>
+                       <div id="causalNetworkGraph" class="h-96 mt-4"></div>
+                   </div>
+
+                   <!-- Chart Sections -->
+                   <div class="flex flex-wrap -mx-2">
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cash Flow Projection <span class="text-sm font-normal text-gray-500">(93% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="cashFlowProjectionChart"></canvas>
+                               </div>
+                               <p id="cashFlowProjectionExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Working Capital Trend <span class="text-sm font-normal text-gray-500">(90% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="workingCapitalTrendChart"></canvas>
+                               </div>
+                               <p id="workingCapitalTrendExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Liquidity Ratio Analysis <span class="text-sm font-normal text-gray-500">(92% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="liquidityRatioChart"></canvas>
+                               </div>
+                               <p id="liquidityRatioExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cash Conversion Cycle <span class="text-sm font-normal text-gray-500">(89% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="cashConversionCycleChart"></canvas>
+                               </div>
+                               <p id="cashConversionCycleExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Interest Rate Sensitivity <span class="text-sm font-normal text-gray-500">(88% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="interestRateSensitivityChart"></canvas>
+                               </div>
+                               <p id="interestRateSensitivityExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                       <div class="w-full lg:w-1/2 px-2 mb-4">
+                           <div class="bg-white rounded-lg shadow p-4">
+                               <h3 class="text-sm font-semibold">Cross-Border Cash Flow <span class="text-sm font-normal text-gray-500">(91% Confidence)</span></h3>
+                               <div class="chart-container mt-4">
+                                   <canvas id="crossBorderCashFlowChart"></canvas>
+                               </div>
+                               <p id="crossBorderCashFlowExplanation" class="mt-4 pt-2 text-xs text-gray-600 border-t border-gray-200"></p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </main>
+
+   <script>
+       const today = new Date();
+
+       function generateDateLabels(monthsBack, monthsForward) {
+           const labels = [];
+           for (let i = -monthsBack; i <= monthsForward; i++) {
+               const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+               labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+           }
+           return labels;
+       }
+
+       function setPredictionExplanation(elementId, explanation) {
+           const element = document.getElementById(elementId);
+           if (element) {
+               element.textContent = explanation;
+           }
+       }
+
+       function initCashFlowProjectionChart() {
+           const ctx = document.getElementById('cashFlowProjectionChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Actual Cash Flow',
+                   data: [210, 225, 215, 230, 240, 255, 265, 280, 290, 300, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Projected Cash Flow',
+                   data: [null, null, null, null, null, null, null, null, null, 300, 315, 330, 345],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Cash Flow (Millions $)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('cashFlowProjectionExplanation', 
+               'Cash flow projected to increase by 15% over the next quarter, driven by improved receivables management and strategic investment in high-yield short-term instruments.');
+       }
+
+       function initWorkingCapitalTrendChart() {
+           const ctx = document.getElementById('workingCapitalTrendChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Working Capital',
+                   data: [220, 228, 235, 230, 238, 245, 250, 242, 246, 251, null, null, null],
+                   borderColor: 'rgba(153, 102, 255, 1)',
+                   backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Projected Working Capital',
+                   data: [null, null, null, null, null, null, null, null, null, 251, 258, 265, 272],
+                   borderColor: 'rgba(255, 159, 64, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Working Capital (Millions $)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('workingCapitalTrendExplanation', 
+               'Working capital expected to grow by 8.4% in the next quarter, benefiting from optimized inventory management and improved supplier payment terms.');
+       }
+
+       function initLiquidityRatioChart() {
+           const ctx = document.getElementById('liquidityRatioChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Current Ratio',
+                   data: [1.25, 1.28, 1.30, 1.29, 1.31, 1.32, 1.34, 1.33, 1.35, 1.36, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: false
+               }, {
+                   label: 'Quick Ratio',
+                   data: [0.95, 0.98, 1.00, 0.99, 1.01, 1.02, 1.04, 1.03, 1.05, 1.06, null, null, null],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                   fill: false
+               }, {
+                   label: 'Projected Current Ratio',
+                   data: [null, null, null, null, null, null, null, null, null, 1.36, 1.38, 1.40, 1.42],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }, {
+                   label: 'Projected Quick Ratio',
+                   data: [null, null, null, null, null, null, null, null, null, 1.06, 1.08, 1.10, 1.12],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Ratio'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('liquidityRatioExplanation', 
+               'Liquidity ratios projected to improve, with the current ratio reaching 1.42 and quick ratio 1.12 by Q3. This improvement is driven by more efficient working capital management and strategic short-term investments.');
+       }
+
+       function initCashConversionCycleChart() {
+           const ctx = document.getElementById('cashConversionCycleChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Cash Conversion Cycle',
+                   data: [45, 44, 43, 42, 41, 42, 41, 40, 42, 41, null, null, null],
+                   borderColor: 'rgba(255, 206, 86, 1)',
+                   backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Projected Cash Conversion Cycle',
+                   data: [null, null, null, null, null, null, null, null, null, 41, 40, 39, 38],
+                   borderColor: 'rgba(153, 102, 255, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           reverse: true,
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Days'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('cashConversionCycleExplanation', 
+               'Cash Conversion Cycle expected to decrease to 38 days by Q3, a 7.3% improvement. This is primarily due to better inventory turnover and improved collections processes.');
+       }
+
+       function initInterestRateSensitivityChart() {
+           const ctx = document.getElementById('interestRateSensitivityChart').getContext('2d');
+           const data = {
+               labels: ['-1%', '-0.5%', 'Current', '+0.5%', '+1%'],
+               datasets: [{
+                   label: 'Net Interest Income',
+                   data: [95, 97.5, 100, 102.5, 105],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Liquidity Buffer Requirement',
+                   data: [92, 96, 100, 104, 108],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                   fill: true
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Relative Change (%)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('interestRateSensitivityExplanation', 
+               'A 1% increase in interest rates could boost net interest income by 5% but would require an 8% increase in liquidity buffers. Recommend hedging strategies to mitigate potential risks.');
+       }
+
+       function initCrossBorderCashFlowChart() {
+           const ctx = document.getElementById('crossBorderCashFlowChart').getContext('2d');
+           const labels = generateDateLabels(9, 3);
+           const data = {
+               labels: labels,
+               datasets: [{
+                   label: 'Inflow',
+                   data: [80, 85, 82, 88, 90, 93, 95, 98, 100, 102, null, null, null],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Outflow',
+                   data: [75, 78, 76, 80, 82, 85, 87, 89, 91, 93, null, null, null],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                   fill: true
+               }, {
+                   label: 'Projected Inflow',
+                   data: [null, null, null, null, null, null, null, null, null, 102, 105, 108, 111],
+                   borderColor: 'rgba(75, 192, 192, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }, {
+                   label: 'Projected Outflow',
+                   data: [null, null, null, null, null, null, null, null, null, 93, 95, 97, 99],
+                   borderColor: 'rgba(255, 99, 132, 1)',
+                   borderDash: [5, 5],
+                   fill: false
+               }]
+           };
+
+           new Chart(ctx, {
+               type: 'line',
+               data: data,
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: false,
+                           title: {
+                               display: true,
+                               text: 'Cash Flow (Millions $)'
+                           }
+                       }
+                   },
+                   plugins: {
+                       tooltip: {
+                           mode: 'index',
+                           intersect: false
+                       },
+                       legend: {
+                           position: 'bottom'
+                       }
+                   }
+               }
+           });
+
+           setPredictionExplanation('crossBorderCashFlowExplanation', 
+               'Cross-border cash inflows projected to grow by 8.8% and outflows by 6.5% over the next quarter. Recommend optimizing currency hedging strategies to mitigate FX risks.');
+       }
+
+       function initCausalNetworkGraph() {
+           const nodes = new vis.DataSet([
+               { id: 1, label: 'Cash Flow Management', shape: 'circle' },
+               { id: 2, label: 'Working Capital', shape: 'circle' },
+               { id: 3, label: 'Interest Rates', shape: 'circle' },
+               { id: 4, label: 'FX Fluctuations', shape: 'circle' },
+               { id: 5, label: 'Regulatory Requirements', shape: 'circle' },
+               { id: 6, label: 'Liquidity Buffer', shape: 'circle' },
+               { id: 7, label: 'Cross-Border Transactions', shape: 'circle' }
+           ]);
+
+           const edges = new vis.DataSet([
+               { from: 1, to: 2, arrows: 'to', label: '0.7' },
+               { from: 2, to: 6, arrows: 'to', label: '0.6' },
+               { from: 3, to: 1, arrows: 'to', label: '0.5' },
+               { from: 3, to: 6, arrows: 'to', label: '0.4' },
+               { from: 4, to: 7, arrows: 'to', label: '0.8' },
+               { from: 5, to: 6, arrows: 'to', label: '0.9' },
+               { from: 7, to: 1, arrows: 'to', label: '0.6' }
+           ]);
+
+           const container = document.getElementById('causalNetworkGraph');
+           const data = {
+               nodes: nodes,
+               edges: edges
+           };
+           const options = {
+               nodes: {
+                   shape: 'dot',
+                   size: 30,
+                   font: {
+                       size: 14,
+                       color: '#333'
+                   },
+                   borderWidth: 2
+               },
+               edges: {
+                   width: 2,
+                   color: {
+                       color: '#666',
+                       highlight: '#000',
+                       hover: '#333'
+                   },
+                   font: {
+                       size: 12,
+                       align: 'middle'
+                   }
+               },
+               physics: {
+                   enabled: true,
+                   barnesHut: {
+                       gravitationalConstant: -2000,
+                       centralGravity: 0.3,
+                       springLength: 95,
+                       springConstant: 0.04,
+                       damping: 0.09,
+                       avoidOverlap: 0.1
+                   }
+               }
+           };
+           new vis.Network(container, data, options);
+       }
+
+       function initDashboard() {
+           initCashFlowProjectionChart();
+           initWorkingCapitalTrendChart();
+           initLiquidityRatioChart();
+           initCashConversionCycleChart();
+           initInterestRateSensitivityChart();
+           initCrossBorderCashFlowChart();
+           initCausalNetworkGraph();
+       }
+
+       document.addEventListener('DOMContentLoaded', initDashboard);
+   </script>
+</body>
+</html>
