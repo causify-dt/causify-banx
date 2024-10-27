@@ -57,6 +57,30 @@
         body {
             padding-top: 0; /* Remove the padding we added for the fixed header */
         }
+
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin: 0;  /* Added this line */
+            padding: 0; /* Added this line */
+        }
+
+        #sidebar {
+            min-width: 52px;   /* Changed from 103px */
+            width: 52px;       /* Changed from 103px */
+            transition: width 0.3s ease;
+        }
+
+        #sidebar.expanded {
+            width: 220px !important;
+            min-width: 220px !important;
+        }
+
+        .sidebar-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body class="font-sans">
@@ -122,7 +146,7 @@
     </header>
     
     <div class="flex">
-        <div id="sidebar" class="bg-gray-50 text-gray-700 w-[103px] transition-all duration-300 overflow-y-auto flex flex-col border-r border-gray-200">
+        <div id="sidebar" class="bg-gray-50 text-gray-700 w-[52px] transition-all duration-300 overflow-y-auto flex flex-col border-r border-gray-200">
             <div class="flex flex-col items-center pt-4">
                 <button id="sidebarToggle" class="mb-6 text-gray-700 hover:text-gray-900 focus:outline-none">
                     <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
@@ -256,8 +280,8 @@
             </ul>
         </div>
         
-        <div class="flex-grow bg-gray-100 overflow-y-auto transition-all duration-300">
-            <div id="dynamic-content" class="p-6 bg-gray-50">
+        <div class="main-content">
+            <div id="dynamic-content" class="bg-gray-50">  <!-- Removed p-6 class -->
                 <!-- Dynamic content will be injected here -->
             </div>
         </div>
@@ -283,66 +307,102 @@
             let isSidebarExpanded = false;
             
             const navigationItems = {
+                retail: [
+                    { icon: 'fa-home', text: 'Overview', file: 'RETAIL-BANKING-Overview.html' },
+                    { icon: 'fa-user-plus', text: 'Customer Acquisition', file: 'RETAIL BANKING-Customer-Acquisition-Retention.html' },
+                    { icon: 'fa-door-open', text: 'Account Opening', file: 'RETAIL-BANKING-Account-Opening-Forecast.html' },
+                    { icon: 'fa-exchange-alt', text: 'Cross-Selling', file: 'RETAIL-BANKING-Cross-Selling-Opportunities.html' },
+                    { icon: 'fa-user-minus', text: 'Churn Prediction', file: 'RETAIL-BANKING-Customer-Churn-Prediction.html' },
+                    { icon: 'fa-smile', text: 'Customer Satisfaction', file: 'RETAIL-BANKING-Customer-Satisfaction-Feedback.html' },
+                    { icon: 'fa-chart-line', text: 'Revenue Analysis', file: 'RETAIL-BANKING-Revenue-Profitability-Analysis.html' },
+                    { icon: 'fa-chart-bar', text: 'Service Usage Trends', file: 'RETAIL-BANKING-Service-Usage-Trends.html' },
+                ],
                 corporate: [
                     { icon: 'fa-home', text: 'Overview', file: 'CORPORATE-Overview.html' },
                     { icon: 'fa-briefcase', text: 'Business Accounts', file: 'CORPORATE-Business-Accounts.html' },
-                    { icon: 'fa-hand-holding-usd', text: 'Loans & Financing', file: 'CORPORATE-Loans-Financing.html' },
+                    { icon: 'fa-chart-line', text: 'Cash Flow Management', file: 'CORPORATE-Cash-Flow-Liquidity-Management.html' },
                     { icon: 'fa-coins', text: 'Cash Management', file: 'CORPORATE-Cash-Management-Services.html' },
-                    { icon: 'fa-globe', text: 'Trade Services', file: 'CORPORATE-Trade-Services.html' },
-                    { icon: 'fa-credit-card', text: 'Merchant Services', file: 'CORPORATE-Merchant-Services.html' },
-                    { icon: 'fa-chart-line', text: 'Cash Flow', file: 'CORPORATE-Cash-Flow-Liquidity-Management.html' },
                     { icon: 'fa-chart-pie', text: 'Client Profitability', file: 'CORPORATE-Client-Profitability-Analysis.html' },
+                    { icon: 'fa-exchange-alt', text: 'Cross-Selling', file: 'CORPORATE-Cross-Selling-Upselling-Opportunities.html' },
+                    { icon: 'fa-hand-holding-usd', text: 'Loans & Financing', file: 'CORPORATE-Loans-Financing.html' },
+                    { icon: 'fa-credit-card', text: 'Merchant Services', file: 'CORPORATE-Merchant-Services.html' },
                     { icon: 'fa-money-bill-wave', text: 'Payments', file: 'CORPORATE-Payments.html' },
-                    { icon: 'fa-handshake', text: 'Cross-Selling', file: 'CORPORATE-Cross-Selling-Upselling-Opportunities.html' }
+                    { icon: 'fa-globe', text: 'Trade Services', file: 'CORPORATE-Trade-Services.html' }
                 ],
                 cards: [
                     { icon: 'fa-home', text: 'Overview', file: 'CREDIT-CARDS-Overview.html' },
-                    { icon: 'fa-credit-card', text: 'Consumer Cards', file: 'CREDIT-CARDS-Consumer-Credit-Cards.html' },
                     { icon: 'fa-building', text: 'Business Cards', file: 'CREDIT-CARDS-Business.html' },
-                    { icon: 'fa-lock', text: 'Secured Cards', file: 'CREDIT-CARDS-Secured.html' },
                     { icon: 'fa-cogs', text: 'Card Services', file: 'CREDIT-CARDS-Card-Services.html' },
-                    { icon: 'fa-chart-line', text: 'Credit Risk', file: 'CREDIT-CARDS-Credit-Risk-Analysis.html' },
-                    { icon: 'fa-gift', text: 'Rewards Program', file: 'CREDIT-CARDS-Rewards-Program-Analysis.html' },
-                    { icon: 'fa-shield-alt', text: 'Fraud Prevention', file: 'CREDIT-CARDS-Fraud-Prevention-Detection.html' },
+                    { icon: 'fa-user', text: 'Consumer Cards', file: 'CREDIT-CARDS-Consumer-Credit-Cards.html' },
+                    { icon: 'fa-chart-line', text: 'Credit Risk Analysis', file: 'CREDIT-CARDS-Credit-Risk-Analysis.html' },
                     { icon: 'fa-users', text: 'Customer Engagement', file: 'CREDIT-CARDS-customer-engagement.html' },
-                    { icon: 'fa-sync', text: 'Card Lifecycle', file: 'CREDIT-CARDS-Lifecycle.html' }
+                    { icon: 'fa-shield-alt', text: 'Fraud Prevention', file: 'CREDIT-CARDS-Fraud-Prevention-Detection.html' },
+                    { icon: 'fa-recycle', text: 'Lifecycle Management', file: 'CREDIT-CARDS-Lifecycle.html' },
+                    { icon: 'fa-gift', text: 'Rewards Program', file: 'CREDIT-CARDS-Rewards-Program-Analysis.html' },
+                    { icon: 'fa-lock', text: 'Secured Cards', file: 'CREDIT-CARDS-Secured.html' }
                 ],
-                institutional: [
-                    { icon: 'fa-home', text: 'Overview', file: 'INSTITUTIONAL-CLIENTS-Overview.html' },
-                    { icon: 'fa-landmark', text: 'Government Services', file: 'INSTITUTIONAL-CLIENTS-Govt-Public-Sector.html' },
-                    { icon: 'fa-university', text: 'Financial Institutions', file: 'INSTITUTIONAL-CLIENTS-Financial-Institutions.html' },
-                    { icon: 'fa-building', text: 'Multinational Corps', file: 'INSTITUTIONAL-CLIENTS-Multinational-Corporations.html' },
-                    { icon: 'fa-globe', text: 'Cross-Border Finance', file: 'INSTITUTIONAL-CLIENTS-Cross-border-Financing-Cash-Management.html' },
-                    { icon: 'fa-crown', text: 'Sovereign Wealth', file: 'INSTITUTIONAL-CLIENTS-Sovereign-Wealth-Management.html' },
-                    { icon: 'fa-road', text: 'Infrastructure Finance', file: 'INSTITUTIONAL-CLIENTS-Infrastructure-Project-Planning.html' },
-                    { icon: 'fa-handshake', text: 'Correspondent Banking', file: 'INSTITUTIONAL-CLIENTS-Global-Correspondent-Banking.html' },
-                    { icon: 'fa-shield-alt', text: 'Risk & Compliance', file: 'INSTITUTIONAL-CLIENTS-Risk-Compliance.html' },
-                    { icon: 'fa-laptop', text: 'Digital Transformation', file: 'INSTITUTIONAL-CLIENTS-Digital-Transformation.html' },
-                    { icon: 'fa-leaf', text: 'Sustainable Finance', file: 'INSTITUTIONAL-CLIENTS-Sustainable-Finance-ESG.html' },
-                    { icon: 'fa-chart-pie', text: 'Client Profitability', file: 'INSTITUTIONAL-CLIENTS-Client-Profitability-Engagement.html' }
+                private: [
+                    { icon: 'fa-home', text: 'Overview', file: 'PRIVATE-BANKING-WEALTH-Overview.html' },
+                    { icon: 'fa-piggy-bank', text: 'Estate Planning', file: 'PRIVATE-BANKING-WEALTH-Estate-Planning-Trust-Services.html' },
+                    { icon: 'fa-users', text: 'Family Office', file: 'PRIVATE-BANKING-WEALTH-Family-Office.html' },
+                    { icon: 'fa-chart-pie', text: 'HNWI', file: 'PRIVATE-BANKING-WEALTH-HNWI.html' },
+                    { icon: 'fa-hand-holding-heart', text: 'Philanthropic Advisory', file: 'PRIVATE-BANKING-WEALTH-Philanthropic-Advisory.html' }
                 ],
                 investment: [
                     { icon: 'fa-home', text: 'Overview', file: 'INVESTMENT-BANKING-Overview.html' },
-                    { icon: 'fa-handshake', text: 'M&A', file: 'INVESTMENT-BANKING-Mergers-Acquisitions.html' },
-                    { icon: 'fa-chart-line', text: 'Equity Capital Markets', file: 'INVESTMENT-BANKING-Equity-Capital-Markets.html' },
+                    { icon: 'fa-chart-line', text: 'Capital Raise Syndication', file: 'INVESTMENT-BANKING-Capital-Raise-Syndication.html' },
                     { icon: 'fa-chart-area', text: 'Debt Capital Markets', file: 'INVESTMENT-BANKING-Debt-Capital-Markets.html' },
-                    { icon: 'fa-file-signature', text: 'Underwriting', file: 'INVESTMENT-BANKING-Underwriting.html' },
-                    { icon: 'fa-lightbulb', text: 'Strategic Advisory', file: 'INVESTMENT-BANKING-Strategic-Advisory.html' },
+                    { icon: 'fa-chart-bar', text: 'Equity Capital Markets', file: 'INVESTMENT-BANKING-Equity-Capital-Markets.html' },
+                    { icon: 'fa-handshake', text: 'Mergers & Acquisitions', file: 'INVESTMENT-BANKING-Mergers-Acquisitions.html' },
                     { icon: 'fa-sitemap', text: 'Corporate Restructuring', file: 'INVESTMENT-BANKING-MA-Corporate-Restructuring-Analysis.html' },
-                    { icon: 'fa-money-bill-wave', text: 'Capital Raising', file: 'INVESTMENT-BANKING-Capital-Raise-Syndication.html' },
-                    { icon: 'fa-piggy-bank', text: 'Private Equity & VC', file: 'INVESTMENT-BANKING-Private-Equity-Venture-Capital.html' }
+                    { icon: 'fa-piggy-bank', text: 'Private Equity', file: 'INVESTMENT-BANKING-Private-Equity-Venture-Capital.html' },
+                    { icon: 'fa-lightbulb', text: 'Strategic Advisory', file: 'INVESTMENT-BANKING-Strategic-Advisory.html' },
+                    { icon: 'fa-file-signature', text: 'Underwriting Services', file: 'INVESTMENT-BANKING-Underwriting-Services.html' }
+                ],
+                markets: [
+                    { icon: 'fa-home', text: 'Overview', file: 'MARKETS-SECURITIES-Overview.html' },
+                    { icon: 'fa-coins', text: 'Commodities Trading', file: 'MARKETS-SECURITIES-Commodities-Trading.html' },
+                    { icon: 'fa-smile', text: 'Customer Satisfaction', file: 'MARKETS-SECURITIES-Customer-Satisfaction-Feedback.html' },
+                    { icon: 'fa-chart-area', text: 'Derivatives & Structured Products', file: 'MARKETS-SECURITIES-Derivaties-Structured-Products.html' },
+                    { icon: 'fa-chart-line', text: 'Equities Trading', file: 'MARKETS-SECURITIES-Equities-Trading.html' },
+                    { icon: 'fa-chart-bar', text: 'Fixed Income Trading', file: 'MARKETS-SECURITIES-Fixed-Income-Trading.html' },
+                    { icon: 'fa-balance-scale', text: 'Prime Brokerage', file: 'MARKETS-SECURITIES-Prime-Brokerage.html' },
+                    { icon: 'fa-shield-alt', text: 'Risk Management', file: 'MARKETS-SECURITIES-Risk-Management-Trading.html' },
+                    { icon: 'fa-handshake', text: 'Securities Lending', file: 'MARKETS-SECURITIES-Securities-Lending-Custody.html' }
+                ],
+                treasury: [
+                    { icon: 'fa-home', text: 'Overview', file: 'TREASURY-TRADE-SOLUTIONS-Overview.html' },
+                    { icon: 'fa-credit-card', text: 'Commercial Cards', file: 'TREASURY-TRADE-SOLUTIONS-Commercial-Cards.html' },
+                    { icon: 'fa-tint', text: 'Liquidity Management', file: 'TREASURY-TRADE-SOLUTIONS-Liquidity-Management.html' },
+                    { icon: 'fa-money-bill-wave', text: 'Payments & Receivables', file: 'TREASURY-TRADE-SOLUTIONS-Payments-Receivables.html' },
+                    { icon: 'fa-ship', text: 'Trade Services', file: 'TREASURY-TRADE-SOLUTIONS-Trade-Services.html' }
+                ],
+                institutional: [
+                    { icon: 'fa-home', text: 'Overview', file: 'INSTITUTIONAL-CLIENTS-Overview.html' },
+                    { icon: 'fa-chart-pie', text: 'Client Profitability', file: 'INSTITUTIONAL-CLIENTS-Client-Profitability-Engagement.html' },
+                    { icon: 'fa-globe', text: 'Cross-border Financing', file: 'INSTITUTIONAL-CLIENTS-Cross-border-Financing-Cash-Management.html' },
+                    { icon: 'fa-laptop', text: 'Digital Transformation', file: 'INSTITUTIONAL-CLIENTS-Digital-Transformation.html' },
+                    { icon: 'fa-university', text: 'Financial Institutions', file: 'INSTITUTIONAL-CLIENTS-Financial-Institutions.html' },
+                    { icon: 'fa-handshake', text: 'Global Correspondent Banking', file: 'INSTITUTIONAL-CLIENTS-Global-Correspondent-Banking.html' },
+                    { icon: 'fa-landmark', text: 'Government & Public Sector', file: 'INSTITUTIONAL-CLIENTS-Govt-Public-Sector.html' },
+                    { icon: 'fa-building', text: 'Infrastructure Project Planning', file: 'INSTITUTIONAL-CLIENTS-Infrastructure-Project-Planning.html' },
+                    { icon: 'fa-globe-americas', text: 'Multinational Corporations', file: 'INSTITUTIONAL-CLIENTS-Multinational-Corporations.html' },
+                    { icon: 'fa-shield-alt', text: 'Risk & Compliance', file: 'INSTITUTIONAL-CLIENTS-Risk-Compliance.html' },
+                    { icon: 'fa-crown', text: 'Sovereign Wealth Management', file: 'INSTITUTIONAL-CLIENTS-Sovereign-Wealth-Management.html' },
+                    { icon: 'fa-leaf', text: 'Sustainable Finance & ESG', file: 'INSTITUTIONAL-CLIENTS-Sustainable-Finance-ESG.html' }
                 ]
             };
 
             function loadContent(url) {
-                // Remove any leading slash if present
-                url = url.replace(/^\//, '');
-                
-                console.log('Attempting to fetch:', url); // Log the URL being fetched
+                console.log('Attempting to fetch:', url);
+
+                // Define today globally if it doesn't exist
+                if (typeof window.today === 'undefined') {
+                    window.today = new Date();
+                }
 
                 fetch(url)
                     .then(response => {
-                        console.log('Fetch response:', response); // Log the full response
                         if (!response.ok) {
                             throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
                         }
@@ -350,17 +410,69 @@
                     })
                     .then(html => {
                         if (dynamicContent) {
-                            console.log('Content loaded successfully'); // Log success
-                            dynamicContent.innerHTML = html;
-                            // Execute scripts if needed
-                        } else {
-                            console.error('Dynamic content element not found');
+                            // Create a temporary container
+                            const temp = document.createElement('div');
+                            temp.innerHTML = html;
+
+                            // Extract and remove scripts
+                            const scripts = Array.from(temp.getElementsByTagName('script'));
+                            scripts.forEach(script => script.remove());
+
+                            // Set the HTML content
+                            dynamicContent.innerHTML = temp.innerHTML;
+
+                            // Re-execute scripts in order
+                            scripts.forEach((script, index) => {
+                                const newScript = document.createElement('script');
+                                
+                                // Copy all attributes
+                                Array.from(script.attributes).forEach(attr => {
+                                    newScript.setAttribute(attr.name, attr.value);
+                                });
+
+                                // Remove any 'today' declaration from the script content
+                                let scriptContent = script.textContent;
+                                scriptContent = scriptContent.replace(/const today = new Date\(\);/, '');
+                                
+                                // Set the modified script content
+                                newScript.textContent = scriptContent;
+
+                                document.body.appendChild(newScript);
+                            });
                         }
                     })
                     .catch(error => {
                         console.error('Error loading content:', error);
-                        displayPlaceholder(url, error.message);
                     });
+            }
+
+            // Helper function to load external scripts
+            function loadScript(src) {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+            }
+
+            // Helper function to check if required libraries are loaded
+            function checkLibraries() {
+                return new Promise((resolve, reject) => {
+                    const interval = setInterval(() => {
+                        if (typeof Chart !== 'undefined' && typeof vis !== 'undefined') {
+                            clearInterval(interval);
+                            resolve();
+                        }
+                    }, 100);
+
+                    // Timeout after 5 seconds
+                    setTimeout(() => {
+                        clearInterval(interval);
+                        reject(new Error('Required libraries failed to load'));
+                    }, 5000);
+                });
             }
 
             function displayPlaceholder(url, errorMessage) {
@@ -377,7 +489,15 @@
             }
 
             function updateSidebar(tab) {
-                const items = navigationItems[tab] || navigationItems.retail;
+                console.log('Updating sidebar for tab:', tab); // Log the tab being updated
+                
+                const items = navigationItems[tab];
+                
+                if (!items) {
+                    console.error(`No navigation items found for tab: ${tab}`);
+                    return; // Exit the function if no items are found
+                }
+                
                 let sidebarHTML = `
                     <div class="flex flex-col items-center pt-4">
                         <button id="sidebarToggle" class="mb-6 text-gray-700 hover:text-gray-900 focus:outline-none">
@@ -422,16 +542,16 @@
             function toggleSidebar() {
                 isSidebarExpanded = !isSidebarExpanded;
                 if (isSidebarExpanded) {
-                    sidebar.classList.remove('w-[103px]');
-                    sidebar.classList.add('w-[415px]');
+                    sidebar.classList.remove('w-[52px]');  // Changed from 103px
+                    sidebar.classList.add('w-[220px]', 'expanded');
                     document.querySelectorAll('.sidebar-text').forEach(text => text.classList.remove('hidden'));
                     document.querySelectorAll('#sidebar ul li').forEach(item => {
                         item.classList.remove('justify-center');
                         item.classList.add('justify-start');
                     });
                 } else {
-                    sidebar.classList.remove('w-[415px]');
-                    sidebar.classList.add('w-[103px]');
+                    sidebar.classList.remove('w-[220px]', 'expanded');
+                    sidebar.classList.add('w-[52px]');  // Changed from 103px
                     document.querySelectorAll('.sidebar-text').forEach(text => text.classList.add('hidden'));
                     document.querySelectorAll('#sidebar ul li').forEach(item => {
                         item.classList.remove('justify-start');
@@ -483,19 +603,39 @@
                     
                     // Update the sidebar based on the selected tab
                     const selectedTab = this.getAttribute('data-tab');
+                    console.log('Selected tab:', selectedTab);
                     updateSidebar(selectedTab);
 
-                    // Load the overview content for the selected tab
+                    // Load the overview content for the selected tab with correct file paths
                     let overviewFile;
-                    switch(selectedTab.toUpperCase()) {
-                        case 'CARDS':
+                    switch(selectedTab.toLowerCase()) {
+                        case 'retail':
+                            overviewFile = 'RETAIL-BANKING-Overview.html';
+                            break;
+                        case 'corporate':
+                            overviewFile = 'CORPORATE-Overview.html';
+                            break;
+                        case 'cards':
                             overviewFile = 'CREDIT-CARDS-Overview.html';
                             break;
-                        case 'INSTITUTIONAL':
+                        case 'private':
+                            overviewFile = 'PRIVATE-BANKING-WEALTH-Overview.html';
+                            break;
+                        case 'investment':
+                            overviewFile = 'INVESTMENT-BANKING-Overview.html';
+                            break;
+                        case 'markets':
+                            overviewFile = 'MARKETS-SECURITIES-Overview.html';
+                            break;
+                        case 'treasury':
+                            overviewFile = 'TREASURY-TRADE-SOLUTIONS-Overview.html';
+                            break;
+                        case 'institutional':
                             overviewFile = 'INSTITUTIONAL-CLIENTS-Overview.html';
                             break;
                         default:
-                            overviewFile = `${selectedTab.toUpperCase()}-Overview.html`;
+                            console.error('Unknown tab:', selectedTab);
+                            return;
                     }
                     loadContent(overviewFile);
                 });
@@ -503,7 +643,7 @@
 
             // Initialize with the retail sidebar and load retail overview
             updateSidebar('retail');
-            loadContent('RETAIL-Overview.html');
+            loadContent('RETAIL-BANKING-Overview.html');
         });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
