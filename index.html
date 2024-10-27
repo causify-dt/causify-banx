@@ -394,55 +394,109 @@
             };
 
             function loadContent(url) {
-                console.log('Attempting to fetch:', url);
-
-                // Define today globally if it doesn't exist
-                if (typeof window.today === 'undefined') {
-                    window.today = new Date();
+                console.log('Loading content from:', url);
+                
+                // First destroy any existing charts to prevent conflicts
+                if (window.Chart) {
+                    const chartInstances = Chart.instances;
+                    while (chartInstances.length > 0) {
+                        chartInstances[0].destroy();
+                    }
                 }
 
                 fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
-                        }
-                        return response.text();
-                    })
+                    .then(response => response.text())
                     .then(html => {
                         if (dynamicContent) {
-                            // Create a temporary container
+                            // Clear existing content
+                            dynamicContent.innerHTML = '';
+                            
+                            // Create temporary container
                             const temp = document.createElement('div');
                             temp.innerHTML = html;
-
-                            // Extract and remove scripts
+                            
+                            // Extract scripts
                             const scripts = Array.from(temp.getElementsByTagName('script'));
                             scripts.forEach(script => script.remove());
-
-                            // Set the HTML content
+                            
+                            // Insert HTML
                             dynamicContent.innerHTML = temp.innerHTML;
+                            
+                            // Add helper functions if they don't exist
+                            if (!window.generateTimeSeriesData) {
+                                window.generateTimeSeriesData = function(monthsBack, monthsForward, baseValue, growthRate) {
+                                    const data = [];
+                                    for (let i = -monthsBack; i <= monthsForward; i++) {
+                                        const value = baseValue * Math.pow(1 + growthRate, i);
+                                        data.push(parseFloat(value.toFixed(2)));
+                                    }
+                                    return data;
+                                };
+                            }
 
-                            // Re-execute scripts in order
-                            scripts.forEach((script, index) => {
-                                const newScript = document.createElement('script');
-                                
-                                // Copy all attributes
-                                Array.from(script.attributes).forEach(attr => {
-                                    newScript.setAttribute(attr.name, attr.value);
-                                });
+                            if (!window.generateDateLabels) {
+                                window.generateDateLabels = function(monthsBack, monthsForward) {
+                                    const labels = [];
+                                    const today = new Date();
+                                    for (let i = -monthsBack; i <= monthsForward; i++) {
+                                        const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+                                        labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+                                    }
+                                    return labels;
+                                };
+                            }
 
-                                // Remove any 'today' declaration from the script content
-                                let scriptContent = script.textContent;
-                                scriptContent = scriptContent.replace(/const today = new Date\(\);/, '');
-                                
-                                // Set the modified script content
-                                newScript.textContent = scriptContent;
+                            // Execute scripts in sequence
+                            const executeScripts = async () => {
+                                for (const script of scripts) {
+                                    try {
+                                        const newScript = document.createElement('script');
+                                        
+                                        // Copy attributes
+                                        Array.from(script.attributes).forEach(attr => {
+                                            newScript.setAttribute(attr.name, attr.value);
+                                        });
+                                        
+                                        // Handle both external and inline scripts
+                                        if (script.src) {
+                                            await new Promise((resolve, reject) => {
+                                                newScript.onload = resolve;
+                                                newScript.onerror = reject;
+                                                newScript.src = script.src;
+                                                document.body.appendChild(newScript);
+                                            });
+                                        } else {
+                                            newScript.textContent = `
+                                                try {
+                                                    ${script.textContent}
+                                                } catch (error) {
+                                                    console.error('Script execution error:', error);
+                                                }
+                                            `;
+                                            document.body.appendChild(newScript);
+                                        }
+                                    } catch (error) {
+                                        console.error('Error executing script:', error);
+                                    }
+                                }
 
-                                document.body.appendChild(newScript);
+                                // Initialize dashboard after all scripts are loaded
+                                if (typeof initDashboard === 'function') {
+                                    console.log('Initializing dashboard...');
+                                    setTimeout(initDashboard, 100);
+                                }
+                            };
+
+                            executeScripts().catch(error => {
+                                console.error('Error in script execution:', error);
                             });
                         }
                     })
                     .catch(error => {
                         console.error('Error loading content:', error);
+                        if (dynamicContent) {
+                            dynamicContent.innerHTML = `<div class="p-4">Error loading content: ${error.message}</div>`;
+                        }
                     });
             }
 
@@ -647,5 +701,36 @@
         });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
+    <script>
+        window.chartInitialized = false;
+        
+        // Global chart initialization check
+        function ensureChartInitialization() {
+            if (!window.chartInitialized && typeof Chart !== 'undefined') {
+                Chart.defaults.responsive = true;
+                Chart.defaults.maintainAspectRatio = false;
+                window.chartInitialized = true;
+            }
+        }
+    </script>
+    <script>
+        function initDashboard() {
+            ensureChartInitialization();
+            
+            // Your chart initialization code here
+            const charts = document.querySelectorAll('canvas');
+            charts.forEach(canvas => {
+                if (canvas.chart) {
+                    canvas.chart.destroy();
+                }
+                
+                // Initialize your chart here
+                const ctx = canvas.getContext('2d');
+                canvas.chart = new Chart(ctx, {
+                    // Your chart configuration
+                });
+            });
+        }
+    </script>
 </body>
 </html>
