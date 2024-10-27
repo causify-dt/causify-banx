@@ -335,30 +335,42 @@
             };
 
             function loadContent(url) {
+                // Remove any leading slash if present
+                url = url.replace(/^\//, '');
+                
+                console.log('Attempting to fetch:', url); // Log the URL being fetched
+
                 fetch(url)
-                    .then(response => response.text())
+                    .then(response => {
+                        console.log('Fetch response:', response); // Log the full response
+                        if (!response.ok) {
+                            throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+                        }
+                        return response.text();
+                    })
                     .then(html => {
                         if (dynamicContent) {
-                            const sanitizedHtml = DOMPurify.sanitize(html);
-                            dynamicContent.innerHTML = sanitizedHtml;
-                            // Execute any scripts here if needed
+                            console.log('Content loaded successfully'); // Log success
+                            dynamicContent.innerHTML = html;
+                            // Execute scripts if needed
                         } else {
                             console.error('Dynamic content element not found');
                         }
                     })
                     .catch(error => {
                         console.error('Error loading content:', error);
-                        displayPlaceholder(url);
+                        displayPlaceholder(url, error.message);
                     });
             }
 
-            function displayPlaceholder(url) {
+            function displayPlaceholder(url, errorMessage) {
                 const section = url.split('-')[0];
                 if (dynamicContent) {
                     dynamicContent.innerHTML = `
                         <div class="p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
                             <p class="font-bold">Content Not Available</p>
-                            <p>The ${section} content (${url}) is currently under development. Please check back later.</p>
+                            <p>The ${section} content (${url}) could not be loaded.</p>
+                            <p>Error: ${errorMessage}</p>
                         </div>
                     `;
                 }
