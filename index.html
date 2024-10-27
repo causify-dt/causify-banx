@@ -376,9 +376,6 @@
                 }
             }
 
-            // Load initial content
-            loadContent('RETAIL-Overview.html');
-
             function updateSidebar(tab) {
                 const items = navigationItems[tab] || navigationItems.retail;
                 let sidebarHTML = `
@@ -407,15 +404,6 @@
 
                 sidebarHTML += '</ul>';
                 sidebar.innerHTML = sidebarHTML;
-
-                // Apply the current sidebar state
-                if (isSidebarExpanded) {
-                    sidebar.classList.remove('w-[103px]');
-                    sidebar.classList.add('w-[415px]');
-                } else {
-                    sidebar.classList.remove('w-[415px]');
-                    sidebar.classList.add('w-[103px]');
-                }
 
                 // Reattach the sidebarToggle event listener
                 const sidebarToggle = document.getElementById('sidebarToggle');
@@ -513,8 +501,9 @@
                 });
             });
 
-            // Initialize with the retail sidebar
+            // Initialize with the retail sidebar and load retail overview
             updateSidebar('retail');
+            loadContent('RETAIL-Overview.html');
         });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
