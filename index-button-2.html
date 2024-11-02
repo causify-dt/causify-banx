@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banx Finance Demo Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sidebar: '#2c3e50',
+                        'sidebar-hover': '#34495e',
+                        header: '#3498db',  
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css" rel="stylesheet" />
+    <style>
+        .text-xs {
+            line-height: 0rem;
+        }
+
+        .causify-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: white;
+            border-radius: 5px;
+            padding: 0px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 9999;
+            width: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .causify-logo {
+            width: 80px;
+            height: auto;
+            display: block;
+            margin: 5px 0;
+        }
+
+        .banx-logo-black {
+            filter: brightness(0) saturate(100%);
+            height: 1.25rem;
+            width: auto;
+        }
+
+        body {
+            padding-top: 0; /* Remove the padding we added for the fixed header */
+        }
+
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin: 0;  /* Added this line */
+            padding: 0; /* Added this line */
+        }
+
+        #sidebar {
+            min-width: 52px;   /* Changed from 103px */
+            width: 52px;       /* Changed from 103px */
+            transition: width 0.3s ease;
+        }
+
+        #sidebar.expanded {
+            width: 220px !important;
+            min-width: 220px !important;
+        }
+
+        .sidebar-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Add this new style for the active menu item */
+        .sidebar-item-active {
+            background-color: rgb(229, 231, 235); /* bg-gray-200 */
+            color: rgb(17, 24, 39); /* text-gray-900 */
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+        .modal-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            width: 95vw;
+            height: 90vh;
+            background: white;
+            border-radius: 8px;
+            z-index: 51;
+            opacity: 0;
+            transition: all 0.2s ease-in-out;
+        }
+        .modal-show {
+            opacity: 1;
+        }
+        .modal-content.modal-show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .dim-sparkle {
+            opacity: 0.3;
+            transform: scaleX(1.35);
+            display: inline-block;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+        .dim-sparkle:hover {
+            opacity: 1;
+        }
+
+        /* Add modal styles */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 50;
+        }
+        .modal-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 95vw;
+            height: 90vh;
+            background: white;
+            border-radius: 8px;
+            z-index: 51;
+            padding: 24px;
+        }
+
+        #insightsModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 9999;
+        }
+        #insightsModal.show {
+            display: flex;
+        }
+        .modal-inner {
+            background: white;
+            width: 95%;
+            height: 90%;
+            margin: auto;
+            border-radius: 8px;
+            padding: 24px;
+            position: relative;
+        }
+
+        .flex.flex-wrap.-mx-2 {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.5rem;
+        }
+        
+        .flex.flex-wrap.-mx-2 > div {
+            display: flex;
+        }
+        
+        .flex.flex-wrap.-mx-2 > div > div {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .chart-container {
+            flex: 1;
+        }
+
+        .w-full.lg\\:w-1\\/2 {
+            display: flex;
+        }
+        .w-full.lg\\:w-1\\/2 > .bg-white {
+            width: 100%;
+        }
+
+        /* Add CSS for chart container height */
+        .chart-container {
+            min-height: 300px;  /* Adjust this value as needed */
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; text-shadow: 0 0 4px rgba(255, 215, 0, 0.3); }
+            50% { opacity: 0.6; text-shadow: 0 0 8px rgba(255, 215, 0, 0.5); }
+        }
+        
+        .dim-sparkle:hover {
+            animation: sparkle 1s infinite;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <header class="bg-white text-gray-800 py-2 px-3 shadow-sm border-b border-gray-200">
+        <div class="flex justify-between items-center">
+            <img src="https://github.com/causify-dt/causify-banx/blob/main/banx-logo/banx-logo.png?raw=true" alt="Banx Logo" class="banx-logo-black">
+            <div class="flex items-center">
+                <ul class="inline-flex text-xs font-medium text-center text-gray-500 dark:text-gray-400 space-x-1 bg-gray-100 p-1 rounded-full mr-3">
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap bg-white text-gray-900" data-tab="retail">
+                            <i class="fas fa-home mr-1.5 text-gray-900"></i>
+                            Retail
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="corporate">
+                            <i class="fas fa-building mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Corporate
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="cards">
+                            <i class="fas fa-credit-card mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Cards
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="private">
+                            <i class="fas fa-user-tie mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Private
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="venture">
+                            <i class="fas fa-rocket mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Venture
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="investment">
+                            <i class="fas fa-chart-line mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Investment
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="markets">
+                            <i class="fas fa-globe mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Markets
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="treasury">
+                            <i class="fas fa-vault mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Treasury
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="institutional">
+                            <i class="fas fa-university mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Institutional
+                        </a>
+                    </li>
+                </ul>
+                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-base">
+                    MB
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="flex">
+        <div id="sidebar" class="bg-gray-50 text-gray-700 w-[52px] transition-all duration-300 overflow-y-auto flex flex-col border-r border-gray-200 sticky top-0 h-screen">
+            <div class="flex flex-col items-center pt-4">
+                <button id="sidebarToggle" class="mb-6 text-gray-700 hover:text-gray-900 focus:outline-none">
+                    <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </button>
+            </div>
+            <ul class="p-0 m-0 w-full flex flex-col items-center">
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Overview</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">E-commerce</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-hashtag"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Social Media</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Influencers</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Email Campaigns</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-pen-fancy"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Content Marketing</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-ad"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Paid Advertising</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Events</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Retail Partnerships</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Product Performance</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Customer Segments</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Brand Health</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Competitor Analysis</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Sustainability</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Trend Forecasting</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">A/B Testing</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Customer Feedback</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Marketing ROI</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Budget Allocation</span>
+                </li>
+                <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center justify-center w-full">
+                    <div class="w-8 flex justify-center">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <span class="sidebar-text hidden ml-2">Campaign Planner</span>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="main-content">
+            <div id="dynamic-content" class="bg-gray-50">  <!-- Removed p-6 class -->
+                <!-- Dynamic content will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Causify Badge -->
+    <div class="causify-badge" style="z-index: 10000;">
+        <img src="https://raw.githubusercontent.com/causify-dt/causify-marketing/refs/heads/main/causify-black-color.png" alt="Causify Logo" class="causify-logo">
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabLinks = document.querySelectorAll('header ul li a');
+            const sidebar = document.getElementById('sidebar');
+            const dynamicContent = document.getElementById('dynamic-content');
+
+            // Check if dynamicContent exists
+            if (!dynamicContent) {
+                console.error('Dynamic content element not found');
+                return;
+            }
+
+            let isSidebarExpanded = false;
+            
+            const navigationItems = {
+                retail: [
+                    { icon: 'fa-home', text: 'Overview', file: 'RETAIL-BANKING-Overview.html' },
+                    { icon: 'fa-user-plus', text: 'Customer Acquisition', file: 'RETAIL BANKING-Customer-Acquisition-Retention.html' },
+                    { icon: 'fa-door-open', text: 'Account Opening', file: 'RETAIL-BANKING-Account-Opening-Forecast.html' },
+                    { icon: 'fa-exchange-alt', text: 'Cross-Selling', file: 'RETAIL-BANKING-Cross-Selling-Opportunities.html' },
+                    { icon: 'fa-user-minus', text: 'Churn Prediction', file: 'RETAIL-BANKING-Customer-Churn-Prediction.html' },
+                    { icon: 'fa-smile', text: 'Customer Satisfaction', file: 'RETAIL-BANKING-Customer-Satisfaction-Feedback.html' },
+                    { icon: 'fa-chart-line', text: 'Revenue Analysis', file: 'RETAIL-BANKING-Revenue-Profitability-Analysis.html' },
+                    { icon: 'fa-chart-bar', text: 'Service Usage Trends', file: 'RETAIL-BANKING-Service-Usage-Trends.html' },
+                ],
+                corporate: [
+                    { icon: 'fa-home', text: 'Overview', file: 'CORPORATE-Overview.html' },
+                    { icon: 'fa-briefcase', text: 'Business Accounts', file: 'CORPORATE-Business-Accounts.html' },
+                    { icon: 'fa-chart-line', text: 'Cash Flow Management', file: 'CORPORATE-Cash-Flow-Liquidity-Management.html' },
+                    { icon: 'fa-coins', text: 'Cash Management', file: 'CORPORATE-Cash-Management-Services.html' },
+                    { icon: 'fa-chart-pie', text: 'Client Profitability', file: 'CORPORATE-Client-Profitability-Analysis.html' },
+                    { icon: 'fa-exchange-alt', text: 'Cross-Selling', file: 'CORPORATE-Cross-Selling-Upselling-Opportunities.html' },
+                    { icon: 'fa-hand-holding-usd', text: 'Loans & Financing', file: 'CORPORATE-Loans-Financing.html' },
+                    { icon: 'fa-credit-card', text: 'Merchant Services', file: 'CORPORATE-Merchant-Services.html' },
+                    { icon: 'fa-money-bill-wave', text: 'Payments', file: 'CORPORATE-Payments.html' },
+                    { icon: 'fa-globe', text: 'Trade Services', file: 'CORPORATE-Trade-Services.html' }
+                ],
+                cards: [
+                    { icon: 'fa-home', text: 'Overview', file: 'CREDIT-CARDS-Overview.html' },
+                    { icon: 'fa-building', text: 'Business Cards', file: 'CREDIT-CARDS-Business.html' },
+                    { icon: 'fa-cogs', text: 'Card Services', file: 'CREDIT-CARDS-Card-Services.html' },
+                    { icon: 'fa-user', text: 'Consumer Cards', file: 'CREDIT-CARDS-Consumer-Credit-Cards.html' },
+                    { icon: 'fa-chart-line', text: 'Credit Risk Analysis', file: 'CREDIT-CARDS-Credit-Risk-Analysis.html' },
+                    { icon: 'fa-users', text: 'Customer Engagement', file: 'CREDIT-CARDS-customer-engagement.html' },
+                    { icon: 'fa-shield-alt', text: 'Fraud Prevention', file: 'CREDIT-CARDS-Fraud-Prevention-Detection.html' },
+                    { icon: 'fa-recycle', text: 'Lifecycle Management', file: 'CREDIT-CARDS-Lifecycle.html' },
+                    { icon: 'fa-gift', text: 'Rewards Program', file: 'CREDIT-CARDS-Rewards-Program-Analysis.html' },
+                    { icon: 'fa-lock', text: 'Secured Cards', file: 'CREDIT-CARDS-Secured.html' }
+                ],
+                private: [
+                    { icon: 'fa-home', text: 'Overview', file: 'PRIVATE-BANKING-WEALTH-Overview.html' },
+                    { icon: 'fa-piggy-bank', text: 'Estate Planning', file: 'PRIVATE-BANKING-WEALTH-Estate-Planning-Trust-Services.html' },
+                    { icon: 'fa-users', text: 'Family Office', file: 'PRIVATE-BANKING-WEALTH-Family-Office.html' },
+                    { icon: 'fa-chart-pie', text: 'HNWI', file: 'PRIVATE-BANKING-WEALTH-HNWI.html' },
+                    { icon: 'fa-hand-holding-heart', text: 'Philanthropic Advisory', file: 'PRIVATE-BANKING-WEALTH-Philanthropic-Advisory.html' }
+                ],
+                venture: [  // Changed from 'ventures' to 'venture'
+                    { icon: 'fa-home', text: 'Overview', file: 'VENTURE-Overview.html' },
+                    { icon: 'fa-search', text: 'Deal Sourcing', file: 'VENTURE-Deal-Sourcing.html' },
+                    { icon: 'fa-chart-line', text: 'Deal Sourcing Outlook', file: 'VENTURE-Deal-Sourcing-Outlook.html' },
+                    { icon: 'fa-handshake', text: 'Strategic Alignment', file: 'VENTURE-Strategic-Alignment.html' },
+                    { icon: 'fa-shield-alt', text: 'Risk Management', file: 'VENTURE-Risk-Management.html' },
+                    { icon: 'fa-users', text: 'Talent & Team Development', file: 'VENTURE-Talent-Team-Development.html' },
+                    { icon: 'fa-balance-scale', text: 'RegTech', file: 'VENTURE-RegTech.html' },
+                    { icon: 'fa-lightbulb', text: 'Innovation Impact', file: 'VENTURE-Innovation-Impact.html' },
+                    { icon: 'fa-robot', text: 'Financial Services AI/ML', file: 'VENTURE-Financial-Services-AIML-Investment.html' }
+                ],
+                investment: [
+                    { icon: 'fa-home', text: 'Overview', file: 'INVESTMENT-BANKING-Overview.html' },
+                    { icon: 'fa-chart-line', text: 'Capital Raise Syndication', file: 'INVESTMENT-BANKING-Capital-Raise-Syndication.html' },
+                    { icon: 'fa-chart-area', text: 'Debt Capital Markets', file: 'INVESTMENT-BANKING-Debt-Capital-Markets.html' },
+                    { icon: 'fa-chart-bar', text: 'Equity Capital Markets', file: 'INVESTMENT-BANKING-Equity-Capital-Markets.html' },
+                    { icon: 'fa-handshake', text: 'Mergers & Acquisitions', file: 'INVESTMENT-BANKING-Mergers-Acquisitions.html' },
+                    { icon: 'fa-piggy-bank', text: 'Private Equity', file: 'INVESTMENT-BANKING-Private-Equity-Venture-Capital.html' },
+                    { icon: 'fa-lightbulb', text: 'Strategic Advisory', file: 'INVESTMENT-BANKING-Strategic-Advisory.html' },
+                    { icon: 'fa-file-signature', text: 'Underwriting Services', file: 'INVESTMENT-BANKING-Underwriting-Services.html' }
+                ],
+                markets: [
+                    { icon: 'fa-home', text: 'Overview', file: 'MARKETS-SECURITIES-Overview.html' },
+                    { icon: 'fa-coins', text: 'Commodities Trading', file: 'MARKETS-SECURITIES-Commodities-Trading.html' },
+                    { icon: 'fa-smile', text: 'Customer Satisfaction', file: 'MARKETS-SECURITIES-Customer-Satisfaction-Feedback.html' },
+                    { icon: 'fa-chart-area', text: 'Derivatives & Structured Products', file: 'MARKETS-SECURITIES-Derivaties-Structured-Products.html' },
+                    { icon: 'fa-chart-line', text: 'Equities Trading', file: 'MARKETS-SECURITIES-Equities-Trading.html' },
+                    { icon: 'fa-chart-bar', text: 'Fixed Income Trading', file: 'MARKETS-SECURITIES-Fixed-Income-Trading.html' },
+                    { icon: 'fa-balance-scale', text: 'Prime Brokerage', file: 'MARKETS-SECURITIES-Prime-Brokerage.html' },
+                    { icon: 'fa-shield-alt', text: 'Risk Management', file: 'MARKETS-SECURITIES-Risk-Management-Trading.html' },
+                    { icon: 'fa-handshake', text: 'Securities Lending', file: 'MARKETS-SECURITIES-Securities-Lending-Custody.html' }
+                ],
+                treasury: [
+                    { icon: 'fa-home', text: 'Overview', file: 'TREASURY-TRADE-SOLUTIONS-Overview.html' },
+                    { icon: 'fa-credit-card', text: 'Commercial Cards', file: 'TREASURY-TRADE-SOLUTIONS-Commercial-Cards.html' },
+                    { icon: 'fa-tint', text: 'Liquidity Management', file: 'TREASURY-TRADE-SOLUTIONS-Liquidity-Management.html' },
+                    { icon: 'fa-money-bill-wave', text: 'Payments & Receivables', file: 'TREASURY-TRADE-SOLUTIONS-Payments-Receivables.html' },
+                    { icon: 'fa-ship', text: 'Trade Services', file: 'TREASURY-TRADE-SOLUTIONS-Trade-Services.html' }
+                ],
+                institutional: [
+                    { icon: 'fa-home', text: 'Overview', file: 'INSTITUTIONAL-CLIENTS-Overview.html' },
+                    { icon: 'fa-chart-pie', text: 'Client Profitability', file: 'INSTITUTIONAL-CLIENTS-Client-Profitability-Engagement.html' },
+                    { icon: 'fa-globe', text: 'Cross-border Financing', file: 'INSTITUTIONAL-CLIENTS-Cross-border-Financing-Cash-Management.html' },
+                    { icon: 'fa-laptop', text: 'Digital Transformation', file: 'INSTITUTIONAL-CLIENTS-Digital-Transformation.html' },
+                    { icon: 'fa-university', text: 'Financial Institutions', file: 'INSTITUTIONAL-CLIENTS-Financial-Institutions.html' },
+                    { icon: 'fa-handshake', text: 'Global Correspondent Banking', file: 'INSTITUTIONAL-CLIENTS-Global-Correspondent-Banking.html' },
+                    { icon: 'fa-landmark', text: 'Government & Public Sector', file: 'INSTITUTIONAL-CLIENTS-Govt-Public-Sector.html' },
+                    { icon: 'fa-building', text: 'Infrastructure Project Planning', file: 'INSTITUTIONAL-CLIENTS-Infrastructure-Project-Planning.html' },
+                    { icon: 'fa-globe-americas', text: 'Multinational Corporations', file: 'INSTITUTIONAL-CLIENTS-Multinational-Corporations.html' },
+                    { icon: 'fa-shield-alt', text: 'Risk & Compliance', file: 'INSTITUTIONAL-CLIENTS-Risk-Compliance.html' },
+                    { icon: 'fa-crown', text: 'Sovereign Wealth Management', file: 'INSTITUTIONAL-CLIENTS-Sovereign-Wealth-Management.html' },
+                    { icon: 'fa-leaf', text: 'Sustainable Finance & ESG', file: 'INSTITUTIONAL-CLIENTS-Sustainable-Finance-ESG.html' }
+                ]
+            };
+
+            function loadContent(url) {
+                console.log('Loading content from:', url);
+                
+                // Add this: Update active state in sidebar
+                updateActiveSidebarItem(url);
+                
+                // First destroy any existing charts to prevent conflicts
+                if (window.Chart) {
+                    const chartInstances = Chart.instances;
+                    while (chartInstances.length > 0) {
+                        chartInstances[0].destroy();
+                    }
+                }
+
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        if (dynamicContent) {
+                            // Clear existing content
+                            dynamicContent.innerHTML = '';
+                            
+                            // Create temporary container
+                            const temp = document.createElement('div');
+                            temp.innerHTML = html;
+                            
+                            // Add buttons next to h3 elements
+                            temp.querySelectorAll('h3').forEach(h3 => {
+                                // Create wrapper div for h3 and button
+                                const wrapper = document.createElement('div');
+                                wrapper.className = 'flex justify-between items-center';
+                                
+                                // Move h3 into wrapper
+                                h3.parentNode.insertBefore(wrapper, h3);
+                                wrapper.appendChild(h3);
+                                
+                                // Check if this wrapper is inside a chart section
+                                const isInChartSection = wrapper.closest('.flex.flex-wrap.-mx-2') !== null;
+                                
+                                // Only add sparkle to chart sections
+                                if (isInChartSection) {
+                                    // Add chart container height and sparkle animation
+                                    document.head.insertAdjacentHTML('beforeend', `
+                                        <style>
+                                            .chart-container {
+                                                min-height: 300px;
+                                            }
+                                            
+                                            @keyframes sparkle {
+                                                0%, 100% { opacity: 1; text-shadow: 0 0 4px rgba(255, 215, 0, 0.3); }
+                                                50% { opacity: 0.6; text-shadow: 0 0 8px rgba(255, 215, 0, 0.5); }
+                                            }
+                                            
+                                            .dim-sparkle:hover {
+                                                animation: sparkle 1s infinite;
+                                            }
+                                        </style>
+                                    `);
+
+                                    // Check if this is a chart section by looking for chart-container
+                                    const isChartSection = wrapper.closest('.bg-white').querySelector('.chart-container') !== null;
+                                    
+                                    if (isChartSection) {
+                                        // Create button
+                                        const iconButton = document.createElement('button');
+                                        iconButton.innerHTML = '✨';
+                                        iconButton.className = 'dim-sparkle';
+                                        iconButton.style.cssText = `
+                                            background: none;
+                                            border: none;
+                                            padding: 0;
+                                            cursor: pointer;
+                                            opacity: 0.6;
+                                            transform: scaleX(1.35);
+                                            transition: opacity 0.2s ease;
+                                            position: relative;
+                                            overflow: hidden;
+                                        `;
+                                        
+                                        // Add hover styles
+                                        iconButton.onmouseover = function() {
+                                            this.style.opacity = '1';
+                                        };
+                                        
+                                        iconButton.onmouseout = function() {
+                                            this.style.opacity = '0.6';
+                                        };
+                                        
+                                        // Create modal HTML
+                                        const modalHTML = `
+                                            <div id="chartModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000;">
+                                                <div style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:24px; border-radius:8px; width:90%; height:85%; display:flex; flex-direction:column;">
+                                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                                        <h2 style="margin:0; font-size:20px;" id="modalTitle">Chart Analysis</h2>
+                                                        <button onclick="document.getElementById('chartModal').style.display='none'" style="border:none; background:none; font-size:24px; cursor:pointer;">×</button>
+                                                    </div>
+                                                    <div style="display:flex; gap:24px; flex:1; min-height:0;">
+                                                        <div style="flex:1; display:flex; flex-direction:column; gap:16px;">
+                                                            <div style="flex:2; background:#f8f9fa; border-radius:8px; padding:20px; overflow:auto;" id="chartContainer">
+                                                                <!-- Chart will go here -->
+                                                            </div>
+                                                            <div style="flex:1; background:#f8f9fa; border-radius:8px; padding:20px; overflow:auto;" id="chartData">
+                                                                <!-- Chart data will go here -->
+                                                            </div>
+                                                        </div>
+                                                        <div style="flex:1; background:#f8f9fa; border-radius:8px; padding:20px; overflow:auto;" id="textContainer">
+                                                            <!-- Text content will go here -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                        
+                                        // Add modal to document if it doesn't exist
+                                        if (!document.getElementById('chartModal')) {
+                                            document.body.insertAdjacentHTML('beforeend', modalHTML);
+                                        }
+                                        
+                                        // Click handler with modal
+                                        iconButton.setAttribute('onclick', `
+                                            const modal = document.getElementById('chartModal');
+                                            const chartSection = this.closest('.bg-white');
+                                            
+                                            if (chartSection) {
+                                                // Get title and text content
+                                                const title = chartSection.querySelector('h3')?.textContent || 'Chart Analysis';
+                                                const explanation = chartSection.querySelector('p')?.textContent || '';
+                                                
+                                                // Update modal content
+                                                document.getElementById('modalTitle').textContent = title;
+                                                document.getElementById('chartData').innerHTML = '<div style="background:white; padding:16px; border-radius:8px;">' + explanation + '</div>';
+                                                document.getElementById('textContainer').innerHTML = '<div style="background:white; padding:16px; border-radius:8px;">Additional analysis will go here</div>';
+                                                
+                                                // Show modal
+                                                modal.style.display = 'block';
+                                            }
+                                        `);
+                                        
+                                        wrapper.appendChild(iconButton);
+                                    }
+                                }
+                            });
+                            
+                            // Extract scripts
+                            const scripts = Array.from(temp.getElementsByTagName('script'));
+                            scripts.forEach(script => script.remove());
+                            
+                            // Insert HTML
+                            dynamicContent.innerHTML = temp.innerHTML;
+                            
+                            // Add helper functions if they don't exist
+                            if (!window.generateTimeSeriesData) {
+                                window.generateTimeSeriesData = function(monthsBack, monthsForward, baseValue, growthRate) {
+                                    const data = [];
+                                    for (let i = -monthsBack; i <= monthsForward; i++) {
+                                        const value = baseValue * Math.pow(1 + growthRate, i);
+                                        data.push(parseFloat(value.toFixed(2)));
+                                    }
+                                    return data;
+                                };
+                            }
+
+                            if (!window.generateDateLabels) {
+                                window.generateDateLabels = function(monthsBack, monthsForward) {
+                                    const labels = [];
+                                    const today = new Date();
+                                    for (let i = -monthsBack; i <= monthsForward; i++) {
+                                        const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+                                        labels.push(date.toLocaleString('default', { month: 'short', year: '2-digit' }));
+                                    }
+                                    return labels;
+                                };
+                            }
+
+                            // Execute scripts in sequence
+                            const executeScripts = async () => {
+                                for (const script of scripts) {
+                                    try {
+                                        const newScript = document.createElement('script');
+                                        
+                                        // Copy attributes
+                                        Array.from(script.attributes).forEach(attr => {
+                                            newScript.setAttribute(attr.name, attr.value);
+                                        });
+                                        
+                                        // Handle both external and inline scripts
+                                        if (script.src) {
+                                            await new Promise((resolve, reject) => {
+                                                newScript.onload = resolve;
+                                                newScript.onerror = reject;
+                                                newScript.src = script.src;
+                                                document.body.appendChild(newScript);
+                                            });
+                                        } else {
+                                            newScript.textContent = `
+                                                try {
+                                                    ${script.textContent}
+                                                } catch (error) {
+                                                    console.error('Script execution error:', error);
+                                                }
+                                            `;
+                                            document.body.appendChild(newScript);
+                                        }
+                                    } catch (error) {
+                                        console.error('Error executing script:', error);
+                                    }
+                                }
+
+                                // Initialize dashboard after all scripts are loaded
+                                if (typeof initDashboard === 'function') {
+                                    console.log('Initializing dashboard...');
+                                    setTimeout(initDashboard, 100);
+                                }
+                            };
+
+                            executeScripts().catch(error => {
+                                console.error('Error in script execution:', error);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading content:', error);
+                        if (dynamicContent) {
+                            dynamicContent.innerHTML = `<div class="p-4">Error loading content: ${error.message}</div>`;
+                        }
+                    });
+            }
+
+            // Helper function to load external scripts
+            function loadScript(src) {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+            }
+
+            // Helper function to check if required libraries are loaded
+            function checkLibraries() {
+                return new Promise((resolve, reject) => {
+                    const interval = setInterval(() => {
+                        if (typeof Chart !== 'undefined' && typeof vis !== 'undefined') {
+                            clearInterval(interval);
+                            resolve();
+                        }
+                    }, 100);
+
+                    // Timeout after 5 seconds
+                    setTimeout(() => {
+                        clearInterval(interval);
+                        reject(new Error('Required libraries failed to load'));
+                    }, 5000);
+                });
+            }
+
+            function displayPlaceholder(url, errorMessage) {
+                const section = url.split('-')[0];
+                if (dynamicContent) {
+                    dynamicContent.innerHTML = `
+                        <div class="p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
+                            <p class="font-bold">Content Not Available</p>
+                            <p>The ${section} content (${url}) could not be loaded.</p>
+                            <p>Error: ${errorMessage}</p>
+                        </div>
+                    `;
+                }
+            }
+
+            function updateSidebar(tab) {
+                console.log('Updating sidebar for tab:', tab); // Log the tab being updated
+                
+                const items = navigationItems[tab];
+                
+                if (!items) {
+                    console.error(`No navigation items found for tab: ${tab}`);
+                    return; // Exit the function if no items are found
+                }
+                
+                let sidebarHTML = `
+                    <div class="flex flex-col items-center pt-4">
+                        <button id="sidebarToggle" class="mb-6 text-gray-700 hover:text-gray-900 focus:outline-none">
+                            <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </button>
+                    </div>
+                    <ul class="p-0 m-0 w-full flex flex-col items-center">
+                `;
+
+                items.forEach(item => {
+                    sidebarHTML += `
+                        <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center ${isSidebarExpanded ? 'justify-start' : 'justify-center'} w-full ${item.file.includes('Overview') ? 'sidebar-item-active' : ''}" data-content="${item.file}">
+                            <div class="w-8 flex justify-center">
+                                <i class="fas ${item.icon}"></i>
+                            </div>
+                            <span class="sidebar-text ${isSidebarExpanded ? '' : 'hidden'} ml-2">${item.text}</span>
+                        </li>
+                    `;
+                });
+
+                sidebarHTML += '</ul>';
+                sidebar.innerHTML = sidebarHTML;
+
+                // Reattach the sidebarToggle event listener
+                const sidebarToggle = document.getElementById('sidebarToggle');
+                sidebarToggle.addEventListener('click', toggleSidebar);
+
+                // Add click event listeners to sidebar items
+                const sidebarItems = sidebar.querySelectorAll('li');
+                sidebarItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        const contentUrl = this.getAttribute('data-content');
+                        loadContent(contentUrl);
+                    });
+                });
+            }
+
+            function toggleSidebar() {
+                isSidebarExpanded = !isSidebarExpanded;
+                if (isSidebarExpanded) {
+                    sidebar.classList.remove('w-[52px]');  // Changed from 103px
+                    sidebar.classList.add('w-[220px]', 'expanded');
+                    document.querySelectorAll('.sidebar-text').forEach(text => text.classList.remove('hidden'));
+                    document.querySelectorAll('#sidebar ul li').forEach(item => {
+                        item.classList.remove('justify-center');
+                        item.classList.add('justify-start');
+                    });
+                } else {
+                    sidebar.classList.remove('w-[220px]', 'expanded');
+                    sidebar.classList.add('w-[52px]');  // Changed from 103px
+                    document.querySelectorAll('.sidebar-text').forEach(text => text.classList.add('hidden'));
+                    document.querySelectorAll('#sidebar ul li').forEach(item => {
+                        item.classList.remove('justify-start');
+                        item.classList.add('justify-center');
+                    });
+                }
+                updateToggleButton();
+            }
+
+            function updateToggleButton() {
+                const sidebarToggle = document.getElementById('sidebarToggle');
+                if (isSidebarExpanded) {
+                    sidebarToggle.innerHTML = `
+                        <div class="flex items-center">
+                            <span class="mr-2 text-xs">Collapse</span>
+                            <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    sidebarToggle.innerHTML = `
+                        <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    `;
+                }
+            }
+
+            tabLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all tabs
+                    tabLinks.forEach(tab => {
+                        tab.classList.remove('bg-white', 'text-gray-900');
+                        tab.querySelector('i').classList.remove('text-gray-900');
+                        tab.querySelector('i').classList.add('text-gray-400');
+                    });
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('bg-white', 'text-gray-900');
+                    this.querySelector('i').classList.remove('text-gray-400');
+                    this.querySelector('i').classList.add('text-gray-900');
+                    
+                    // Update the sidebar based on the selected tab
+                    const selectedTab = this.getAttribute('data-tab');
+                    console.log('Selected tab:', selectedTab);
+                    updateSidebar(selectedTab);
+
+                    // Load the overview content for the selected tab with correct file paths
+                    let overviewFile;
+                    switch(selectedTab.toLowerCase()) {
+                        case 'retail':
+                            overviewFile = 'RETAIL-BANKING-Overview.html';
+                            break;
+                        case 'corporate':
+                            overviewFile = 'CORPORATE-Overview.html';
+                            break;
+                        case 'cards':
+                            overviewFile = 'CREDIT-CARDS-Overview.html';
+                            break;
+                        case 'private':
+                            overviewFile = 'PRIVATE-BANKING-WEALTH-Overview.html';
+                            break;
+                        case 'venture':  // Changed from 'ventures' to 'venture'
+                            overviewFile = 'VENTURE-Overview.html';
+                            break;
+                        case 'investment':
+                            overviewFile = 'INVESTMENT-BANKING-Overview.html';
+                            break;
+                        case 'markets':
+                            overviewFile = 'MARKETS-SECURITIES-Overview.html';
+                            break;
+                        case 'treasury':
+                            overviewFile = 'TREASURY-TRADE-SOLUTIONS-Overview.html';
+                            break;
+                        case 'institutional':
+                            overviewFile = 'INSTITUTIONAL-CLIENTS-Overview.html';
+                            break;
+                        default:
+                            console.error('Unknown tab:', selectedTab);
+                            return;
+                    }
+                    loadContent(overviewFile);
+                });
+            });
+
+            // Initialize with the retail sidebar and load retail overview
+            updateSidebar('retail');
+            loadContent('RETAIL-BANKING-Overview.html');
+
+            // Add this new function
+            function updateActiveSidebarItem(url) {
+                // Remove active class from all items
+                document.querySelectorAll('#sidebar li').forEach(item => {
+                    item.classList.remove('sidebar-item-active');
+                });
+                
+                // Add active class to matching item
+                const activeItem = document.querySelector(`#sidebar li[data-content="${url}"]`);
+                if (activeItem) {
+                    activeItem.classList.add('sidebar-item-active');
+                }
+            }
+
+            // Function to equalize card heights in each row
+            function equalizeCardHeights() {
+                // Reset any previously set heights
+                document.querySelectorAll('.bg-white').forEach(card => {
+                    card.style.height = 'auto';
+                });
+                
+                const rows = [];
+                let currentRow = [];
+                const cards = document.querySelectorAll('.w-full.lg\\:w-1\\/2');
+                
+                // Group cards into rows
+                cards.forEach(card => {
+                    if (currentRow.length === 0 || 
+                        currentRow[0].offsetTop === card.offsetTop) {
+                        currentRow.push(card);
+                    } else {
+                        rows.push(currentRow);
+                        currentRow = [card];
+                    }
+                });
+                if (currentRow.length > 0) {
+                    rows.push(currentRow);
+                }
+                
+                // Set equal heights for cards in each row
+                rows.forEach(row => {
+                    const maxHeight = Math.max(...row.map(card => 
+                        card.querySelector('.bg-white').offsetHeight
+                    ));
+                    row.forEach(card => {
+                        card.querySelector('.bg-white').style.height = maxHeight + 'px';
+                    });
+                });
+            }
+            
+            // Run after charts load
+            setTimeout(equalizeCardHeights, 1000);
+            
+            // Run on resize
+            window.addEventListener('resize', () => {
+                setTimeout(equalizeCardHeights, 100);
+            });
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
+    <script>
+        window.chartInitialized = false;
+        
+        // Global chart initialization check
+        function ensureChartInitialization() {
+            if (!window.chartInitialized && typeof Chart !== 'undefined') {
+                Chart.defaults.responsive = true;
+                Chart.defaults.maintainAspectRatio = false;
+                window.chartInitialized = true;
+            }
+        }
+    </script>
+    <script>
+        function initDashboard() {
+            ensureChartInitialization();
+            
+            // Your chart initialization code here
+            const charts = document.querySelectorAll('canvas');
+            charts.forEach(canvas => {
+                if (canvas.chart) {
+                    canvas.chart.destroy();
+                }
+                
+                // Initialize your chart here
+                const ctx = canvas.getContext('2d');
+                canvas.chart = new Chart(ctx, {
+                    // Your chart configuration
+                });
+            });
+        }
+    </script>
+</body>
+</html>
