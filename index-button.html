@@ -680,62 +680,40 @@
                                                 // Format chart data for display
                                                 let dataAnalysis = '<div class="flex flex-col">';
                                                 
+                                                // Add chart type detection
+                                                const chartType = originalChart ? originalChart.config.type : '';
+                                                
                                                 // Add these calculations before the dataAnalysis string
-                                                const currentData = originalChart.data.datasets[0].data;
-                                                const predictedData = originalChart.data.datasets[1].data;
+                                                if (originalChart && originalChart.data && originalChart.data.datasets) {
+                                                    const currentData = originalChart.data.datasets[0]?.data || [];
+                                                    const predictedData = originalChart.data.datasets[1]?.data || [];
 
-                                                // Calculate statistics
-                                                const currentTotal = currentData.reduce((a, b) => a + b, 0).toFixed(2);
-                                                const currentAvg = (currentTotal / currentData.length).toFixed(2);
-                                                const currentMin = Math.min(...currentData).toFixed(2);
-                                                const currentMax = Math.max(...currentData).toFixed(2);
+                                                    // Calculate statistics only if we have data
+                                                    if (currentData.length > 0) {
+                                                        const currentTotal = currentData.reduce((a, b) => a + b, 0).toFixed(2);
+                                                        const currentAvg = (currentTotal / currentData.length).toFixed(2);
+                                                        const currentMin = Math.min(...currentData).toFixed(2);
+                                                        const currentMax = Math.max(...currentData).toFixed(2);
+                                                    }
 
-                                                const predictedTotal = predictedData.reduce((a, b) => a + b, 0).toFixed(2);
-                                                const predictedAvg = (predictedTotal / predictedData.length).toFixed(2);
-                                                const predictedMin = Math.min(...predictedData).toFixed(2);
-                                                const predictedMax = Math.max(...predictedData).toFixed(2);
+                                                    if (predictedData.length > 0) {
+                                                        const predictedTotal = predictedData.reduce((a, b) => a + b, 0).toFixed(2);
+                                                        const predictedAvg = (predictedTotal / predictedData.length).toFixed(2);
+                                                        const predictedMin = Math.min(...predictedData).toFixed(2);
+                                                        const predictedMax = Math.max(...predictedData).toFixed(2);
+                                                    }
+                                                }
 
                                                 // Then use the dataAnalysis string as before
                                                 dataAnalysis += 
-                                                    '<div class="bg-gray-50 rounded-2xl p-6 mb-6">' +
-                                                        '<div class="text-gray-600 text-lg mb-2">Ask me anything about this chart...</div>' +
-                                                        '<div id="chatMessages">' +
-                                                            '<div class="flex mb-2">' +
-                                                                '<div class="bg-gray-100 text-gray-700 rounded-lg py-2 px-3 max-w-[80%]">' +
-                                                                    '<strong>Chart Context:</strong><br>' +
-                                                                    '• Page: ' + (document.querySelector('meta[name="description"]')?.content || '') + '<br>' +
-                                                                    '• Section: ' + document.querySelector('.bg-white.text-gray-900')?.textContent.trim() + '<br>' +
-                                                                    '• View: ' + document.querySelector('.sidebar-item-active')?.textContent.trim() + '<br>' +
-                                                                    '• Title: ' + title + '<br>' +
-                                                                    '• Description: ' + explanation + '<br>' +
-                                                                    '• Data: Chart with ' + originalChart.data.labels.length + ' points<br>' +
-                                                                    '• Current Values: ' + originalChart.data.datasets[0].data.join(', ') + '<br>' +
-                                                                    '• Predicted Values: ' + originalChart.data.datasets[1].data.join(', ') + '<br>' +
-                                                                    '• Current Stats: Total: ' + currentTotal + ', Avg: ' + currentAvg + ', Min: ' + currentMin + ', Max: ' + currentMax + '<br>' +
-                                                                    '• Predicted Stats: Total: ' + predictedTotal + ', Avg: ' + predictedAvg + ', Min: ' + predictedMin + ', Max: ' + predictedMax +
-                                                                '</div>' +
-                                                            '</div>' +
-                                                        '</div>' +
-                                                        '<div class="mt-4">' +
-                                                            '<div class="relative">' +
-                                                                '<input type="text" ' +
-                                                                'class="w-full pl-6 pr-12 py-4 bg-white border-2 border-blue-100 rounded-full focus:outline-none focus:border-blue-500 text-base" ' +
-                                                                'placeholder="Message Causify..." ' +
-                                                                'id="chatInput" ' +
-                                                                'onkeypress="if(event.key===\\\'Enter\\\') sendChatMessage()" ' +
-                                                                '>' +
-                                                                '<button id="sendButton" ' +
-                                                                'class="absolute right-4 top-1/2 -translate-y-1/2 text-blue-500 hover:text-blue-600" ' +
-                                                                'onclick="sendChatMessage()">' +
-                                                                '<i class="fas fa-paper-plane fa-lg"></i>' +
-                                                                '</button>' +
-                                                            '</div>' +
-                                                        '</div>' +
-                                                    '</div>';
+                                                        '<div class="text-gray-600 text-lg mb-2">Ask me anything about this ' + chartType + ' chart...</div>' +
+                                                        '<div class="bg-gray-100 text-gray-700 rounded-lg py-2 px-3 max-w-[80%]">' +
+                                                            // Keep existing analysis
+                                                        '</div>';
 
                                                 // Chart data follows immediately after
                                                 if (originalChart) {
-                                                    dataAnalysis += '<div class="bg-white rounded-lg p-4">' +
+                                                    dataAnalysis += '<div class="bg-white rounded-lg p-4 hidden">' +
                                                         '<h3 class="font-bold mb-3">Chart Data</h3>';
                                                     
                                                     // Create a table for the data
@@ -1254,21 +1232,6 @@
                         }
                     ]
                 };
-
-                // Initial chat message
-                messagesContainer.innerHTML = `
-                    <div class="flex mb-2">
-                        <div class="bg-gray-100 text-gray-700 rounded-lg py-2 px-3 max-w-[80%]">
-                            <strong>Chart Context:</strong><br>
-                            • Page: ${context.metaDescription}<br>
-                            • Section: ${context.selectedTopNav}<br>
-                            • View: ${context.selectedLeftNav}<br>
-                            • Title: ${context.title}<br>
-                            • Description: ${context.description}<br>
-                            • Data: Chart with ${context.chartData.labels.length} points
-                        </div>
-                    </div>
-                `;
                 
                 // Log the message and context
                 console.log('Message:', input.value);
