@@ -218,7 +218,6 @@
             animation: sparkle 1s infinite;
         }
     </style>
-    <meta name="description" content="Banx Finance Dashboard - A comprehensive analytics platform for banking insights across retail, corporate, cards, private banking, venture capital, and investment banking. Features real-time data visualization, causal network analysis, and AI-powered insights for financial decision making." />
 </head>
 <body class="font-sans">
     <header class="bg-white text-gray-800 py-2 px-3 shadow-sm border-b border-gray-200">
@@ -436,6 +435,12 @@
     </div>
 
     <script>
+        const apiKey = 'app-GOHXUVETNtNziH5yhdihrt9p';
+        const apiUrl = 'https://api.dify.ai/v1/completion-messages';
+        const exampleQuestionsApiKey = 'app-3s4vYGWsEFlngczZ0AIC5Hlr';
+        const exampleQuestionsApiUrl = 'https://api.dify.ai/v1/completion-messages';
+        let allContent = '';
+
         document.addEventListener('DOMContentLoaded', function() {
             const tabLinks = document.querySelectorAll('header ul li a');
             const sidebar = document.getElementById('sidebar');
@@ -669,6 +674,39 @@
                                             const chartSection = this.closest('.bg-white');
                                             
                                             if (chartSection) {
+                                                // Define helper functions within this scope
+                                                function parseQuestions(str) {
+                                                    try {
+                                                        str = str.trim();
+                                                        if (!str.startsWith('[') && !str.endsWith(']')) {
+                                                            str = '[' + str.replace(/\}\s*\{/g, '},{') + ']';
+                                                        }
+                                                        return JSON.parse(str);
+                                                    } catch (error) {
+                                                        console.error('Error parsing questions:', error);
+                                                        return [];
+                                                    }
+                                                }
+
+                                                function displayExampleQuestions(questions) {
+                                                    const container = document.getElementById('exampleQuestions');
+                                                    if (!container) return;
+                                                    
+                                                    container.innerHTML = '';
+                                                    questions.forEach(questionObj => {
+                                                        const card = document.createElement('div');
+                                                        card.className = 'bg-white p-4 rounded shadow-md cursor-pointer hover:bg-gray-50 transition-colors';
+                                                        card.innerHTML = \`<p class="text-sm">\${questionObj.question || 'No question available'}</p>\`;
+                                                        card.addEventListener('click', () => {
+                                                            const questionInput = document.getElementById('question');
+                                                            if (questionInput) {
+                                                                questionInput.value = questionObj.question;
+                                                            }
+                                                        });
+                                                        container.appendChild(card);
+                                                    });
+                                                }
+
                                                 // Get title and text content
                                                 const title = chartSection.querySelector('h3')?.textContent || 'Chart Analysis';
                                                 const explanation = chartSection.querySelector('p')?.textContent || '';
@@ -704,13 +742,7 @@
                                                     }
                                                 }
 
-                                                // Then use the dataAnalysis string as before
-                                                dataAnalysis += 
-                                                        '<div class="text-gray-600 text-lg mb-2">Ask me anything about this ' + chartType + ' chart...</div>' +
-                                                        '<div class="bg-gray-100 text-gray-700 rounded-lg py-2 px-3 max-w-[80%]">' +
-                                                            // Keep existing analysis
-                                                        '</div>';
-
+                                        
                                                 // Chart data follows immediately after
                                                 if (originalChart) {
                                                     dataAnalysis += '<div class="bg-white rounded-lg p-4 hidden">' +
@@ -766,7 +798,40 @@
                                                 document.getElementById('modalTitle').textContent = title;
                                                 document.getElementById('chartContainer').innerHTML = '<canvas id="modalChart"></canvas>';
                                                 document.getElementById('chartData').innerHTML = '<div style="background:white; padding:16px; border-radius:8px;">' + explanation + '</div>';
-                                                document.getElementById('textContainer').innerHTML = dataAnalysis;
+                                                document.getElementById('textContainer').innerHTML = \`
+                                                    <div class="flex flex-col h-full">
+                                                        <div class="flex-1 overflow-auto">
+                                                            \${dataAnalysis}
+                                                        </div>
+                                                        <div>
+                                                            <h3 class="text-lg font-bold mb-4">Ask AI About This Chart</h3>
+                                                            <div id="questionForm" class="space-y-4">
+                                                                <div class="relative">
+                                                                    <textarea 
+                                                                        id="question" 
+                                                                        class="w-full p-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
+                                                                        rows="4" 
+                                                                        placeholder="Ask a question about this chart..."
+                                                                        required
+                                                                    ></textarea>
+                                                                    <button 
+                                                                        id="sendButton" 
+                                                                        class="absolute bottom-2 right-2 text-gray-400 hover:text-gray-600"
+                                                                        style="background: none; border: none; padding: 0; cursor: pointer;"
+                                                                    >
+                                                                        <i class="fas fa-paper-plane send-icon"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <div id="questionsLoader" class="flex justify-center items-center mt-8">
+                                                                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                                                            </div>
+                                                            <div id="exampleQuestions" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 hidden">
+                                                                <!-- Example question cards will be inserted here -->
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                \`;
                                                 
                                                 // Show modal
                                                 modal.style.display = 'block';
@@ -780,6 +845,75 @@
                                                         options: JSON.parse(JSON.stringify(originalChart.options))
                                                     });
                                                 }
+
+                                                // Update the fetch call with better error handling
+                                                const fetchWithTimeout = () => {
+                                                    const controller = new AbortController();
+                                                    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+                                                    fetch(exampleQuestionsApiUrl, {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'Authorization': \`Bearer \${exampleQuestionsApiKey}\`,
+                                                            'Content-Type': 'application/json',
+                                                        },
+                                                        body: JSON.stringify({
+                                                            inputs: {
+                                                                chartContext: JSON.stringify({
+                                                                    title: title,
+                                                                    type: chartType,
+                                                                    data: originalChart ? {
+                                                                        labels: originalChart.data.labels,
+                                                                        datasets: originalChart.data.datasets.map(ds => ({
+                                                                            label: ds.label,
+                                                                            data: ds.data
+                                                                        }))
+                                                                    } : {},
+                                                                    explanation: explanation
+                                                                })
+                                                            },
+                                                            response_mode: 'blocking',
+                                                            user: 'user-' + Date.now()
+                                                        }),
+                                                        signal: controller.signal
+                                                    })
+                                                    .then(response => {
+                                                        clearTimeout(timeoutId);
+                                                        if (!response.ok) {
+                                                            return response.text().then(text => {
+                                                                throw new Error(\`API Error (\${response.status}): \${text}\`);
+                                                            });
+                                                        }
+                                                        return response.json();
+                                                    })
+                                                    .then(data => {
+                                                        const questions = parseQuestions(data.answer);
+                                                        if (Array.isArray(questions)) {
+                                                            document.getElementById('questionsLoader').classList.add('hidden');
+                                                            document.getElementById('exampleQuestions').classList.remove('hidden');
+                                                            displayExampleQuestions(questions.slice(0, 6));
+                                                        }
+                                                    })
+                                                    .catch(error => {
+                                                        clearTimeout(timeoutId);
+                                                        console.error('Detailed error:', error);
+                                                        document.getElementById('questionsLoader').classList.add('hidden');
+                                                        document.getElementById('exampleQuestions').classList.remove('hidden');
+                                                        
+                                                        let errorMessage = 'Failed to load example questions. ';
+                                                        if (error.name === 'AbortError') {
+                                                            errorMessage += 'Request timed out after 15 seconds.';
+                                                        } else {
+                                                            errorMessage += error.message;
+                                                        }
+                                                        
+                                                        document.getElementById('exampleQuestions').innerHTML = 
+                                                            \`<p class="text-red-500">\${errorMessage}</p>\`;
+                                                    });
+                                                };
+
+                                                // Call the fetch function after modal is shown
+                                                fetchWithTimeout();
                                             }
                                         `);
                                         
@@ -1132,6 +1266,66 @@
             window.addEventListener('resize', () => {
                 setTimeout(equalizeCardHeights, 100);
             });
+
+            function sendChatMessage() {
+                const input = document.getElementById('chatInput');
+                const messagesContainer = document.getElementById('chatMessages');
+                
+                if (input.value.trim()) {
+                    // Add user message UI
+                    messagesContainer.innerHTML += `
+                        <div class="flex justify-end mb-2">
+                            <div class="bg-blue-500 text-white rounded-lg py-2 px-3 max-w-[80%]">
+                                ${input.value}
+                            </div>
+                        </div>
+                    `;
+
+                    // Call prediction engine API
+                    fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            inputs: { question: input.value },
+                            response_mode: 'streaming',
+                            user: 'user-' + Date.now()
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Add AI response to chat
+                        messagesContainer.innerHTML += `
+                            <div class="flex mb-2">
+                                <div class="bg-gray-100 text-gray-700 rounded-lg py-2 px-3 max-w-[80%]">
+                                    ${data.answer}
+                                </div>
+                            </div>
+                        `;
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    })
+                    .catch(error => {
+                        console.error('API Error:', error);
+                        // Show error message in chat
+                        messagesContainer.innerHTML += `
+                            <div class="flex mb-2">
+                                <div class="bg-red-100 text-red-700 rounded-lg py-2 px-3 max-w-[80%]">
+                                    Error: Could not get response. Please try again.
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    // Clear input
+                    input.value = '';
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+            }
         });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
@@ -1164,113 +1358,6 @@
                     // Your chart configuration
                 });
             });
-        }
-    </script>
-    <script>
-        function sendChatMessage() {
-            const input = document.getElementById('chatInput');
-            const messagesContainer = document.getElementById('chatMessages');
-            
-            if (input.value.trim()) {
-                // Add user message
-                messagesContainer.innerHTML += `
-                    <div class="flex justify-end mb-2">
-                        <div class="bg-blue-500 text-white rounded-lg py-2 px-3 max-w-[80%]">
-                            ${input.value}
-                        </div>
-                    </div>
-                `;
-
-                // Get chart data from modal
-                const modalChart = Chart.getChart(document.getElementById('modalChart'));
-                const chartData = modalChart ? {
-                    labels: modalChart.data.labels,
-                    datasets: modalChart.data.datasets.map(ds => ({
-                        label: ds.label,
-                        data: ds.data
-                    }))
-                } : null;
-
-                // Get context from modal elements with reordered properties
-                const context = {
-                    metaDescription: document.querySelector('meta[name="description"]')?.content || '',
-                    selectedTopNav: document.querySelector('.bg-white.text-gray-900')?.textContent.trim() || '',
-                    selectedLeftNav: document.querySelector('.sidebar-item-active')?.textContent.trim() || '',
-                    title: document.getElementById('modalTitle').textContent,
-                    description: document.querySelector('#chartData div').textContent,
-                    chartData: {
-                        labels: ['Branch', 'Online', 'Mobile App', 'Referral', 'Social Media', 'Direct Mail'],
-                        datasets: [
-                            {
-                                label: 'Current',
-                                data: [300, 450, 200, 150, 100, 50]
-                            },
-                            {
-                                label: 'Predicted (Next Quarter)',
-                                data: [280, 500, 250, 180, 130, 40]
-                            }
-                        ]
-                    },
-                    summaryStats: [
-                        {
-                            dataset: 'Current',
-                            metrics: [
-                                'Total: 1250.00',
-                                'Average: 208.33',
-                                'Min: 50.00',
-                                'Max: 450.00'
-                            ]
-                        },
-                        {
-                            dataset: 'Predicted (Next Quarter)',
-                            metrics: [
-                                'Total: 1380.00',
-                                'Average: 230.00',
-                                'Min: 40.00',
-                                'Max: 500.00'
-                            ]
-                        }
-                    ]
-                };
-                
-                // Log the message and context
-                console.log('Message:', input.value);
-                console.log('Chart Context:', context);
-                
-                // Clear input
-                input.value = '';
-                
-                // Scroll to bottom
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                
-                // Simulate AI response
-                setTimeout(() => {
-                    const response = generateAIResponse(context);
-                    messagesContainer.innerHTML += `
-                        <div class="flex mb-2">
-                            <div class="bg-gray-100 text-gray-700 rounded-lg py-2 px-3 max-w-[80%]">
-                                ${response}
-                            </div>
-                        </div>
-                    `;
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                }, 1000);
-            }
-        }
-
-        // Helper function to generate AI response based on context
-        function generateAIResponse(context) {
-            const { title, chartData } = context;
-            
-            if (!chartData) {
-                return `I understand you're asking about ${title}. However, I don't have access to the chart data at the moment. Could you please clarify what specific information you're looking for?`;
-            }
-
-            // Get the most recent data point
-            const lastDatasetIndex = chartData.datasets.length - 1;
-            const lastDataPoint = chartData.datasets[lastDatasetIndex].data[chartData.datasets[lastDatasetIndex].data.length - 1];
-            
-            return `I see you're asking about ${title}. The most recent data shows ${lastDataPoint} for ${chartData.datasets[lastDatasetIndex].label || 'the latest period'}. What specific aspects would you like me to analyze?`;
         }
     </script>
 </body>
