@@ -466,11 +466,261 @@
     </div>
 
     <script>
-        const apiKey = 'app-GOHXUVETNtNziH5yhdihrt9p';
+        // Define all necessary functions and variables at the top
+        const apiKey = 'app-Ynbu1N8VPh3cyZh0ubt4mSnm';
         const apiUrl = 'https://api.dify.ai/v1/completion-messages';
         const exampleQuestionsApiKey = 'app-3s4vYGWsEFlngczZ0AIC5Hlr';
         const exampleQuestionsApiUrl = 'https://api.dify.ai/v1/completion-messages';
         let allContent = '';
+
+        // Function to create modal content
+        function createModalContent(dataAnalysis, chartContextValue) {
+            return `
+                <div class="flex flex-col h-full">
+                    <div class="flex-1 overflow-auto">
+                        ${dataAnalysis}
+                    </div>
+                    <div>
+                        <h3 class="text-md font-bold mb-2">Ask AI About This Chart</h3>
+                        <div id="questionForm" class="space-y-4">
+                            <div class="relative">
+                                <textarea 
+                                    id="question" 
+                                    class="w-full p-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
+                                    rows="2" 
+                                    placeholder="Ask a question about this chart..."
+                                    required
+                                ></textarea>
+                                <input type="hidden" id="chartContext" name="chartContext" value="${chartContextValue}" />
+                                <div id="answer" class="mt-4"></div>
+                                <div id="debugInfo" class="text-xs mt-4"></div>
+                                <div class="flex justify-end mt-2">
+                                    <button 
+                                        onclick="window.sendChatMessage()" 
+                                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm transition-colors duration-150"
+                                    >
+                                        Send
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="questionsLoader" class="flex justify-center items-center mt-8">
+                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                        </div>
+                        <div id="exampleQuestions" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 hidden">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Function to handle Dify response
+        function handleDifyResponse(data, messagesContainer) {
+            // Clear loading sequence
+            messagesContainer.innerHTML = '';
+            
+            if (data.answer) {
+                // Check if response contains HTML
+                const htmlMatch = data.answer.match(/<html[\s\S]*?<\/html>/);
+                
+                if (htmlMatch) {
+                    // Create and show a new modal for HTML content
+                    const analysisModal = document.createElement('div');
+                    analysisModal.className = 'fixed inset-0 bg-black bg-opacity-50 overflow-y-auto';
+                    analysisModal.style.zIndex = '70'; // Higher than the chart analysis modal
+                    
+                    analysisModal.innerHTML = `
+                        <div class="relative mx-auto p-5 w-full h-full bg-gray-100">
+                            <button class="absolute top-2 right-2 text-gray-600 text-3xl font-bold hover:text-black">&times;</button>
+                            <iframe class="w-full h-full border-none" srcdoc="${htmlMatch[0]}"></iframe>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(analysisModal);
+                    
+                    // Add close handler
+                    analysisModal.querySelector('button').onclick = () => {
+                        analysisModal.remove();
+                    };
+                } else {
+                    // Display regular text response
+                    messagesContainer.innerHTML = `
+                        <div class="flex justify-start mb-2">
+                            <div class="bg-gray-200 text-gray-800 rounded-lg py-2 px-3 max-w-[80%]">
+                                ${data.answer}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Define the sendChatMessage function
+        window.sendChatMessage = function() {
+            allContent = ''; // Reset the content
+            const input = document.getElementById('question');
+            const chartContext = document.getElementById('chartContext')?.value;
+            
+            if (input.value.trim()) {
+                // Close the original modal if it exists
+                const originalModal = document.querySelector('[id^="modal-"]');
+                if (originalModal) {
+                    originalModal.remove();
+                }
+
+                // Create or get analysis modal
+                let analysisModal = document.getElementById('analysisModal');
+                if (!analysisModal) {
+                    analysisModal = document.createElement('div');
+                    analysisModal.id = 'analysisModal';
+                    analysisModal.className = 'fixed inset-0 bg-black bg-opacity-50 overflow-y-auto';
+                    analysisModal.style.zIndex = '9999'; // Ensure it's on top
+                    document.body.appendChild(analysisModal);
+                }
+
+                // Show loading state in modal
+                analysisModal.innerHTML = `
+                    <div class="relative mx-auto p-5 w-full h-full bg-gray-100">
+                        <button class="absolute top-2 right-2 text-gray-600 text-3xl font-bold hover:text-black">&times;</button>
+                        <div class="h-full flex items-center justify-center">
+                            <div class="flex flex-col items-center">
+                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+                                <div class="mt-4 text-gray-600">Analyzing data...</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Add close handler
+                analysisModal.querySelector('button').onclick = () => {
+                    analysisModal.remove();
+                };
+
+                function handleStreamEvent(data) {
+                    console.log('Parsed data:', data);
+                    
+                    if (data.answer) {
+                        // Accumulate the content
+                        allContent += data.answer;
+                        
+                        // Check if response contains HTML
+                        const htmlMatch = allContent.match(/<html[\s\S]*?<\/html>/);
+                        
+                        if (htmlMatch) {
+                            console.log('Found HTML content, updating modal');
+                            analysisModal.innerHTML = `
+                                <div class="relative mx-auto p-5 w-full h-full bg-gray-100">
+                                    <button class="absolute top-2 right-2 text-gray-600 text-3xl font-bold hover:text-black">&times;</button>
+                                    <div class="h-full overflow-auto">
+                                        ${htmlMatch[0]}
+                                    </div>
+                                </div>
+                            `;
+                            
+                            // Reattach close handler
+                            analysisModal.querySelector('button').onclick = () => {
+                                analysisModal.remove();
+                            };
+                        }
+                    }
+                    
+                    switch (data.event) {
+                        case 'message_end':
+                            console.log('Message complete');
+                            break;
+                        case 'error':
+                            analysisModal.innerHTML = `
+                                <div class="relative mx-auto p-5 w-full h-full bg-gray-100">
+                                    <button class="absolute top-2 right-2 text-gray-600 text-3xl font-bold hover:text-black">&times;</button>
+                                    <div class="text-red-500 p-4">
+                                        Error: ${data.message}
+                                    </div>
+                                </div>
+                            `;
+                            break;
+                        case 'ping':
+                            console.log('Ping received');
+                            break;
+                        default:
+                            console.log('Unknown event:', data.event);
+                    }
+                }
+
+                // Rest of the fetch code with the updated handleStreamEvent
+                fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + apiKey,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    mode: 'cors',
+                    credentials: 'omit',
+                    body: JSON.stringify({
+                        inputs: { 
+                            question: input.value,
+                            chartContext: chartContext
+                        },
+                        response_mode: "streaming",
+                        user: 'user-' + Date.now()
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+
+                    function processChunk(chunk) {
+                        console.log('Received chunk:', chunk);
+                        const lines = chunk.split('\n');
+                        lines.forEach(line => {
+                            if (line.startsWith('data: ')) {
+                                const jsonStr = line.slice(6);
+                                try {
+                                    const data = JSON.parse(jsonStr);
+                                    handleStreamEvent(data);
+                                } catch (error) {
+                                    console.error('Error parsing JSON:', error);
+                                }
+                            }
+                        });
+                    }
+
+                    function readStream() {
+                        reader.read().then(({ done, value }) => {
+                            if (done) {
+                                console.log('Stream complete');
+                                return;
+                            }
+                            const chunk = decoder.decode(value);
+                            processChunk(chunk);
+                            readStream();
+                        }).catch(error => {
+                            console.error('Stream reading error:', error);
+                            analysisModal.innerHTML = `
+                                <div class="text-red-500 p-4">
+                                    Stream error: ${error.message}
+                                </div>
+                            `;
+                        });
+                    }
+
+                    readStream();
+                })
+                .catch(error => {
+                    console.error('API Error:', error);
+                    analysisModal.innerHTML = `
+                        <div class="text-red-500 p-4">
+                            Failed to get response: ${error.message}
+                        </div>
+                    `;
+                });
+
+                input.value = '';
+            }
+        };
 
         document.addEventListener('DOMContentLoaded', function() {
             const tabLinks = document.querySelectorAll('header ul li a');
@@ -671,7 +921,7 @@
                                         
                                         // Create modal HTML
                                         const modalHTML = `
-                                            <div id="chartModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000;">
+                                            <div id="chartModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:50;">
                                                 <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:white; display:flex; flex-direction:column;">
                                                     <div style="display:flex; justify-content:space-between; align-items:center; padding:16px;">
                                                         <h2 style="margin:0; font-size:20px;" id="modalTitle">Chart Analysis</h2>
@@ -730,9 +980,10 @@
                                                 // Define helper functions within this scope
                                                 function parseQuestions(str) {
                                                     try {
+                                                        if (!str) return [];
                                                         str = str.trim();
                                                         if (!str.startsWith('[') && !str.endsWith(']')) {
-                                                            str = '[' + str.replace(/\}\s*\{/g, '},{') + ']';
+                                                            str = '[' + str.replace(/}\\s*{/g, '},{') + ']';
                                                         }
                                                         return JSON.parse(str);
                                                     } catch (error) {
@@ -741,23 +992,36 @@
                                                     }
                                                 }
 
-                                                function displayExampleQuestions(questions) {
+                                                function handleExampleQuestions(data) {
                                                     const container = document.getElementById('exampleQuestions');
                                                     if (!container) return;
-                                                    
-                                                    container.innerHTML = '';
-                                                    questions.forEach(questionObj => {
-                                                        const card = document.createElement('div');
-                                                        card.className = 'bg-white p-4 rounded shadow-md cursor-pointer hover:bg-gray-50 transition-colors';
-                                                        card.innerHTML = \`<p class="text-sm">\${questionObj.question || 'No question available'}</p>\`;
-                                                        card.addEventListener('click', () => {
-                                                            const questionInput = document.getElementById('question');
-                                                            if (questionInput) {
-                                                                questionInput.value = questionObj.question;
-                                                            }
-                                                        });
-                                                        container.appendChild(card);
-                                                    });
+
+                                                    // Hide loader and show questions container
+                                                    document.getElementById('questionsLoader').classList.add('hidden');
+                                                    container.classList.remove('hidden');
+
+                                                    try {
+                                                        const questions = parseQuestions(data.answer);
+                                                        if (Array.isArray(questions)) {
+                                                            container.innerHTML = ''; // Clear existing questions
+                                                            questions.slice(0, 6).forEach(q => {
+                                                                const div = document.createElement('div');
+                                                                div.className = 'example-card bg-white p-4 rounded shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer';
+                                                                div.innerHTML = '<p class="text-sm text-gray-700">' + (q.question || '') + '</p>';
+                                                                div.onclick = () => {
+                                                                    const questionInput = document.getElementById('question');
+                                                                    if (questionInput) {
+                                                                        questionInput.value = q.question;
+                                                                        questionInput.focus(); // Optional: focus the input after populating
+                                                                    }
+                                                                };
+                                                                container.appendChild(div);
+                                                            });
+                                                        }
+                                                    } catch (error) {
+                                                        console.error('Error handling example questions:', error);
+                                                        container.innerHTML = '<p class="text-red-500">Failed to load example questions</p>';
+                                                    }
                                                 }
 
                                                 // Get title and text content
@@ -768,11 +1032,22 @@
                                                 const originalCanvas = chartSection.querySelector('canvas');
                                                 const originalChart = originalCanvas ? Chart.getChart(originalCanvas) : null;
                                                 
+                                                // Create chart context value
+                                                const chartContextValue = JSON.stringify({
+                                                    title: title,
+                                                    type: originalChart ? originalChart.config.type : '',
+                                                    data: originalChart ? {
+                                                        labels: originalChart.data.labels,
+                                                        datasets: originalChart.data.datasets.map(ds => ({
+                                                            label: ds.label,
+                                                            data: ds.data
+                                                        }))
+                                                    } : {},
+                                                    explanation: explanation
+                                                });
+                                                
                                                 // Format chart data for display
                                                 let dataAnalysis = '<div class="flex flex-col">';
-                                                
-                                                // Add chart type detection
-                                                const chartType = originalChart ? originalChart.config.type : '';
                                                 
                                                 // Add these calculations before the dataAnalysis string
                                                 if (originalChart && originalChart.data && originalChart.data.datasets) {
@@ -808,7 +1083,7 @@
                                                     dataAnalysis += '<thead><tr class="bg-gray-100">';
                                                     dataAnalysis += '<th class="text-left p-2">Period</th>';
                                                     originalChart.data.datasets.forEach(dataset => {
-                                                        dataAnalysis += \`<th class="text-left p-2">\${dataset.label || 'Value'}</th>\`;
+                                                        dataAnalysis += '<th class="text-left p-2">' + (dataset.label || 'Value') + '</th>';
                                                     });
                                                     dataAnalysis += '</tr></thead>';
                                                     
@@ -817,9 +1092,9 @@
                                                     const labels = originalChart.data.labels || [];
                                                     labels.forEach((label, index) => {
                                                         dataAnalysis += '<tr class="border-b border-gray-200">';
-                                                        dataAnalysis += \`<td class="p-2">\${label}</td>\`;
+                                                        dataAnalysis += '<td class="p-2">' + label + '</td>';
                                                         originalChart.data.datasets.forEach(dataset => {
-                                                            dataAnalysis += \`<td class="p-2">\${dataset.data[index]}</td>\`;
+                                                            dataAnalysis += '<td class="p-2">' + dataset.data[index] + '</td>';
                                                         });
                                                         dataAnalysis += '</tr>';
                                                     });
@@ -831,17 +1106,15 @@
                                                     originalChart.data.datasets.forEach((dataset, index) => {
                                                         const sum = dataset.data.reduce((a, b) => a + b, 0);
                                                         const avg = sum / dataset.data.length;
-                                                        dataAnalysis += \`
-                                                            <div class="mb-3">
-                                                                <p class="font-semibold">\${dataset.label || \`Dataset \${index + 1}\`}</p>
-                                                                <ul class="list-disc pl-5">
-                                                                    <li>Total: \${sum.toFixed(2)}</li>
-                                                                    <li>Average: \${avg.toFixed(2)}</li>
-                                                                    <li>Min: \${Math.min(...dataset.data).toFixed(2)}</li>
-                                                                    <li>Max: \${Math.max(...dataset.data).toFixed(2)}</li>
-                                                                </ul>
-                                                            </div>
-                                                        \`;
+                                                        dataAnalysis += '<div class="mb-3">';
+                                                        dataAnalysis += '<p class="font-semibold">' + (dataset.label || 'Dataset ' + (index + 1)) + '</p>';
+                                                        dataAnalysis += '<ul class="list-disc pl-5">';
+                                                        dataAnalysis += '<li>Total: ' + sum.toFixed(2) + '</li>';
+                                                        dataAnalysis += '<li>Average: ' + avg.toFixed(2) + '</li>';
+                                                        dataAnalysis += '<li>Min: ' + Math.min(...dataset.data).toFixed(2) + '</li>';
+                                                        dataAnalysis += '<li>Max: ' + Math.max(...dataset.data).toFixed(2) + '</li>';
+                                                        dataAnalysis += '</ul>';
+                                                        dataAnalysis += '</div>';
                                                     });
                                                     dataAnalysis += '</div>';
                                                 }
@@ -851,41 +1124,7 @@
                                                 document.getElementById('modalTitle').textContent = title;
                                                 document.getElementById('chartContainer').innerHTML = '<canvas id="modalChart"></canvas>';
                                                 document.getElementById('chartData').innerHTML = '<div style="background:white; padding:16px; border-radius:8px;">' + explanation + '</div>';
-                                                document.getElementById('textContainer').innerHTML = \`
-                                                    <div class="flex flex-col h-full">
-                                                        <div class="flex-1 overflow-auto">
-                                                            \${dataAnalysis}
-                                                        </div>
-                                                        <div>
-                                                            <h3 class="text-md font-bold mb-2">Ask AI About This Chart</h3>
-                                                            <div id="questionForm" class="space-y-4">
-                                                                <div class="relative">
-                                                                    <textarea 
-                                                                        id="question" 
-                                                                        class="w-full p-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
-                                                                        rows="2" 
-                                                                        placeholder="Ask a question about this chart..."
-                                                                        required
-                                                                    ></textarea>
-                                                                    <div class="flex justify-end mt-2">
-                                                                        <button 
-                                                                            onclick="window.sendChatMessage()" 
-                                                                            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm transition-colors duration-150"
-                                                                        >
-                                                                            Send
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div id="questionsLoader" class="flex justify-center items-center mt-8">
-                                                                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
-                                                            </div>
-                                                            <div id="exampleQuestions" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 hidden">
-                                                                <!-- Example question cards will be inserted here -->
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                \`;
+                                                document.getElementById('textContainer').innerHTML = createModalContent(dataAnalysis, chartContextValue);
                                                 
                                                 // Show modal
                                                 modal.style.display = 'block';
@@ -908,23 +1147,12 @@
                                                     fetch(exampleQuestionsApiUrl, {
                                                         method: 'POST',
                                                         headers: {
-                                                            'Authorization': \`Bearer \${exampleQuestionsApiKey}\`,
+                                                            'Authorization': 'Bearer ' + exampleQuestionsApiKey,
                                                             'Content-Type': 'application/json',
                                                         },
                                                         body: JSON.stringify({
                                                             inputs: {
-                                                                chartContext: JSON.stringify({
-                                                                    title: title,
-                                                                    type: chartType,
-                                                                    data: originalChart ? {
-                                                                        labels: originalChart.data.labels,
-                                                                        datasets: originalChart.data.datasets.map(ds => ({
-                                                                            label: ds.label,
-                                                                            data: ds.data
-                                                                        }))
-                                                                    } : {},
-                                                                    explanation: explanation
-                                                                })
+                                                                chartContext: chartContextValue
                                                             },
                                                             response_mode: 'blocking',
                                                             user: 'user-' + Date.now()
@@ -935,34 +1163,17 @@
                                                         clearTimeout(timeoutId);
                                                         if (!response.ok) {
                                                             return response.text().then(text => {
-                                                                throw new Error(\`API Error (\${response.status}): \${text}\`);
+                                                                throw new Error('API Error (' + response.status + '): ' + text);
                                                             });
                                                         }
                                                         return response.json();
                                                     })
-                                                    .then(data => {
-                                                        const questions = parseQuestions(data.answer);
-                                                        if (Array.isArray(questions)) {
-                                                            document.getElementById('questionsLoader').classList.add('hidden');
-                                                            document.getElementById('exampleQuestions').classList.remove('hidden');
-                                                            displayExampleQuestions(questions.slice(0, 6));
-                                                        }
-                                                    })
+                                                    .then(data => handleExampleQuestions(data))
                                                     .catch(error => {
                                                         clearTimeout(timeoutId);
                                                         console.error('Detailed error:', error);
                                                         document.getElementById('questionsLoader').classList.add('hidden');
-                                                        document.getElementById('exampleQuestions').classList.remove('hidden');
-                                                        
-                                                        let errorMessage = 'Failed to load example questions. ';
-                                                        if (error.name === 'AbortError') {
-                                                            errorMessage += 'Request timed out after 15 seconds.';
-                                                        } else {
-                                                            errorMessage += error.message;
-                                                        }
-                                                        
-                                                        document.getElementById('exampleQuestions').innerHTML = 
-                                                            \`<p class="text-red-500">\${errorMessage}</p>\`;
+                                                        document.getElementById('exampleQuestions').innerHTML = '<p class="text-red-500">Error: ' + error.message + '</p>';
                                                     });
                                                 };
 
@@ -1056,7 +1267,7 @@
                     .catch(error => {
                         console.error('Error loading content:', error);
                         if (dynamicContent) {
-                            dynamicContent.innerHTML = `<div class="p-4">Error loading content: ${error.message}</div>`;
+                            dynamicContent.innerHTML = '<div class="p-4">Error loading content: ' + error.message + '</div>';
                         }
                     });
             }
@@ -1109,7 +1320,7 @@
                 const items = navigationItems[tab];
                 
                 if (!items) {
-                    console.error(`No navigation items found for tab: ${tab}`);
+                    console.error('No navigation items found for tab: ' + tab);
                     return; // Exit the function if no items are found
                 }
                 
@@ -1321,74 +1532,38 @@
                 setTimeout(equalizeCardHeights, 100);
             });
 
-            // First define the function
-            window.sendChatMessage = function() {
-                const input = document.getElementById('question');
-                const messagesContainer = document.getElementById('answer');
-                const chartContext = document.getElementById('chartContext')?.value;
-                const debugContainer = document.getElementById('debugInfo');
-                
-                if (input.value.trim()) {
-                    const messageData = {
-                        inputs: { 
-                            question: input.value,
-                            chartContext: chartContext  // Adding the chart context
-                        },
-                        response_mode: "streaming",
-                        user: 'user-' + Date.now()
-                    };
-                    
-                    console.log('Sending message data:', messageData);
-                    
-                    fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${apiKey}`,
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(messageData)
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('API Response:', data);
-                        if (messagesContainer && data.answer) {
-                            messagesContainer.innerHTML += `
-                                <div class="flex justify-start mb-2">
-                                    <div class="bg-gray-200 text-gray-800 rounded-lg py-2 px-3 max-w-[80%]">
-                                        ${data.answer}
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('API Error:', error);
-                        if (debugContainer) {
-                            debugContainer.innerHTML += `
-                                <div class="mt-2 p-4 bg-red-100 rounded-lg text-xs font-mono">
-                                    <div class="font-bold mb-2">Error:</div>
-                                    <pre class="text-red-600">${error.message}</pre>
-                                </div>
-                            `;
-                        }
-                    });
+            // Define at the top level with other functions
+            function handleExampleQuestions(data) {
+                const container = document.getElementById('exampleQuestions');
+                if (!container) return;
 
-                    // Clear input
-                    input.value = '';
+                // Hide loader and show questions container
+                document.getElementById('questionsLoader').classList.add('hidden');
+                container.classList.remove('hidden');
+
+                try {
+                    const questions = parseQuestions(data.answer);
+                    if (Array.isArray(questions)) {
+                        container.innerHTML = ''; // Clear existing questions
+                        questions.slice(0, 6).forEach(q => {
+                            const div = document.createElement('div');
+                            div.className = 'example-card bg-white p-4 rounded shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer';
+                            div.innerHTML = '<p class="text-sm text-gray-700">' + (q.question || '') + '</p>';
+                            div.onclick = () => {
+                                const questionInput = document.getElementById('question');
+                                if (questionInput) {
+                                    questionInput.value = q.question;
+                                    questionInput.focus(); // Optional: focus the input after populating
+                                }
+                            };
+                            container.appendChild(div);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error handling example questions:', error);
+                    container.innerHTML = '<p class="text-red-500">Failed to load example questions</p>';
                 }
-            };
-
-            // Then create the modal HTML
-            const modalHTML = `
-                <!-- ... rest of your modal HTML ... -->
-                <button 
-                    onclick="window.sendChatMessage()" 
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm transition-colors duration-150"
-                >
-                    Send
-                </button>
-                <!-- ... rest of your modal HTML ... -->
-            `;
+            }
         });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
