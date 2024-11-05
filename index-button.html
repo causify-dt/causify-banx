@@ -467,23 +467,55 @@
 
     <script>
         // Define all necessary functions and variables at the top
-        const apiKey = 'app-Ynbu1N8VPh3cyZh0ubt4mSnm';
+        const apiKey = 'app-GOHXUVETNtNziH5yhdihrt9p';
         const apiUrl = 'https://api.dify.ai/v1/completion-messages';
         const exampleQuestionsApiKey = 'app-3s4vYGWsEFlngczZ0AIC5Hlr';
         const exampleQuestionsApiUrl = 'https://api.dify.ai/v1/completion-messages';
         let allContent = '';
+        let hasProcessedHtml = false;
+
+        // Add this at the top level
+        let debugMode = true;
+
+        function logChartState(location) {
+            if (!debugMode) return;
+            console.log(`=== Chart State at ${location} ===`);
+            console.log('Chart instances:', Object.keys(Chart.instances));
+            console.log('Chart registry:', Chart.instances);
+            console.log('========================');
+        }
 
         // Function to create modal content
         function createModalContent(dataAnalysis, chartContextValue) {
-            return `
-                <div class="flex flex-col h-full">
-                    <div class="flex-1 overflow-auto">
-                        ${dataAnalysis}
+            const temp = document.createElement('div');
+            temp.innerHTML = dataAnalysis;
+            
+            // Extract scripts but keep a copy
+            const scripts = Array.from(temp.getElementsByTagName('script'));
+            const scriptsCopy = scripts.map(script => script.cloneNode(true));
+            scripts.forEach(script => script.remove());
+            
+            // Create the modal HTML with updated layout
+            const modalHTML = `
+                <div class="flex h-full">
+                    <!-- Left panel (70%) -->
+                    <div class="flex-1 overflow-auto" id="modalDynamicContent">
+                        ${temp.innerHTML}
                     </div>
-                    <div>
-                        <h3 class="text-md font-bold mb-2">Ask AI About This Chart</h3>
-                        <div id="questionForm" class="space-y-4">
-                            <div class="relative">
+                    
+                    <!-- Right panel (30%) -->
+                    <div class="w-[30%] flex flex-col h-full border-l border-gray-200 bg-white">
+                        <!-- Questions section at the top -->
+                        <div class="p-4">
+                            <h3 class="text-md font-bold mb-4">Ask AI About This Chart</h3>
+                            
+                            <!-- Example questions in 2x3 grid -->
+                            <div id="exampleQuestions" class="grid grid-cols-2 gap-3 mb-4">
+                                <!-- Questions will be dynamically inserted here -->
+                            </div>
+
+                            <!-- Question form -->
+                            <div id="questionForm" class="space-y-4">
                                 <textarea 
                                     id="question" 
                                     class="w-full p-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
@@ -492,9 +524,7 @@
                                     required
                                 ></textarea>
                                 <input type="hidden" id="chartContext" name="chartContext" value="${chartContextValue}" />
-                                <div id="answer" class="mt-4"></div>
-                                <div id="debugInfo" class="text-xs mt-4"></div>
-                                <div class="flex justify-end mt-2">
+                                <div class="flex justify-end">
                                     <button 
                                         onclick="window.sendChatMessage()" 
                                         class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm transition-colors duration-150"
@@ -504,14 +534,22 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="questionsLoader" class="flex justify-center items-center mt-8">
+
+                        <!-- Answers section -->
+                        <div id="answer" class="p-4 border-t border-gray-200"></div>
+                        
+                        <!-- Debug info if needed -->
+                        <div id="debugInfo" class="text-xs p-4"></div>
+                        
+                        <!-- Loading indicator -->
+                        <div id="questionsLoader" class="flex justify-center items-center p-4 hidden">
                             <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
-                        </div>
-                        <div id="exampleQuestions" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 hidden">
                         </div>
                     </div>
                 </div>
             `;
+
+            return modalHTML;
         }
 
         // Function to handle Dify response
@@ -529,10 +567,18 @@
                     analysisModal.className = 'fixed inset-0 bg-black bg-opacity-50 overflow-y-auto';
                     analysisModal.style.zIndex = '70'; // Higher than the chart analysis modal
                     
+                    // Create temporary container
+                    const temp = document.createElement('div');
+                    temp.innerHTML = htmlMatch[0];
+                    
+                    // Get all scripts
+                    const scripts = Array.from(temp.getElementsByTagName('script'));
+                    
+                    // Insert modal HTML first
                     analysisModal.innerHTML = `
                         <div class="relative mx-auto p-5 w-full h-full bg-gray-100">
                             <button class="absolute top-2 right-2 text-gray-600 text-3xl font-bold hover:text-black">&times;</button>
-                            <iframe class="w-full h-full border-none" srcdoc="${htmlMatch[0]}"></iframe>
+                            <div class="w-full h-full">${temp.innerHTML}</div>
                         </div>
                     `;
                     
@@ -542,6 +588,33 @@
                     analysisModal.querySelector('button').onclick = () => {
                         analysisModal.remove();
                     };
+
+                    // Execute scripts in order
+                    scripts.forEach(script => {
+                        const newScript = document.createElement('script');
+                        
+                        if (script.src) {
+                            newScript.src = script.src;
+                        } else {
+                            newScript.textContent = script.textContent;
+                        }
+                        
+                        document.body.appendChild(newScript);
+                    });
+
+                    // Run initialization after a brief delay
+                    setTimeout(() => {
+                        if (typeof updateFeatureControls === 'function') {
+                            updateFeatureControls(jsonData.features);
+                            updatePrediction();
+                            jsonData.charts.forEach((chartData, index) => {
+                                createChart(chartData, index);
+                            });
+                            createKnowledgeGraph(jsonData.knowledge_graph);
+                            updateRisks(jsonData.risk_assessment.risks);
+                            updateDataTable(jsonData.data_table);
+                        }
+                    }, 500);
                 } else {
                     // Display regular text response
                     messagesContainer.innerHTML = `
@@ -597,52 +670,36 @@
                 };
 
                 function handleStreamEvent(data) {
-                    console.log('Parsed data:', data);
-                    
                     if (data.answer) {
-                        // Accumulate the content
                         allContent += data.answer;
-                        
-                        // Check if response contains HTML
                         const htmlMatch = allContent.match(/<html[\s\S]*?<\/html>/);
                         
                         if (htmlMatch) {
-                            console.log('Found HTML content, updating modal');
-                            analysisModal.innerHTML = `
-                                <div class="relative mx-auto p-5 w-full h-full bg-gray-100">
-                                    <button class="absolute top-2 right-2 text-gray-600 text-3xl font-bold hover:text-black">&times;</button>
-                                    <div class="h-full overflow-auto">
-                                        ${htmlMatch[0]}
+                            const analysisModal = document.getElementById('analysisModal');
+                            if (analysisModal) {
+                                // Create a blob URL for the complete HTML document
+                                const blob = new Blob([htmlMatch[0]], { type: 'text/html' });
+                                const blobUrl = URL.createObjectURL(blob);
+                                
+                                // Create modal with iframe pointing to blob URL
+                                analysisModal.innerHTML = `
+                                    <div class="relative mx-auto p-5 w-full h-full bg-gray-100">
+                                        <button class="absolute top-2 right-2 text-gray-600 text-3xl font-bold hover:text-black">&times;</button>
+                                        <iframe 
+                                            src="${blobUrl}"
+                                            class="w-full h-full border-0" 
+                                            sandbox="allow-same-origin allow-scripts allow-popups"
+                                        ></iframe>
                                     </div>
-                                </div>
-                            `;
-                            
-                            // Reattach close handler
-                            analysisModal.querySelector('button').onclick = () => {
-                                analysisModal.remove();
-                            };
+                                `;
+
+                                // Add close handler that also cleans up the blob URL
+                                analysisModal.querySelector('button').onclick = () => {
+                                    URL.revokeObjectURL(blobUrl);
+                                    analysisModal.remove();
+                                };
+                            }
                         }
-                    }
-                    
-                    switch (data.event) {
-                        case 'message_end':
-                            console.log('Message complete');
-                            break;
-                        case 'error':
-                            analysisModal.innerHTML = `
-                                <div class="relative mx-auto p-5 w-full h-full bg-gray-100">
-                                    <button class="absolute top-2 right-2 text-gray-600 text-3xl font-bold hover:text-black">&times;</button>
-                                    <div class="text-red-500 p-4">
-                                        Error: ${data.message}
-                                    </div>
-                                </div>
-                            `;
-                            break;
-                        case 'ping':
-                            console.log('Ping received');
-                            break;
-                        default:
-                            console.log('Unknown event:', data.event);
                     }
                 }
 
@@ -1580,22 +1637,47 @@
         }
     </script>
     <script>
-        function initDashboard() {
-            ensureChartInitialization();
+        // Add this helper function at the global scope
+        function destroyAllCharts() {
+            // Get all registered chart instances
+            const chartInstances = Object.values(Chart.instances || {});
             
-            // Your chart initialization code here
-            const charts = document.querySelectorAll('canvas');
-            charts.forEach(canvas => {
-                if (canvas.chart) {
-                    canvas.chart.destroy();
+            // Destroy each chart
+            chartInstances.forEach(chart => {
+                try {
+                    chart.destroy();
+                } catch (e) {
+                    console.warn('Error destroying chart:', e);
                 }
-                
-                // Initialize your chart here
-                const ctx = canvas.getContext('2d');
-                canvas.chart = new Chart(ctx, {
-                    // Your chart configuration
-                });
             });
+            
+            // Also try to clear Chart's internal registry
+            Chart.helpers.each(Chart.instances, (chart) => {
+                chart.destroy();
+            });
+        }
+
+        // Then modify the initDashboard function
+        function initDashboard() {
+            logChartState('Before dashboard init');
+            console.log('Initializing dashboard...');
+            console.log('Current Chart instances:', Object.keys(Chart.instances));
+            
+            destroyAllCharts();
+            console.log('After cleanup Chart instances:', Object.keys(Chart.instances));
+            
+            // ... rest of initialization
+            logChartState('After dashboard init');
+        }
+
+        // And modify initAcquisitionFunnelChart
+        function initAcquisitionFunnelChart() {
+            logChartState('Before funnel chart init');
+            console.log('Initializing acquisition funnel chart...');
+            console.log('Chart instances before creation:', Object.keys(Chart.instances));
+            
+            // ... chart creation
+            logChartState('After funnel chart init');
         }
     </script>
 </body>
