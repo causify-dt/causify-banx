@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Banx Finance Dashboard - A comprehensive analytics platform for banking insights across retail, corporate, cards, private banking, venture capital, and investment banking. Features real-time data visualization, causal network analysis, and AI-powered insights for financial decision making." />
     <title>Banx Finance Demo Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -86,6 +87,182 @@
         .sidebar-item-active {
             background-color: rgb(229, 231, 235); /* bg-gray-200 */
             color: rgb(17, 24, 39); /* text-gray-900 */
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+        .modal-content {
+            position: fixed;
+            inset: 0;  /* shorthand for top:0, right:0, bottom:0, left:0 */
+            width: 100vw;
+            height: 100vh;
+            background: white;
+            transform: scale(0);
+            transition: transform 0.3s ease-in-out;
+        }
+        .modal-content.modal-show {
+            transform: scale(1);
+        }
+
+        .dim-sparkle {
+            opacity: 0.5;
+            transform: scaleX(1.35);
+            display: inline-block;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+        .dim-sparkle:hover {
+            opacity: 1;
+        }
+
+        /* Add modal styles */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 50;
+        }
+        .modal-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw;
+            height: 100vh;
+            background: white;
+            border-radius: 0px;
+            z-index: 51;
+            padding: 24px;
+        }
+
+        #insightsModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 9999;
+        }
+        #insightsModal.show {
+            display: flex;
+        }
+        .modal-inner {
+            background: white;
+            width: 95%;
+            height: 90%;
+            margin: auto;
+            border-radius: 8px;
+            padding: 24px;
+            position: relative;
+        }
+
+        .flex.flex-wrap.-mx-2 {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.5rem;
+        }
+        
+        .flex.flex-wrap.-mx-2 > div {
+            display: flex;
+        }
+        
+        .flex.flex-wrap.-mx-2 > div > div {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .chart-container {
+            flex: 1;
+        }
+
+        .w-full.lg\\:w-1\\/2 {
+            display: flex;
+        }
+        .w-full.lg\\:w-1\\/2 > .bg-white {
+            width: 100%;
+        }
+
+        /* Add CSS for chart container height */
+        .chart-container {
+            min-height: 300px;  /* Adjust this value as needed */
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; text-shadow: 0 0 4px rgba(255, 215, 0, 0.3); }
+            50% { opacity: 0.6; text-shadow: 0 0 8px rgba(255, 215, 0, 0.5); }
+        }
+        
+        .dim-sparkle:hover {
+            animation: sparkle 1s infinite;
+        }
+
+        #textContainer {
+            position: relative;
+            z-index: 52;
+        }
+
+        #question, #answer, #debugInfo {
+            position: relative;
+            z-index: 53;
+        }
+
+        /* Add these styles to ensure proper spacing and visibility */
+        #textContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .mt-4 {
+            margin-top: 1rem !important;  /* Force margin */
+        }
+
+        #question {
+            margin-bottom: 1rem;
+        }
+
+        .flex.justify-end {
+            display: flex !important;
+            justify-content: flex-end !important;
+            position: relative;
+            z-index: 53;
+            margin: 1rem 0;  /* Add space above and below */
+        }
+
+        /* Make sure example questions don't overlap */
+        #exampleQuestions {
+            margin-top: 2rem;  /* Add more space after the button */
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: #FF3D00;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -305,6 +482,413 @@
     </div>
 
     <script>
+        // Define all necessary functions and variables at the top
+        const apiKey = 'app-GOHXUVETNtNziH5yhdihrt9p';
+        const apiUrl = 'https://api.dify.ai/v1/completion-messages';
+        const exampleQuestionsApiKey = 'app-3s4vYGWsEFlngczZ0AIC5Hlr';
+        const exampleQuestionsApiUrl = 'https://api.dify.ai/v1/completion-messages';
+        let allContent = '';
+        let hasProcessedHtml = false;
+
+        // Add this at the top level
+        let debugMode = true;
+
+        function logChartState(location) {
+            if (!debugMode) return;
+            console.log(`=== Chart State at ${location} ===`);
+            console.log('Chart instances:', Object.keys(Chart.instances));
+            console.log('Chart registry:', Chart.instances);
+            console.log('========================');
+        }
+
+        // Function to create modal content
+        function createModalContent(dataAnalysis, chartContextValue) {
+            const temp = document.createElement('div');
+            temp.innerHTML = dataAnalysis;
+            
+            // Extract scripts but keep a copy
+            const scripts = Array.from(temp.getElementsByTagName('script'));
+            const scriptsCopy = scripts.map(script => script.cloneNode(true));
+            scripts.forEach(script => script.remove());
+            
+            // Create the modal HTML with updated layout
+            const modalHTML = `
+                        <!-- Title -->
+                        <h3 class="text-md font-bold p-4">Ask AI About This Chart</h3>
+                        
+                        <!-- Question form -->
+                        <div id="questionForm" class="p-4 pt-0 space-y-4">
+                            <textarea 
+                                id="question" 
+                                class="w-full p-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
+                                rows="2" 
+                                placeholder="Ask a question about this chart..."
+                                required
+                            ></textarea>
+                            <input type="hidden" id="chartContext" name="chartContext" value="${chartContextValue}" />
+                            <div class="flex justify-end">
+                                <button 
+                                    onclick="window.sendChatMessage()" 
+                                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm transition-colors duration-150"
+                                >
+                                    Send
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Example questions in 2x3 grid -->
+                        <div id="exampleQuestions" class="grid grid-cols-2 gap-3 p-4">
+                            <!-- Questions will be dynamically inserted here -->
+                        </div>
+                        <!-- Loading indicator -->
+                        <div id="questionsLoader" class="flex justify-center items-center p-4 hidden">
+                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                        </div>
+            `;
+            // Update the example question card styling in handleExampleQuestions
+            function handleExampleQuestions(data) {
+                const container = document.getElementById('exampleQuestions');
+                if (!container) return;
+
+                document.getElementById('questionsLoader').classList.add('hidden');
+                container.classList.remove('hidden');
+
+                try {
+                    const questions = parseQuestions(data.answer);
+                    if (Array.isArray(questions)) {
+                        container.innerHTML = ''; // Clear existing questions
+                        questions.slice(0, 6).forEach(q => { // Limit to 6 questions for 2x3 grid
+                            const div = document.createElement('div');
+                            div.className = 'example-card bg-white p-3 rounded shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer';
+                            div.innerHTML = '<p class="text-sm text-gray-700">' + (q.question || '') + '</p>';
+                            div.onclick = () => {
+                                const questionInput = document.getElementById('question');
+                                if (questionInput) {
+                                    questionInput.value = q.question;
+                                    questionInput.focus();
+                                }
+                            };
+                            container.appendChild(div);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error handling example questions:', error);
+                    container.innerHTML = '<p class="text-red-500">Failed to load example questions</p>';
+                }
+            }
+
+            return modalHTML;
+        }
+
+        // Function to handle Dify response
+        function handleDifyResponse(data, messagesContainer) {
+            // Clear loading sequence
+            messagesContainer.innerHTML = '';
+            
+            if (data.answer) {
+                // Check if response contains HTML
+                const htmlMatch = data.answer.match(/<html[\s\S]*?<\/html>/);
+                
+                if (htmlMatch) {
+                    // Create and show a new modal for HTML content
+                    const analysisModal = document.createElement('div');
+                    analysisModal.className = 'fixed inset-0 bg-black bg-opacity-50 overflow-y-auto';
+                    analysisModal.style.zIndex = '70'; // Higher than the chart analysis modal
+                    
+                    // Create temporary container
+                    const temp = document.createElement('div');
+                    temp.innerHTML = htmlMatch[0];
+                    
+                    // Get all scripts
+                    const scripts = Array.from(temp.getElementsByTagName('script'));
+                    
+                    // Insert modal HTML first
+                    analysisModal.innerHTML = `
+                        <div class="relative mx-auto p-5 w-full h-full bg-gray-100">
+                            <button class="absolute top-2 right-2 text-gray-600 text-3xl font-bold hover:text-black">&times;</button>
+                            <div class="w-full h-full">${temp.innerHTML}</div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(analysisModal);
+                    
+                    // Add close handler
+                    analysisModal.querySelector('button').onclick = () => {
+                        analysisModal.remove();
+                    };
+
+                    // Execute scripts in order
+                    scripts.forEach(script => {
+                        const newScript = document.createElement('script');
+                        
+                        if (script.src) {
+                            newScript.src = script.src;
+                        } else {
+                            newScript.textContent = script.textContent;
+                        }
+                        
+                        document.body.appendChild(newScript);
+                    });
+
+                    // Run initialization after a brief delay
+                    setTimeout(() => {
+                        if (typeof updateFeatureControls === 'function') {
+                            updateFeatureControls(jsonData.features);
+                            updatePrediction();
+                            jsonData.charts.forEach((chartData, index) => {
+                                createChart(chartData, index);
+                            });
+                            createKnowledgeGraph(jsonData.knowledge_graph);
+                            updateRisks(jsonData.risk_assessment.risks);
+                            updateDataTable(jsonData.data_table);
+                        }
+                    }, 500);
+                } else {
+                    // Display regular text response
+                    messagesContainer.innerHTML = `
+                        <div class="flex justify-start mb-2">
+                            <div class="bg-gray-200 text-gray-800 rounded-lg py-2 px-3 max-w-[80%]">
+                                ${data.answer}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Define the sendChatMessage function
+        window.sendChatMessage = function() {
+            allContent = ''; // Reset the content
+            const input = document.getElementById('question');
+            const chartContext = document.getElementById('chartContext')?.value;
+            
+            if (input.value.trim()) {
+                // Close the original modal if it exists
+                const originalModal = document.querySelector('[id^="modal-"]');
+                if (originalModal) {
+                    originalModal.remove();
+                }
+
+                // Create or get analysis modal
+                let analysisModal = document.getElementById('analysisModal');
+                if (!analysisModal) {
+                    analysisModal = document.createElement('div');
+                    analysisModal.id = 'analysisModal';
+                    analysisModal.className = 'fixed inset-0 bg-black bg-opacity-50 overflow-y-auto';
+                    analysisModal.style.zIndex = '9999'; // Ensure it's on top
+                    document.body.appendChild(analysisModal);
+                }
+
+                // Update the analysis modal loading state HTML
+                analysisModal.innerHTML = `
+                    <div class="relative mx-auto p-5 w-full h-full bg-gray-100">
+                        <button class="absolute top-2 right-2 text-gray-600 text-3xl font-bold hover:text-black">&times;</button>
+                        <div class="h-full flex items-center justify-center">
+                            <div class="flex flex-col items-center">
+                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+                                <div id="analysisLoaderText" class="mt-4 text-gray-600">Aggregating Data...</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Add close handler
+                analysisModal.querySelector('button').onclick = () => {
+                    analysisModal.remove();
+                };
+
+                // Define the loading sequence
+                const loaderSteps = [
+                    'Aggregating Data...',
+                    'Building Knowledge Graph...',
+                    'Creating Network...',
+                    'Generating Model...',
+                    'Testing Prediction...',
+                    'Building What If Scenarios...',
+                    'Deploying Model...'
+                ];
+
+                let stepIndex = 0;
+                const updateLoaderText = () => {
+                    const loaderText = document.getElementById('analysisLoaderText');
+                    if (loaderText && stepIndex < loaderSteps.length) {
+                        loaderText.textContent = loaderSteps[stepIndex];
+                        stepIndex++;
+                        setTimeout(updateLoaderText, 12860); // 90 seconds / 7 steps ≈ 12.86 seconds per step
+                    }
+                };
+
+                // Start the loading sequence
+                updateLoaderText();
+
+                function handleStreamEvent(data) {
+                    if (data.answer) {
+                        allContent += data.answer;
+                        const htmlMatch = allContent.match(/<html[\s\S]*?<\/html>/);
+                        
+                        if (htmlMatch) {
+                            const analysisModal = document.getElementById('analysisModal');
+                            if (analysisModal) {
+                                // Create a blob URL for the complete HTML document
+                                const blob = new Blob([htmlMatch[0]], { type: 'text/html' });
+                                const blobUrl = URL.createObjectURL(blob);
+                                
+                                // Create modal with iframe pointing to blob URL
+                                analysisModal.innerHTML = `
+                                    <div class="relative mx-auto p-5 w-full h-full bg-gray-100">
+                                        <button class="absolute top-2 right-2 text-gray-600 text-3xl font-bold hover:text-black">&times;</button>
+                                        <iframe 
+                                            src="${blobUrl}"
+                                            class="w-full h-full border-0" 
+                                            sandbox="allow-same-origin allow-scripts allow-popups"
+                                        ></iframe>
+                                    </div>
+                                `;
+
+                                // Add close handler that also cleans up the blob URL
+                                analysisModal.querySelector('button').onclick = () => {
+                                    URL.revokeObjectURL(blobUrl);
+                                    analysisModal.remove();
+                                };
+                            }
+                        }
+                    }
+                }
+
+                // Rest of the fetch code with the updated handleStreamEvent
+                fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + apiKey,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    mode: 'cors',
+                    credentials: 'omit',
+                    body: JSON.stringify({
+                        inputs: { 
+                            question: input.value,
+                            chartContext: chartContext
+                        },
+                        response_mode: "streaming",
+                        user: 'user-' + Date.now()
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+
+                    function processChunk(chunk) {
+                        console.log('Received chunk:', chunk);
+                        const lines = chunk.split('\n');
+                        lines.forEach(line => {
+                            if (line.startsWith('data: ')) {
+                                const jsonStr = line.slice(6);
+                                try {
+                                    const data = JSON.parse(jsonStr);
+                                    
+                                    // Handle error events in the stream
+                                    if (data.event === 'error') {
+                                        let errorMessage;
+                                        if (data.code === 'completion_request_error' && data.status === 400) {
+                                            errorMessage = 'The AI service is currently at high capacity. Please wait a moment and try again.';
+                                        } else {
+                                            errorMessage = 'An unexpected error occurred. Please try again later.';
+                                        }
+                                        
+                                        // Update modal with error message
+                                        const analysisModal = document.getElementById('analysisModal');
+                                        if (analysisModal) {
+                                            analysisModal.innerHTML = `
+                                                <div class="relative mx-auto p-5 w-full h-full bg-gray-100">
+                                                    <button class="absolute top-2 right-2 text-gray-600 text-3xl font-bold hover:text-black">&times;</button>
+                                                    <div class="flex items-center justify-center h-full">
+                                                        <div class="bg-red-50 border-l-4 border-red-400 p-4 max-w-lg">
+                                                            <div class="flex">
+                                                                <div class="flex-shrink-0">
+                                                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                                                    </svg>
+                                                                </div>
+                                                                <div class="ml-3">
+                                                                    <p class="text-sm text-red-700">${errorMessage}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `;
+                                            
+                                            // Add close handler
+                                            analysisModal.querySelector('button').onclick = () => {
+                                                analysisModal.remove();
+                                            };
+                                        }
+                                    } else {
+                                        // Handle normal stream data
+                                        handleStreamEvent(data);
+                                    }
+                                } catch (error) {
+                                    console.error('Error parsing JSON:', error);
+                                }
+                            }
+                        });
+                    }
+
+                    function readStream() {
+                        reader.read().then(({ done, value }) => {
+                            if (done) {
+                                console.log('Stream complete');
+                                return;
+                            }
+                            const chunk = decoder.decode(value);
+                            processChunk(chunk);
+                            readStream();
+                        }).catch(error => {
+                            console.error('Stream reading error:', error);
+                            analysisModal.innerHTML = `
+                                <div class="text-red-500 p-4">
+                                    Stream error: ${error.message}
+                                </div>
+                            `;
+                        });
+                    }
+
+                    readStream();
+                })
+                .catch(error => {
+                    console.error('API Error:', error);
+                    analysisModal.innerHTML = `
+                        <div class="relative mx-auto p-5 w-full h-full bg-gray-100">
+                            <button class="absolute top-2 right-2 text-gray-600 text-3xl font-bold hover:text-black">&times;</button>
+                            <div class="flex items-center justify-center h-full">
+                                <div class="bg-red-50 border-l-4 border-red-400 p-4 max-w-lg">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0">
+                                            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm text-red-700">
+                                                ${error.status === 400 ? 
+                                                    'The AI service is currently experiencing high demand. Please try again in a few moments.' : 
+                                                    'An unexpected error occurred. Please try again later.'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                input.value = '';
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
             const tabLinks = document.querySelectorAll('header ul li a');
             const sidebar = document.getElementById('sidebar');
@@ -440,6 +1024,336 @@
                             const temp = document.createElement('div');
                             temp.innerHTML = html;
                             
+                            // Add buttons next to h3 elements
+                            temp.querySelectorAll('h3').forEach(h3 => {
+                                // Create wrapper div for h3 and button
+                                const wrapper = document.createElement('div');
+                                wrapper.className = 'flex justify-between items-center';
+                                
+                                // Move h3 into wrapper
+                                h3.parentNode.insertBefore(wrapper, h3);
+                                wrapper.appendChild(h3);
+                                
+                                // Check if this wrapper is inside a chart section
+                                const isInChartSection = wrapper.closest('.flex.flex-wrap.-mx-2') !== null;
+                                
+                                // Only add sparkle to chart sections
+                                if (isInChartSection) {
+                                    // Add chart container height and sparkle animation
+                                    document.head.insertAdjacentHTML('beforeend', `
+                                        <style>
+                                            .chart-container {
+                                                min-height: 300px;
+                                            }
+                                            
+                                            @keyframes sparkle {
+                                                0%, 100% { opacity: 1; text-shadow: 0 0 4px rgba(255, 215, 0, 0.3); }
+                                                50% { opacity: 0.6; text-shadow: 0 0 8px rgba(255, 215, 0, 0.5); }
+                                            }
+                                            
+                                            .dim-sparkle:hover {
+                                                animation: sparkle 1s infinite;
+                                            }
+                                        </style>
+                                    `);
+
+                                    // Check if this is a chart section by looking for chart-container
+                                    const isChartSection = wrapper.closest('.bg-white').querySelector('.chart-container') !== null;
+                                    
+                                    if (isChartSection) {
+                                        // Create button
+                                        const iconButton = document.createElement('button');
+                                        iconButton.innerHTML = '✨';
+                                        iconButton.className = 'dim-sparkle';
+                                        iconButton.style.cssText = `
+                                            background: none;
+                                            border: none;
+                                            padding: 0;
+                                            cursor: pointer;
+                                            opacity: 0.6;
+                                            transform: scaleX(1.35);
+                                            transition: opacity 0.2s ease;
+                                            position: relative;
+                                            overflow: hidden;
+                                        `;
+                                        
+                                        // Add hover styles
+                                        iconButton.onmouseover = function() {
+                                            this.style.opacity = '1';
+                                        };
+                                        
+                                        iconButton.onmouseout = function() {
+                                            this.style.opacity = '0.6';
+                                        };
+                                        
+                                        // Create modal HTML
+                                        const modalHTML = `
+                                            <div id="chartModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:50;">
+                                                <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:white; display:flex; flex-direction:column;">
+                                                    <div style="display:flex; justify-content:space-between; align-items:center; padding:16px;">
+                                                        <h2 style="margin:0; font-size:20px;" id="modalTitle">Chart Analysis</h2>
+                                                        <button onclick="document.getElementById('chartModal').style.display='none'" style="border:none; background:none; font-size:24px; cursor:pointer;">×</button>
+                                                    </div>
+                                                    <div style="display:flex; gap:24px; flex:1; padding:24px; overflow:hidden;">
+                                                        <div style="flex:1; display:flex; flex-direction:column; gap:16px; overflow:hidden;">
+                                                            <div style="flex:2; background:#f8f9fa; border-radius:8px; padding:20px; overflow:auto;" id="chartContainer">
+                                                                <!-- Chart will go here -->
+                                                            </div>
+                                                            <div style="flex:1; background:#f8f9fa; border-radius:8px; padding:20px; overflow:auto;" id="chartData">
+                                                                <!-- Chart data will go here -->
+                                                            </div>
+                                                        </div>
+                                                        <div style="flex:1; background:#f8f9fa; border-radius:8px; padding:20px; overflow:auto;" id="textContainer">
+                                                            <input type="hidden" id="chartContext" name="chartContext" />
+                                                            <div id="questionForm" class="space-y-4">
+                                                                <div class="relative">
+                                                                    <textarea 
+                                                                        id="question" 
+                                                                        class="w-full p-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
+                                                                        rows="2" 
+                                                                        placeholder="Ask a question about this chart..."
+                                                                        required
+                                                                    ></textarea>
+                                                                    <div class="flex justify-end mt-2">
+                                                                        <button 
+                                                                            onclick="window.sendChatMessage()" 
+                                                                            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm transition-colors duration-150"
+                                                                        >
+                                                                            Send
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div id="exampleQuestions" class="mt-4"></div>
+                                                            <div id="answer" class="mt-4"></div>
+                                                            <div id="debugInfo" class="text-xs mt-4"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                        
+                                        // Add modal to document if it doesn't exist
+                                        if (!document.getElementById('chartModal')) {
+                                            document.body.insertAdjacentHTML('beforeend', modalHTML);
+                                        }
+                                        
+                                        // Click handler with modal
+                                        iconButton.setAttribute('onclick', `
+                                            const modal = document.getElementById('chartModal');
+                                            const chartSection = this.closest('.bg-white');
+                                            
+                                            if (chartSection) {
+                                                // Define helper functions within this scope
+                                                function parseQuestions(str) {
+                                                    try {
+                                                        if (!str) return [];
+                                                        str = str.trim();
+                                                        if (!str.startsWith('[') && !str.endsWith(']')) {
+                                                            str = '[' + str.replace(/}\\s*{/g, '},{') + ']';
+                                                        }
+                                                        return JSON.parse(str);
+                                                    } catch (error) {
+                                                        console.error('Error parsing questions:', error);
+                                                        return [];
+                                                    }
+                                                }
+
+                                                function handleExampleQuestions(data) {
+                                                    const container = document.getElementById('exampleQuestions');
+                                                    if (!container) return;
+
+                                                    // Hide loader and show questions container
+                                                    document.getElementById('questionsLoader').classList.add('hidden');
+                                                    container.classList.remove('hidden');
+
+                                                    try {
+                                                        const questions = parseQuestions(data.answer);
+                                                        if (Array.isArray(questions)) {
+                                                            container.innerHTML = ''; // Clear existing questions
+                                                            questions.slice(0, 6).forEach(q => {
+                                                                const div = document.createElement('div');
+                                                                div.className = 'example-card bg-white p-4 rounded shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer';
+                                                                div.innerHTML = '<p class="text-sm text-gray-700">' + (q.question || '') + '</p>';
+                                                                div.onclick = () => {
+                                                                    const questionInput = document.getElementById('question');
+                                                                    if (questionInput) {
+                                                                        questionInput.value = q.question;
+                                                                        questionInput.focus(); // Optional: focus the input after populating
+                                                                    }
+                                                                };
+                                                                container.appendChild(div);
+                                                            });
+                                                        }
+                                                    } catch (error) {
+                                                        console.error('Error handling example questions:', error);
+                                                        container.innerHTML = '<p class="text-red-500">Failed to load example questions</p>';
+                                                    }
+                                                }
+
+                                                // Get title and text content
+                                                const title = chartSection.querySelector('h3')?.textContent || 'Chart Analysis';
+                                                const explanation = chartSection.querySelector('p')?.textContent || '';
+                                                
+                                                // Find the original canvas and chart instance
+                                                const originalCanvas = chartSection.querySelector('canvas');
+                                                const originalChart = originalCanvas ? Chart.getChart(originalCanvas) : null;
+                                                
+                                                // Create chart context value
+                                                const chartContextValue = JSON.stringify({
+                                                    title: title,
+                                                    type: originalChart ? originalChart.config.type : '',
+                                                    data: originalChart ? {
+                                                        labels: originalChart.data.labels,
+                                                        datasets: originalChart.data.datasets.map(ds => ({
+                                                            label: ds.label,
+                                                            data: ds.data
+                                                        }))
+                                                    } : {},
+                                                    explanation: explanation
+                                                });
+                                                
+                                                // Format chart data for display
+                                                let dataAnalysis = '<div class="flex flex-col">';
+                                                
+                                                // Add these calculations before the dataAnalysis string
+                                                if (originalChart && originalChart.data && originalChart.data.datasets) {
+                                                    const currentData = originalChart.data.datasets[0]?.data || [];
+                                                    const predictedData = originalChart.data.datasets[1]?.data || [];
+
+                                                    // Calculate statistics only if we have data
+                                                    if (currentData.length > 0) {
+                                                        const currentTotal = currentData.reduce((a, b) => a + b, 0).toFixed(2);
+                                                        const currentAvg = (currentTotal / currentData.length).toFixed(2);
+                                                        const currentMin = Math.min(...currentData).toFixed(2);
+                                                        const currentMax = Math.max(...currentData).toFixed(2);
+                                                    }
+
+                                                    if (predictedData.length > 0) {
+                                                        const predictedTotal = predictedData.reduce((a, b) => a + b, 0).toFixed(2);
+                                                        const predictedAvg = (predictedTotal / predictedData.length).toFixed(2);
+                                                        const predictedMin = Math.min(...predictedData).toFixed(2);
+                                                        const predictedMax = Math.max(...predictedData).toFixed(2);
+                                                    }
+                                                }
+
+                                        
+                                                // Chart data follows immediately after
+                                                if (originalChart) {
+                                                    dataAnalysis += '<div class="bg-white rounded-lg p-4 hidden">' +
+                                                        '<h3 class="font-bold mb-3">Chart Data</h3>';
+                                                    
+                                                    // Create a table for the data
+                                                    dataAnalysis += '<div class="overflow-x-auto"><table class="w-full text-sm">';
+                                                    
+                                                    // Table header
+                                                    dataAnalysis += '<thead><tr class="bg-gray-100">';
+                                                    dataAnalysis += '<th class="text-left p-2">Period</th>';
+                                                    originalChart.data.datasets.forEach(dataset => {
+                                                        dataAnalysis += '<th class="text-left p-2">' + (dataset.label || 'Value') + '</th>';
+                                                    });
+                                                    dataAnalysis += '</tr></thead>';
+                                                    
+                                                    // Table body
+                                                    dataAnalysis += '<tbody>';
+                                                    const labels = originalChart.data.labels || [];
+                                                    labels.forEach((label, index) => {
+                                                        dataAnalysis += '<tr class="border-b border-gray-200">';
+                                                        dataAnalysis += '<td class="p-2">' + label + '</td>';
+                                                        originalChart.data.datasets.forEach(dataset => {
+                                                            dataAnalysis += '<td class="p-2">' + dataset.data[index] + '</td>';
+                                                        });
+                                                        dataAnalysis += '</tr>';
+                                                    });
+                                                    dataAnalysis += '</tbody></table></div>';
+                                                    
+                                                    // Add summary statistics
+                                                    dataAnalysis += '<div class="mt-4">';
+                                                    dataAnalysis += '<h4 class="font-bold mb-2">Summary Statistics</h4>';
+                                                    originalChart.data.datasets.forEach((dataset, index) => {
+                                                        const sum = dataset.data.reduce((a, b) => a + b, 0);
+                                                        const avg = sum / dataset.data.length;
+                                                        dataAnalysis += '<div class="mb-3">';
+                                                        dataAnalysis += '<p class="font-semibold">' + (dataset.label || 'Dataset ' + (index + 1)) + '</p>';
+                                                        dataAnalysis += '<ul class="list-disc pl-5">';
+                                                        dataAnalysis += '<li>Total: ' + sum.toFixed(2) + '</li>';
+                                                        dataAnalysis += '<li>Average: ' + avg.toFixed(2) + '</li>';
+                                                        dataAnalysis += '<li>Min: ' + Math.min(...dataset.data).toFixed(2) + '</li>';
+                                                        dataAnalysis += '<li>Max: ' + Math.max(...dataset.data).toFixed(2) + '</li>';
+                                                        dataAnalysis += '</ul>';
+                                                        dataAnalysis += '</div>';
+                                                    });
+                                                    dataAnalysis += '</div>';
+                                                }
+                                                dataAnalysis += '</div>';
+                                                
+                                                // Update modal content
+                                                document.getElementById('modalTitle').textContent = title;
+                                                document.getElementById('chartContainer').innerHTML = '<canvas id="modalChart"></canvas>';
+                                                document.getElementById('chartData').innerHTML = '<div style="background:white; padding:16px; border-radius:8px;">' + explanation + '</div>';
+                                                document.getElementById('textContainer').innerHTML = createModalContent(dataAnalysis, chartContextValue);
+                                                
+                                                // Show modal
+                                                modal.style.display = 'block';
+                                                
+                                                // If we found a chart, recreate it in the modal
+                                                if (originalChart) {
+                                                    const modalCanvas = document.getElementById('modalChart');
+                                                    new Chart(modalCanvas, {
+                                                        type: originalChart.config.type,
+                                                        data: JSON.parse(JSON.stringify(originalChart.data)),
+                                                        options: JSON.parse(JSON.stringify(originalChart.options))
+                                                    });
+                                                }
+
+                                                // Update the fetch call with better error handling
+                                                const fetchWithTimeout = () => {
+                                                    const controller = new AbortController();
+                                                    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+                                                    fetch(exampleQuestionsApiUrl, {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'Authorization': 'Bearer ' + exampleQuestionsApiKey,
+                                                            'Content-Type': 'application/json',
+                                                        },
+                                                        body: JSON.stringify({
+                                                            inputs: {
+                                                                chartContext: chartContextValue
+                                                            },
+                                                            response_mode: 'blocking',
+                                                            user: 'user-' + Date.now()
+                                                        }),
+                                                        signal: controller.signal
+                                                    })
+                                                    .then(response => {
+                                                        clearTimeout(timeoutId);
+                                                        if (!response.ok) {
+                                                            return response.text().then(text => {
+                                                                throw new Error('API Error (' + response.status + '): ' + text);
+                                                            });
+                                                        }
+                                                        return response.json();
+                                                    })
+                                                    .then(data => handleExampleQuestions(data))
+                                                    .catch(error => {
+                                                        clearTimeout(timeoutId);
+                                                        console.error('Detailed error:', error);
+                                                        document.getElementById('questionsLoader').classList.add('hidden');
+                                                        document.getElementById('exampleQuestions').innerHTML = '<p class="text-red-500">Error: ' + error.message + '</p>';
+                                                    });
+                                                };
+
+                                                // Call the fetch function after modal is shown
+                                                fetchWithTimeout();
+                                            }
+                                        `);
+                                        
+                                        wrapper.appendChild(iconButton);
+                                    }
+                                }
+                            });
+                            
                             // Extract scripts
                             const scripts = Array.from(temp.getElementsByTagName('script'));
                             scripts.forEach(script => script.remove());
@@ -520,7 +1434,7 @@
                     .catch(error => {
                         console.error('Error loading content:', error);
                         if (dynamicContent) {
-                            dynamicContent.innerHTML = `<div class="p-4">Error loading content: ${error.message}</div>`;
+                            dynamicContent.innerHTML = '<div class="p-4">Error loading content: ' + error.message + '</div>';
                         }
                     });
             }
@@ -573,7 +1487,7 @@
                 const items = navigationItems[tab];
                 
                 if (!items) {
-                    console.error(`No navigation items found for tab: ${tab}`);
+                    console.error('No navigation items found for tab: ' + tab);
                     return; // Exit the function if no items are found
                 }
                 
@@ -740,6 +1654,82 @@
                     activeItem.classList.add('sidebar-item-active');
                 }
             }
+
+            // Function to equalize card heights in each row
+            function equalizeCardHeights() {
+                // Reset any previously set heights
+                document.querySelectorAll('.bg-white').forEach(card => {
+                    card.style.height = 'auto';
+                });
+                
+                const rows = [];
+                let currentRow = [];
+                const cards = document.querySelectorAll('.w-full.lg\\:w-1\\/2');
+                
+                // Group cards into rows
+                cards.forEach(card => {
+                    if (currentRow.length === 0 || 
+                        currentRow[0].offsetTop === card.offsetTop) {
+                        currentRow.push(card);
+                    } else {
+                        rows.push(currentRow);
+                        currentRow = [card];
+                    }
+                });
+                if (currentRow.length > 0) {
+                    rows.push(currentRow);
+                }
+                
+                // Set equal heights for cards in each row
+                rows.forEach(row => {
+                    const maxHeight = Math.max(...row.map(card => 
+                        card.querySelector('.bg-white').offsetHeight
+                    ));
+                    row.forEach(card => {
+                        card.querySelector('.bg-white').style.height = maxHeight + 'px';
+                    });
+                });
+            }
+            
+            // Run after charts load
+            setTimeout(equalizeCardHeights, 1000);
+            
+            // Run on resize
+            window.addEventListener('resize', () => {
+                setTimeout(equalizeCardHeights, 100);
+            });
+
+            // Define at the top level with other functions
+            function handleExampleQuestions(data) {
+                const container = document.getElementById('exampleQuestions');
+                if (!container) return;
+
+                document.getElementById('questionsLoader').classList.add('hidden');
+                container.classList.remove('hidden');
+
+                try {
+                    const questions = parseQuestions(data.answer);
+                    if (Array.isArray(questions)) {
+                        container.innerHTML = ''; // Clear existing questions
+                        questions.slice(0, 6).forEach(q => { // Limit to 6 questions for 2x3 grid
+                            const div = document.createElement('div');
+                            div.className = 'example-card bg-white p-3 rounded shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer';
+                            div.innerHTML = '<p class="text-sm text-gray-700">' + (q.question || '') + '</p>';
+                            div.onclick = () => {
+                                const questionInput = document.getElementById('question');
+                                if (questionInput) {
+                                    questionInput.value = q.question;
+                                    questionInput.focus();
+                                }
+                            };
+                            container.appendChild(div);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error handling example questions:', error);
+                    container.innerHTML = '<p class="text-red-500">Failed to load example questions</p>';
+                }
+            }
         });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
@@ -756,22 +1746,47 @@
         }
     </script>
     <script>
-        function initDashboard() {
-            ensureChartInitialization();
+        // Add this helper function at the global scope
+        function destroyAllCharts() {
+            // Get all registered chart instances
+            const chartInstances = Object.values(Chart.instances || {});
             
-            // Your chart initialization code here
-            const charts = document.querySelectorAll('canvas');
-            charts.forEach(canvas => {
-                if (canvas.chart) {
-                    canvas.chart.destroy();
+            // Destroy each chart
+            chartInstances.forEach(chart => {
+                try {
+                    chart.destroy();
+                } catch (e) {
+                    console.warn('Error destroying chart:', e);
                 }
-                
-                // Initialize your chart here
-                const ctx = canvas.getContext('2d');
-                canvas.chart = new Chart(ctx, {
-                    // Your chart configuration
-                });
             });
+            
+            // Also try to clear Chart's internal registry
+            Chart.helpers.each(Chart.instances, (chart) => {
+                chart.destroy();
+            });
+        }
+
+        // Then modify the initDashboard function
+        function initDashboard() {
+            logChartState('Before dashboard init');
+            console.log('Initializing dashboard...');
+            console.log('Current Chart instances:', Object.keys(Chart.instances));
+            
+            destroyAllCharts();
+            console.log('After cleanup Chart instances:', Object.keys(Chart.instances));
+            
+            // ... rest of initialization
+            logChartState('After dashboard init');
+        }
+
+        // And modify initAcquisitionFunnelChart
+        function initAcquisitionFunnelChart() {
+            logChartState('Before funnel chart init');
+            console.log('Initializing acquisition funnel chart...');
+            console.log('Chart instances before creation:', Object.keys(Chart.instances));
+            
+            // ... chart creation
+            logChartState('After funnel chart init');
         }
     </script>
 </body>
