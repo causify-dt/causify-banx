@@ -81,6 +81,12 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        /* Add this new style for the active menu item */
+        .sidebar-item-active {
+            background-color: rgb(229, 231, 235); /* bg-gray-200 */
+            color: rgb(17, 24, 39); /* text-gray-900 */
+        }
     </style>
 </head>
 <body class="font-sans">
@@ -111,6 +117,12 @@
                         <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="private">
                             <i class="fas fa-user-tie mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
                             Private
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="inline-flex items-center justify-center px-3 py-2 rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 ease-in-out group whitespace-nowrap" data-tab="venture">
+                            <i class="fas fa-rocket mr-1.5 text-gray-400 group-hover:text-gray-900"></i>
+                            Venture
                         </a>
                     </li>
                     <li>
@@ -348,13 +360,23 @@
                     { icon: 'fa-chart-pie', text: 'HNWI', file: 'PRIVATE-BANKING-WEALTH-HNWI.html' },
                     { icon: 'fa-hand-holding-heart', text: 'Philanthropic Advisory', file: 'PRIVATE-BANKING-WEALTH-Philanthropic-Advisory.html' }
                 ],
+                venture: [  // Changed from 'ventures' to 'venture'
+                    { icon: 'fa-home', text: 'Overview', file: 'VENTURE-Overview.html' },
+                    { icon: 'fa-search', text: 'Deal Sourcing', file: 'VENTURE-Deal-Sourcing.html' },
+                    { icon: 'fa-chart-line', text: 'Deal Sourcing Outlook', file: 'VENTURE-Deal-Sourcing-Outlook.html' },
+                    { icon: 'fa-handshake', text: 'Strategic Alignment', file: 'VENTURE-Strategic-Alignment.html' },
+                    { icon: 'fa-shield-alt', text: 'Risk Management', file: 'VENTURE-Risk-Management.html' },
+                    { icon: 'fa-users', text: 'Talent & Team Development', file: 'VENTURE-Talent-Team-Development.html' },
+                    { icon: 'fa-balance-scale', text: 'RegTech', file: 'VENTURE-RegTech.html' },
+                    { icon: 'fa-lightbulb', text: 'Innovation Impact', file: 'VENTURE-Innovation-Impact.html' },
+                    { icon: 'fa-robot', text: 'Financial Services AI/ML', file: 'VENTURE-Financial-Services-AIML-Investment.html' }
+                ],
                 investment: [
                     { icon: 'fa-home', text: 'Overview', file: 'INVESTMENT-BANKING-Overview.html' },
                     { icon: 'fa-chart-line', text: 'Capital Raise Syndication', file: 'INVESTMENT-BANKING-Capital-Raise-Syndication.html' },
                     { icon: 'fa-chart-area', text: 'Debt Capital Markets', file: 'INVESTMENT-BANKING-Debt-Capital-Markets.html' },
                     { icon: 'fa-chart-bar', text: 'Equity Capital Markets', file: 'INVESTMENT-BANKING-Equity-Capital-Markets.html' },
                     { icon: 'fa-handshake', text: 'Mergers & Acquisitions', file: 'INVESTMENT-BANKING-Mergers-Acquisitions.html' },
-                    { icon: 'fa-sitemap', text: 'Corporate Restructuring', file: 'INVESTMENT-BANKING-MA-Corporate-Restructuring-Analysis.html' },
                     { icon: 'fa-piggy-bank', text: 'Private Equity', file: 'INVESTMENT-BANKING-Private-Equity-Venture-Capital.html' },
                     { icon: 'fa-lightbulb', text: 'Strategic Advisory', file: 'INVESTMENT-BANKING-Strategic-Advisory.html' },
                     { icon: 'fa-file-signature', text: 'Underwriting Services', file: 'INVESTMENT-BANKING-Underwriting-Services.html' }
@@ -395,6 +417,9 @@
 
             function loadContent(url) {
                 console.log('Loading content from:', url);
+                
+                // Add this: Update active state in sidebar
+                updateActiveSidebarItem(url);
                 
                 // First destroy any existing charts to prevent conflicts
                 if (window.Chart) {
@@ -567,7 +592,7 @@
 
                 items.forEach(item => {
                     sidebarHTML += `
-                        <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center ${isSidebarExpanded ? 'justify-start' : 'justify-center'} w-full" data-content="${item.file}">
+                        <li class="p-2 cursor-pointer hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 text-xs flex items-center ${isSidebarExpanded ? 'justify-start' : 'justify-center'} w-full ${item.file.includes('Overview') ? 'sidebar-item-active' : ''}" data-content="${item.file}">
                             <div class="w-8 flex justify-center">
                                 <i class="fas ${item.icon}"></i>
                             </div>
@@ -675,6 +700,9 @@
                         case 'private':
                             overviewFile = 'PRIVATE-BANKING-WEALTH-Overview.html';
                             break;
+                        case 'venture':  // Changed from 'ventures' to 'venture'
+                            overviewFile = 'VENTURE-Overview.html';
+                            break;
                         case 'investment':
                             overviewFile = 'INVESTMENT-BANKING-Overview.html';
                             break;
@@ -698,6 +726,20 @@
             // Initialize with the retail sidebar and load retail overview
             updateSidebar('retail');
             loadContent('RETAIL-BANKING-Overview.html');
+
+            // Add this new function
+            function updateActiveSidebarItem(url) {
+                // Remove active class from all items
+                document.querySelectorAll('#sidebar li').forEach(item => {
+                    item.classList.remove('sidebar-item-active');
+                });
+                
+                // Add active class to matching item
+                const activeItem = document.querySelector(`#sidebar li[data-content="${url}"]`);
+                if (activeItem) {
+                    activeItem.classList.add('sidebar-item-active');
+                }
+            }
         });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
